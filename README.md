@@ -7,8 +7,12 @@ Estimates a household's emissions and cost savings from electrification
 # Install
 pipenv install --dev
 
-# Run tests
 cd src
+
+# Run the live server
+pipenv run fastapi dev main.py
+
+# Run tests
 pipenv run python -m pytest
 
 # Lint (skip string normalisation)
