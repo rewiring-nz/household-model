@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: Household savings
+  version: 0.0.1
+  description: |-
+    This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
+tags:
+  - name: savings
+    description: Emissions & opex savings, as well as the necessary upfront cost
+paths:
+  /savings:
+    post:
+      tags:
+        - savings
+      summary: Calculate savings & get upfront cost
+      description: Calculate the emissions savings, opex savings, and the upfront cost from electrifying a given household.
+      operationId: calculateSavings
+      requestBody:
+        description: Input a household's energy behaviour
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Household'
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Savings'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+components:
+  schemas:
+    Household:
+      type: object
+      properties:
+        location:
+          type: string
+          description: Where the household is located
+          enum:
+            - NORTHLAND
+            - AUCKLAND_NORTH
+            - AUCKLAND_CENTRAL
+            - AUCKLAND_EAST
+            - AUCKLAND_WEST
+            - AUCKLAND_SOUTH
+            - WAIKATO
+            - BAY_OF_PLENTY
+            - GISBORNE
+            - HAWKES_BAY
+            - TARANAKI
+            - MANAWATU_WANGANUI
+            - WELLINGTON
+            - TASMAN
+            - NELSON
+            - MARLBOROUGH
+            - WEST_COAST
+            - CANTERBURY
+            - OTAGO
+            - SOUTHLAND
+            - STEWART_ISLAND
+            - CHATHAM_ISLANDS
+            - GREAT_BARRIER_ISLAND
+            - OVERSEAS
+            - OTHER
+        occupancy:
+          description: Number of occupants
+          type: integer
+          maximum: 100
+          minimum: 1
+          example: 2
+        spaceHeating:
+          description: The main method of space heating
+          type: string
+          enum:
+            - WOOD
+            - GAS
+            - LPG
+            - ELECTRIC_RESISTANCE
+            - ELECTRIC_HEAT_PUMP
+            - DONT_KNOW
+        waterHeating:
+          description: The method of water heating
+          type: string
+          enum:
+            - GAS
+            - LPG
+            - ELECTRIC_RESISTANCE
+            - ELECTRIC_HEAT_PUMP
+            - SOLAR
+            - DONT_KNOW
+        cooktop:
+          description: The main energy source for cooking
+          type: string
+          enum:
+            - GAS
+            - LPG
+            - ELECTRIC_RESISTANCE
+            - ELECTRIC_HEAT_PUMP
+            - DONT_KNOW
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+        solar:
+          $ref: '#/components/schemas/Solar'
+        battery:
+          $ref: '#/components/schemas/Battery'
+    Savings:
+      type: object
+      properties:
+        emissions:
+          $ref: '#/components/schemas/Emissions'
+        opex:
+          $ref: '#/components/schemas/Opex'
+        upfrontCost:
+          $ref: '#/components/schemas/UpfrontCost'
+    Emissions:
+      type: object
+      properties:
+        perWeek:
+          $ref: '#/components/schemas/EmissionsValues'
+        perYear:
+          $ref: '#/components/schemas/EmissionsValues'
+        overLifetime:
+          $ref: '#/components/schemas/EmissionsValues'
+        operationalLifetime:
+          $ref: '#/components/schemas/OperationalLifetime'
+    Opex:
+      type: object
+      properties:
+        perWeek:
+          $ref: '#/components/schemas/OpexValues'
+        perYear:
+          $ref: '#/components/schemas/OpexValues'
+        overLifetime:
+          $ref: '#/components/schemas/OpexValues'
+        operationalLifetime:
+          $ref: '#/components/schemas/OperationalLifetime'
+    UpfrontCost:
+      description: The estimated total NZD cost of electrifying the household
+      type: number
+      example: 22012.41
+    EmissionsValues:
+      type: object
+      properties:
+        before:
+          description: The household's emissions per week before electrification in kg CO2e to 2 dp.
+          type: number
+          example: 500.50
+        after:
+          description: The household's emissions per week after electrification in kg CO2e to 2 dp.
+          type: number
+          example: 100.10
+        difference:
+          description: The emissions savings per week; the difference in emissions before & after electrification, in kg CO2e to 2 dp.
+          type: number
+          example: 400.40
+    OpexValues:
+      properties:
+        before:
+          description: The household's opex costs per week before electrification in NZD to 2 dp.
+          type: number
+          example: 500.50
+        after:
+          description: The household's opex costs per week after electrification in NZD to 2 dp.
+          type: number
+          example: 100.10
+        difference:
+          description: The savings value; the difference in opex costs before & after electrification, in NZD to 2 dp.
+          type: number
+          example: 400.40
+    OperationalLifetime:
+      type: integer
+      description: The assumed operational lifetime of the machines in years
+      example: 15
+    Solar:
+      type: object
+      description: The household's solar panel system
+      required:
+        - hasSolar
+      properties:
+        hasSolar:
+          description: Whether the household has solar
+          type: boolean
+        size:
+          type: number
+          description: The size of the solar panel system in kW
+          example: 7
+    Battery:
+      type: object
+      description: The household's home battery system
+      required:
+        - hasBattery
+      properties:
+        hasBattery:
+          description: Whether the household has battery
+          type: boolean
+        capacity:
+          type: number
+          description: The capacity of the battery system in kWh
+          example: 13.5
+        powerOutput:
+          type: number
+          description: The continuous power output of the battery system in kW
+          example: 5
+        peakPowerOutput:
+          type: number
+          description: The peak power output of the battery system in kW
+          example: 7
+    Vehicle:
+      type: object
+      required:
+        - fuelType
+      properties:
+        fuelType:
+          type: string
+          enum:
+            - ELECTRIC
+            - PLUG-IN HYBRID
+            - HYBRID
+            - PETROL
+            - DIESEL
+        kmsPerWeek:
+          type: integer
+          description: Typical kilometres driven per week by this vehicle
+          example: 200
