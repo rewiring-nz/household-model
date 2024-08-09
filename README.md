@@ -11,11 +11,14 @@ pipenv install --dev
 
 ## Run
 
-Run the live server with the following command:
-
 ```bash
 cd src
+
+# for development
 pipenv run fastapi dev main.py
+
+# for production
+pipenv run fastapi run
 ```
 
 You can check out the auto-generated API docs at http://127.0.0.1:8000/docs.
