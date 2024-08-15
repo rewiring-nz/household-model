@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from openapi_client.models import (
     Household,
     Savings,
@@ -10,6 +11,18 @@ from openapi_client.models import (
 
 app = FastAPI()
 
+origins = [
+    "*"
+    # TODO: Lock this down to just the deployed frontend app
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
