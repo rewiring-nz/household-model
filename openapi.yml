@@ -145,8 +145,23 @@ components:
           $ref: '#/components/schemas/OperationalLifetime'
     UpfrontCost:
       description: The estimated total NZD cost of electrifying the household
-      type: number
-      example: 22012.41
+      type: object      
+      properties:
+        solar:
+          type: number
+          description: The estimated cost of installing solar in NZD          
+        battery:
+          type: number
+          description: The estimated cost of installing a battery in NZD          
+        cooktop:
+          type: number
+          description: The estimated cost of switching to cooktop in NZD          
+        waterHeating:
+          type: number
+          description: The estimated cost of switching to waterHeating in NZD          
+        spaceHeating:
+          type: number
+          description: The estimated cost of switching to spaceHeating in NZD 
     EmissionsValues:
       type: object
       properties:
