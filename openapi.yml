@@ -193,6 +193,9 @@ components:
           type: number
           description: The size of the solar panel system in kW
           example: 7
+        installSolar:
+          description: Whether the household wants to install solar
+          type: boolean        
     Battery:
       type: object
       description: The household's home battery system
@@ -214,6 +217,9 @@ components:
           type: number
           description: The peak power output of the battery system in kW
           example: 7
+        installBattery:
+          description: Whether the household wants to install a battery
+          type: boolean 
     Vehicle:
       type: object
       required:
@@ -231,6 +237,9 @@ components:
           type: integer
           description: Typical kilometres driven per week by this vehicle
           example: 200
+        switchToEV:
+          description: Whether the household wants to switch to EV
+          type: boolean 
     Recommendation:
       type: object
       required:
