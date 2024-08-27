@@ -229,7 +229,7 @@ components:
           type: string
           enum:
             - ELECTRIC
-            - PLUG-IN HYBRID
+            - PLUG_IN_HYBRID
             - HYBRID
             - PETROL
             - DIESEL
