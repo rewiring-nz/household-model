@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Household savings
-  version: 0.0.2
+  version: 0.0.3
   description: |-
     This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
 tags:
@@ -119,6 +119,8 @@ components:
           $ref: '#/components/schemas/Opex'
         upfrontCost:
           $ref: '#/components/schemas/UpfrontCost'
+        recommendation:
+          $ref: '#/components/schemas/Recommendation'
     Emissions:
       type: object
       properties:
@@ -229,3 +231,22 @@ components:
           type: integer
           description: Typical kilometres driven per week by this vehicle
           example: 200
+    Recommendation:
+      type: object
+      required:
+        - action
+      properties: 
+        action:
+          type: string
+          description: The recommended action for this household to maximise their savings
+          enum:
+            - SPACE_HEATING
+            - WATER_HEATING
+            - COOKING
+            - VEHICLE
+            - SOLAR
+            - BATTERY
+        url:
+          type: string
+          description: A URL to a resource to give more information about this recommended action.
+          example: https://www.rewiring.nz/electrification-guides/space-heating-and-cooling
