@@ -101,6 +101,7 @@ components:
             - LPG
             - ELECTRIC_RESISTANCE
             - ELECTRIC_INDUCTION
+            - WOOD
             - DONT_KNOW
         vehicles:
           type: array
