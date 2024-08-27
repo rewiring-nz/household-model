@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **capacity** | **float** | The capacity of the battery system in kWh | [optional] 
 **power_output** | **float** | The continuous power output of the battery system in kW | [optional] 
 **peak_power_output** | **float** | The peak power output of the battery system in kW | [optional] 
+**install_battery** | **bool** | Whether the household wants to install a battery | [optional] 
 
 ## Example
 

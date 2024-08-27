@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **has_solar** | **bool** | Whether the household has solar | 
 **size** | **float** | The size of the solar panel system in kW | [optional] 
+**install_solar** | **bool** | Whether the household wants to install solar | [optional] 
 
 ## Example
 
