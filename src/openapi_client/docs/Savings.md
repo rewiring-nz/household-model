@@ -6,7 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **emissions** | [**Emissions**](Emissions.md) |  | [optional] 
 **opex** | [**Opex**](Opex.md) |  | [optional] 
-**upfront_cost** | **float** | The estimated total NZD cost of electrifying the household | [optional] 
+**upfront_cost** | [**UpfrontCost**](UpfrontCost.md) |  | [optional] 
+**recommendation** | [**Recommendation**](Recommendation.md) |  | [optional] 
 
 ## Example
 

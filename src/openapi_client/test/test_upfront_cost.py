@@ -15,10 +15,10 @@
 import unittest
 import datetime
 
-from openapi_client.models.emissions_values import EmissionsValues  # noqa: E501
+from openapi_client.models.upfront_cost import UpfrontCost  # noqa: E501
 
-class TestEmissionsValues(unittest.TestCase):
-    """EmissionsValues unit test stubs"""
+class TestUpfrontCost(unittest.TestCase):
+    """UpfrontCost unit test stubs"""
 
     def setUp(self):
         pass
@@ -26,27 +26,29 @@ class TestEmissionsValues(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> EmissionsValues:
-        """Test EmissionsValues
+    def make_instance(self, include_optional) -> UpfrontCost:
+        """Test UpfrontCost
             include_option is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `EmissionsValues`
+        # uncomment below to create an instance of `UpfrontCost`
         """
-        model = EmissionsValues()  # noqa: E501
+        model = UpfrontCost()  # noqa: E501
         if include_optional:
-            return EmissionsValues(
-                before = 500.5,
-                after = 100.1,
-                difference = 400.4
+            return UpfrontCost(
+                solar = 1.337,
+                battery = 1.337,
+                cooktop = 1.337,
+                water_heating = 1.337,
+                space_heating = 1.337
             )
         else:
-            return EmissionsValues(
+            return UpfrontCost(
         )
         """
 
-    def testEmissionsValues(self):
-        """Test EmissionsValues"""
+    def testUpfrontCost(self):
+        """Test UpfrontCost"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

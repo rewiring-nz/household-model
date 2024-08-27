@@ -34,16 +34,35 @@ pipenv run python -m pytest
 pipenv run black -S .
 ```
 
-## Refreshing `src/client` from `openapi.yml`
+## Generating the API client from `openapi.yml`
+
+First, [install the OpenAPI generator](https://openapi-generator.tech/docs/installation/).
+
+```bash
+# Linux/MacOS
+brew install openapi-generator
+```
+
+### For python (e.g. use within this model)
 
 Since FastAPI expected pydantic models, we need to use an OpenAPI python generator that specifically produces pydantic models. We're using [python-pydantic-v1](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/python-pydantic-v1.md).
 
 ```bash
-brew install openapi-generator
-
 # navigate to the root dir of this repo (make sure you're not in src/)
 
+# generate client
 openapi-generator generate -i openapi.yml -g python-pydantic-v1 --additional-properties=generateSourceCodeOnly=true
-mv openapi_client src/
+
+# move into src/ folder, overwriting any existing version
+mkdir -p src/openapi_client && cp -r ./openapi_client/* ./src/openapi_client && rm -R ./openapi_client/
 ```
 
+### For TypeScript
+
+To use the client in TypeScript (e.g. for a frontend like the [household-calculator-app](https://github.com/rewiring-nz/household-calculator-app)), generate a TypeScript api using something like the [typescript-axios generator](https://openapi-generator.tech/docs/generators/typescript-axios).
+
+```bash
+# Replace the value after -o (for "output") with the location where you want the client to go.
+# E.g. the src/shared/api/ folder of your frontend project
+openapi-generator-cli generate -i openapi.yml -g typescript-axios -o ~/code/household-calculator-app/src/shared/api/
+```

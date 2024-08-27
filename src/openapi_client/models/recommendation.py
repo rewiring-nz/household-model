@@ -18,17 +18,23 @@ import re  # noqa: F401
 import json
 
 
-from typing import Optional, Union
-from pydantic import BaseModel, Field, StrictBool, StrictFloat, StrictInt
+from typing import Optional
+from pydantic import BaseModel, Field, StrictStr, validator
 
-class Solar(BaseModel):
+class Recommendation(BaseModel):
     """
-    The household's solar panel system  # noqa: E501
+    Recommendation
     """
-    has_solar: StrictBool = Field(default=..., alias="hasSolar", description="Whether the household has solar")
-    size: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The size of the solar panel system in kW")
-    install_solar: Optional[StrictBool] = Field(default=None, alias="installSolar", description="Whether the household wants to install solar")
-    __properties = ["hasSolar", "size", "installSolar"]
+    action: StrictStr = Field(default=..., description="The recommended action for this household to maximise their savings")
+    url: Optional[StrictStr] = Field(default=None, description="A URL to a resource to give more information about this recommended action.")
+    __properties = ["action", "url"]
+
+    @validator('action')
+    def action_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in ('SPACE_HEATING', 'WATER_HEATING', 'COOKING', 'VEHICLE', 'SOLAR', 'BATTERY'):
+            raise ValueError("must be one of enum values ('SPACE_HEATING', 'WATER_HEATING', 'COOKING', 'VEHICLE', 'SOLAR', 'BATTERY')")
+        return value
 
     class Config:
         """Pydantic configuration"""
@@ -44,8 +50,8 @@ class Solar(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Solar:
-        """Create an instance of Solar from a JSON string"""
+    def from_json(cls, json_str: str) -> Recommendation:
+        """Create an instance of Recommendation from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self):
@@ -57,18 +63,17 @@ class Solar(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: dict) -> Solar:
-        """Create an instance of Solar from a dict"""
+    def from_dict(cls, obj: dict) -> Recommendation:
+        """Create an instance of Recommendation from a dict"""
         if obj is None:
             return None
 
         if not isinstance(obj, dict):
-            return Solar.parse_obj(obj)
+            return Recommendation.parse_obj(obj)
 
-        _obj = Solar.parse_obj({
-            "has_solar": obj.get("hasSolar"),
-            "size": obj.get("size"),
-            "install_solar": obj.get("installSolar")
+        _obj = Recommendation.parse_obj({
+            "action": obj.get("action"),
+            "url": obj.get("url")
         })
         return _obj
 

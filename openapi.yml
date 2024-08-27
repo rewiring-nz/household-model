@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Household savings
-  version: 0.0.2
+  version: 0.0.3
   description: |-
     This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
 tags:
@@ -101,6 +101,7 @@ components:
             - LPG
             - ELECTRIC_RESISTANCE
             - ELECTRIC_INDUCTION
+            - WOOD
             - DONT_KNOW
         vehicles:
           type: array
@@ -119,6 +120,8 @@ components:
           $ref: '#/components/schemas/Opex'
         upfrontCost:
           $ref: '#/components/schemas/UpfrontCost'
+        recommendation:
+          $ref: '#/components/schemas/Recommendation'
     Emissions:
       type: object
       properties:
@@ -143,8 +146,23 @@ components:
           $ref: '#/components/schemas/OperationalLifetime'
     UpfrontCost:
       description: The estimated total NZD cost of electrifying the household
-      type: number
-      example: 22012.41
+      type: object      
+      properties:
+        solar:
+          type: number
+          description: The estimated cost of installing solar in NZD          
+        battery:
+          type: number
+          description: The estimated cost of installing a battery in NZD          
+        cooktop:
+          type: number
+          description: The estimated cost of switching to cooktop in NZD          
+        waterHeating:
+          type: number
+          description: The estimated cost of switching to waterHeating in NZD          
+        spaceHeating:
+          type: number
+          description: The estimated cost of switching to spaceHeating in NZD 
     EmissionsValues:
       type: object
       properties:
@@ -191,6 +209,9 @@ components:
           type: number
           description: The size of the solar panel system in kW
           example: 7
+        installSolar:
+          description: Whether the household wants to install solar
+          type: boolean        
     Battery:
       type: object
       description: The household's home battery system
@@ -212,6 +233,9 @@ components:
           type: number
           description: The peak power output of the battery system in kW
           example: 7
+        installBattery:
+          description: Whether the household wants to install a battery
+          type: boolean 
     Vehicle:
       type: object
       required:
@@ -221,7 +245,7 @@ components:
           type: string
           enum:
             - ELECTRIC
-            - PLUG-IN HYBRID
+            - PLUG_IN_HYBRID
             - HYBRID
             - PETROL
             - DIESEL
@@ -229,3 +253,25 @@ components:
           type: integer
           description: Typical kilometres driven per week by this vehicle
           example: 200
+        switchToEV:
+          description: Whether the household wants to switch to EV
+          type: boolean 
+    Recommendation:
+      type: object
+      required:
+        - action
+      properties: 
+        action:
+          type: string
+          description: The recommended action for this household to maximise their savings
+          enum:
+            - SPACE_HEATING
+            - WATER_HEATING
+            - COOKING
+            - VEHICLE
+            - SOLAR
+            - BATTERY
+        url:
+          type: string
+          description: A URL to a resource to give more information about this recommended action.
+          example: https://www.rewiring.nz/electrification-guides/space-heating-and-cooling
