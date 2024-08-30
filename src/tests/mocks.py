@@ -77,3 +77,8 @@ mock_upfront_cost = UpfrontCost(
     waterHeating=3000.15,
     spaceHeating=3300.12,
 )
+
+mock_recommendation = Recommendation(
+    action=RecommendationActionEnum("SPACE_HEATING"),
+    url="https://www.rewiring.nz/electrification-guides/space-heating-and-cooling",
+)
