@@ -11,6 +11,7 @@ from openapi_client.models import (
     Recommendation,
     RecommendationActionEnum
 )
+from savings.emissions_savings import calculate_emissions
 
 app = FastAPI()
 
@@ -38,26 +39,10 @@ def health_check():
 
 
 @app.post("/savings") 
-def calculate_household_savings(household=Household) -> Savings:
+def calculate_household_savings(household: Household) -> Savings:
+    emissions = calculate_emissions(household)
     savings = Savings(
-        emissions=Emissions(
-            perWeek=EmissionsValues(
-                before=500.5,
-                after=100.1,
-                difference=400.4
-            ),
-            perYear=EmissionsValues(
-                before=500.5*52,
-                after=100.1*52,
-                difference=400.4*52
-            ),
-            overLifetime=EmissionsValues(
-                before=500.5*52*15*1.1, # some random factor
-                after=100.1*52*15*1.1,
-                difference=400.4*52*15*1.1
-            ),
-            operationalLifetime=15
-        ),
+        emissions=emissions,
         opex=Opex(
             perWeek=OpexValues(
                 before=300.52,

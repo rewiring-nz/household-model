@@ -41,11 +41,38 @@ from params import (
     OPERATIONAL_LIFETIME,
 )
 
+from openapi_client.models import (
+    Household,
+    Emissions,
+    EmissionsValues,
+)
+
 # Other machines (space cooling, refrigeration, laundry, lighting, etc. assume all electric)
 EMISSIONS_OTHER_MACHINES = (
     ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
 )  # kgCO2e/day
 
+
+def calculate_emissions(household: Household) -> Emissions:
+    return Emissions(
+            perWeek=EmissionsValues(
+                before=500.5,
+                after=100.1,
+                difference=400.4
+            ),
+            perYear=EmissionsValues(
+                before=500.5*52,
+                after=100.1*52,
+                difference=400.4*52
+            ),
+            overLifetime=EmissionsValues(
+                before=500.5*52*15*1.1, # some random factor
+                after=100.1*52*15*1.1,
+                difference=400.4*52*15*1.1
+            ),
+            operationalLifetime=15
+        )
+    
 
 # TODO: unit test
 def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
