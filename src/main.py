@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from openapi_client.models import (
     Household,
     Savings,
-    Recommendation,
-    RecommendationActionEnum,
 )
 from savings.emissions_savings import calculate_emissions
 from savings.opex_savings import calculate_opex

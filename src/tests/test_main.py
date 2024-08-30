@@ -8,6 +8,7 @@ from tests.mocks import (
     mock_upfront_cost,
     mock_recommendation,
 )
+from openapi_client.models import Savings
 
 
 @patch("main.get_recommendation", return_value=mock_recommendation)
@@ -55,3 +56,18 @@ class TestCalculateHouseholdSavings(TestCase):
     ):
         calculate_household_savings(mock_household)
         mock_get_recommendation.assert_called_once_with(mock_household)
+
+    def test_it_returns_savings(
+        self,
+        mock_calculate_emissions,
+        mock_calculate_opex,
+        mock_calculate_upfront_cost,
+        mock_get_recommendation,
+    ):
+        result = calculate_household_savings(mock_household)
+        assert result == Savings(
+            emissions=mock_emissions,
+            opex=mock_opex,
+            upfrontCost=mock_upfront_cost,
+            recommendation=mock_recommendation,
+        )
