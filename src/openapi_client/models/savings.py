@@ -25,12 +25,10 @@ from openapi_client.models.opex import Opex
 from openapi_client.models.recommendation import Recommendation
 from openapi_client.models.upfront_cost import UpfrontCost
 
-
 class Savings(BaseModel):
     """
     Savings
     """
-
     emissions: Optional[Emissions] = None
     opex: Optional[Opex] = None
     upfront_cost: Optional[UpfrontCost] = Field(default=None, alias="upfrontCost")
@@ -39,8 +37,7 @@ class Savings(BaseModel):
 
     class Config:
         """Pydantic configuration"""
-
-        populate_by_name = True
+        allow_population_by_field_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -58,19 +55,22 @@ class Savings(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         # override the default output from pydantic by calling `to_dict()` of emissions
         if self.emissions:
-            _dict["emissions"] = self.emissions.to_dict()
+            _dict['emissions'] = self.emissions.to_dict()
         # override the default output from pydantic by calling `to_dict()` of opex
         if self.opex:
-            _dict["opex"] = self.opex.to_dict()
+            _dict['opex'] = self.opex.to_dict()
         # override the default output from pydantic by calling `to_dict()` of upfront_cost
         if self.upfront_cost:
-            _dict["upfrontCost"] = self.upfront_cost.to_dict()
+            _dict['upfrontCost'] = self.upfront_cost.to_dict()
         # override the default output from pydantic by calling `to_dict()` of recommendation
         if self.recommendation:
-            _dict["recommendation"] = self.recommendation.to_dict()
+            _dict['recommendation'] = self.recommendation.to_dict()
         return _dict
 
     @classmethod
@@ -82,28 +82,12 @@ class Savings(BaseModel):
         if not isinstance(obj, dict):
             return Savings.parse_obj(obj)
 
-        _obj = Savings.parse_obj(
-            {
-                "emissions": (
-                    Emissions.from_dict(obj.get("emissions"))
-                    if obj.get("emissions") is not None
-                    else None
-                ),
-                "opex": (
-                    Opex.from_dict(obj.get("opex"))
-                    if obj.get("opex") is not None
-                    else None
-                ),
-                "upfront_cost": (
-                    UpfrontCost.from_dict(obj.get("upfrontCost"))
-                    if obj.get("upfrontCost") is not None
-                    else None
-                ),
-                "recommendation": (
-                    Recommendation.from_dict(obj.get("recommendation"))
-                    if obj.get("recommendation") is not None
-                    else None
-                ),
-            }
-        )
+        _obj = Savings.parse_obj({
+            "emissions": Emissions.from_dict(obj.get("emissions")) if obj.get("emissions") is not None else None,
+            "opex": Opex.from_dict(obj.get("opex")) if obj.get("opex") is not None else None,
+            "upfront_cost": UpfrontCost.from_dict(obj.get("upfrontCost")) if obj.get("upfrontCost") is not None else None,
+            "recommendation": Recommendation.from_dict(obj.get("recommendation")) if obj.get("recommendation") is not None else None
+        })
         return _obj
+
+

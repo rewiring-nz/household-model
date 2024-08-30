@@ -57,6 +57,8 @@ openapi-generator generate -i openapi.yml -g python-pydantic-v1 --additional-pro
 mkdir -p src/openapi_client && cp -r ./openapi_client/* ./src/openapi_client && rm -R ./openapi_client/
 ```
 
+Unfortunately, there's no Pydantic v2-compatible openapi generator, so we're using the latest Pydantic v1 version, pinned in our Pipfile.
+
 ### For TypeScript
 
 To use the client in TypeScript (e.g. for a frontend like the [household-calculator-app](https://github.com/rewiring-nz/household-calculator-app)), generate a TypeScript api using something like the [typescript-axios generator](https://openapi-generator.tech/docs/generators/typescript-axios).

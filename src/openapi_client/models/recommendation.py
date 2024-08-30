@@ -22,23 +22,17 @@ from typing import Optional
 from pydantic import BaseModel, Field, StrictStr
 from openapi_client.models.recommendation_action_enum import RecommendationActionEnum
 
-
 class Recommendation(BaseModel):
     """
     Recommendation
     """
-
     action: RecommendationActionEnum = Field(...)
-    url: Optional[StrictStr] = Field(
-        default=None,
-        description="A URL to a resource to give more information about this recommended action.",
-    )
+    url: Optional[StrictStr] = Field(default=None, description="A URL to a resource to give more information about this recommended action.")
     __properties = ["action", "url"]
 
     class Config:
         """Pydantic configuration"""
-
-        populate_by_name = True
+        allow_population_by_field_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -56,7 +50,10 @@ class Recommendation(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         return _dict
 
     @classmethod
@@ -68,7 +65,10 @@ class Recommendation(BaseModel):
         if not isinstance(obj, dict):
             return Recommendation.parse_obj(obj)
 
-        _obj = Recommendation.parse_obj(
-            {"action": obj.get("action"), "url": obj.get("url")}
-        )
+        _obj = Recommendation.parse_obj({
+            "action": obj.get("action"),
+            "url": obj.get("url")
+        })
         return _obj
+
+

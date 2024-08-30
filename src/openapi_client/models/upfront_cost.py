@@ -21,37 +21,20 @@ import json
 from typing import Optional, Union
 from pydantic import BaseModel, Field, StrictFloat, StrictInt
 
-
 class UpfrontCost(BaseModel):
     """
     The estimated total NZD cost of electrifying the household  # noqa: E501
     """
-
-    solar: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None, description="The estimated cost of installing solar in NZD"
-    )
-    battery: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None, description="The estimated cost of installing a battery in NZD"
-    )
-    cooktop: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None, description="The estimated cost of switching to cooktop in NZD"
-    )
-    water_heating: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None,
-        alias="waterHeating",
-        description="The estimated cost of switching to waterHeating in NZD",
-    )
-    space_heating: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None,
-        alias="spaceHeating",
-        description="The estimated cost of switching to spaceHeating in NZD",
-    )
+    solar: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The estimated cost of installing solar in NZD")
+    battery: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The estimated cost of installing a battery in NZD")
+    cooktop: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The estimated cost of switching to cooktop in NZD")
+    water_heating: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="waterHeating", description="The estimated cost of switching to waterHeating in NZD")
+    space_heating: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="spaceHeating", description="The estimated cost of switching to spaceHeating in NZD")
     __properties = ["solar", "battery", "cooktop", "waterHeating", "spaceHeating"]
 
     class Config:
         """Pydantic configuration"""
-
-        populate_by_name = True
+        allow_population_by_field_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -69,7 +52,10 @@ class UpfrontCost(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         return _dict
 
     @classmethod
@@ -81,13 +67,13 @@ class UpfrontCost(BaseModel):
         if not isinstance(obj, dict):
             return UpfrontCost.parse_obj(obj)
 
-        _obj = UpfrontCost.parse_obj(
-            {
-                "solar": obj.get("solar"),
-                "battery": obj.get("battery"),
-                "cooktop": obj.get("cooktop"),
-                "water_heating": obj.get("waterHeating"),
-                "space_heating": obj.get("spaceHeating"),
-            }
-        )
+        _obj = UpfrontCost.parse_obj({
+            "solar": obj.get("solar"),
+            "battery": obj.get("battery"),
+            "cooktop": obj.get("cooktop"),
+            "water_heating": obj.get("waterHeating"),
+            "space_heating": obj.get("spaceHeating")
+        })
         return _obj
+
+

@@ -21,30 +21,18 @@ import json
 from typing import Optional, Union
 from pydantic import BaseModel, Field, StrictFloat, StrictInt
 
-
 class OpexValues(BaseModel):
     """
     OpexValues
     """
-
-    before: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None,
-        description="The household's opex costs per week before electrification in NZD to 2 dp.",
-    )
-    after: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None,
-        description="The household's opex costs per week after electrification in NZD to 2 dp.",
-    )
-    difference: Optional[Union[StrictFloat, StrictInt]] = Field(
-        default=None,
-        description="The savings value; the difference in opex costs before & after electrification, in NZD to 2 dp.",
-    )
+    before: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The household's opex costs per week before electrification in NZD to 2 dp.")
+    after: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The household's opex costs per week after electrification in NZD to 2 dp.")
+    difference: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The savings value; the difference in opex costs before & after electrification, in NZD to 2 dp.")
     __properties = ["before", "after", "difference"]
 
     class Config:
         """Pydantic configuration"""
-
-        populate_by_name = True
+        allow_population_by_field_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -62,7 +50,10 @@ class OpexValues(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         return _dict
 
     @classmethod
@@ -74,11 +65,11 @@ class OpexValues(BaseModel):
         if not isinstance(obj, dict):
             return OpexValues.parse_obj(obj)
 
-        _obj = OpexValues.parse_obj(
-            {
-                "before": obj.get("before"),
-                "after": obj.get("after"),
-                "difference": obj.get("difference"),
-            }
-        )
+        _obj = OpexValues.parse_obj({
+            "before": obj.get("before"),
+            "after": obj.get("after"),
+            "difference": obj.get("difference")
+        })
         return _obj
+
+
