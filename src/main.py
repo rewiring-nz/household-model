@@ -7,6 +7,9 @@ from openapi_client.models import (
     EmissionsValues,
     Opex,
     OpexValues,
+    UpfrontCost,
+    Recommendation,
+    RecommendationActionEnum
 )
 
 app = FastAPI()
@@ -73,6 +76,16 @@ def calculate_household_savings(household=Household) -> Savings:
             ),
             operationalLifetime=15
         ),
-        upfrontCost=12345.67
+        upfrontCost=UpfrontCost(
+            solar=15000.12,
+            battery=7000.31,
+            cooktop=500.50,
+            waterHeating=3000.15,
+            spaceHeating=3300.12,
+        ),
+        recommendation=Recommendation(
+            action=RecommendationActionEnum('SPACE_HEATING'),
+            url='https://www.rewiring.nz/electrification-guides/space-heating-and-cooling'
+        )
     )
     return savings
