@@ -22,18 +22,29 @@ from typing import Optional
 from pydantic import BaseModel, Field, StrictBool, StrictInt
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
+
 class Vehicle(BaseModel):
     """
     Vehicle
     """
+
     fuel_type: VehicleFuelTypeEnum = Field(default=..., alias="fuelType")
-    kms_per_week: Optional[StrictInt] = Field(default=None, alias="kmsPerWeek", description="Typical kilometres driven per week by this vehicle")
-    switch_to_ev: Optional[StrictBool] = Field(default=None, alias="switchToEV", description="Whether the household wants to switch to EV")
+    kms_per_week: Optional[StrictInt] = Field(
+        default=None,
+        alias="kmsPerWeek",
+        description="Typical kilometres driven per week by this vehicle",
+    )
+    switch_to_ev: Optional[StrictBool] = Field(
+        default=None,
+        alias="switchToEV",
+        description="Whether the household wants to switch to EV",
+    )
     __properties = ["fuelType", "kmsPerWeek", "switchToEV"]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -51,10 +62,7 @@ class Vehicle(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         return _dict
 
     @classmethod
@@ -66,11 +74,11 @@ class Vehicle(BaseModel):
         if not isinstance(obj, dict):
             return Vehicle.parse_obj(obj)
 
-        _obj = Vehicle.parse_obj({
-            "fuel_type": obj.get("fuelType"),
-            "kms_per_week": obj.get("kmsPerWeek"),
-            "switch_to_ev": obj.get("switchToEV")
-        })
+        _obj = Vehicle.parse_obj(
+            {
+                "fuel_type": obj.get("fuelType"),
+                "kms_per_week": obj.get("kmsPerWeek"),
+                "switch_to_ev": obj.get("switchToEV"),
+            }
+        )
         return _obj
-
-

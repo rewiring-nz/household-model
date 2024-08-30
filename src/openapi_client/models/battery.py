@@ -21,20 +21,45 @@ import json
 from typing import Optional, Union
 from pydantic import BaseModel, Field, StrictBool, StrictFloat, StrictInt
 
+
 class Battery(BaseModel):
     """
     The household's home battery system  # noqa: E501
     """
-    has_battery: StrictBool = Field(default=..., alias="hasBattery", description="Whether the household has battery")
-    capacity: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The capacity of the battery system in kWh")
-    power_output: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="powerOutput", description="The continuous power output of the battery system in kW")
-    peak_power_output: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="peakPowerOutput", description="The peak power output of the battery system in kW")
-    install_battery: Optional[StrictBool] = Field(default=None, alias="installBattery", description="Whether the household wants to install a battery")
-    __properties = ["hasBattery", "capacity", "powerOutput", "peakPowerOutput", "installBattery"]
+
+    has_battery: StrictBool = Field(
+        default=..., alias="hasBattery", description="Whether the household has battery"
+    )
+    capacity: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None, description="The capacity of the battery system in kWh"
+    )
+    power_output: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None,
+        alias="powerOutput",
+        description="The continuous power output of the battery system in kW",
+    )
+    peak_power_output: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None,
+        alias="peakPowerOutput",
+        description="The peak power output of the battery system in kW",
+    )
+    install_battery: Optional[StrictBool] = Field(
+        default=None,
+        alias="installBattery",
+        description="Whether the household wants to install a battery",
+    )
+    __properties = [
+        "hasBattery",
+        "capacity",
+        "powerOutput",
+        "peakPowerOutput",
+        "installBattery",
+    ]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -52,10 +77,7 @@ class Battery(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         return _dict
 
     @classmethod
@@ -67,13 +89,13 @@ class Battery(BaseModel):
         if not isinstance(obj, dict):
             return Battery.parse_obj(obj)
 
-        _obj = Battery.parse_obj({
-            "has_battery": obj.get("hasBattery"),
-            "capacity": obj.get("capacity"),
-            "power_output": obj.get("powerOutput"),
-            "peak_power_output": obj.get("peakPowerOutput"),
-            "install_battery": obj.get("installBattery")
-        })
+        _obj = Battery.parse_obj(
+            {
+                "has_battery": obj.get("hasBattery"),
+                "capacity": obj.get("capacity"),
+                "power_output": obj.get("powerOutput"),
+                "peak_power_output": obj.get("peakPowerOutput"),
+                "install_battery": obj.get("installBattery"),
+            }
+        )
         return _obj
-
-

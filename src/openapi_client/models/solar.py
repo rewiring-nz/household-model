@@ -21,18 +21,29 @@ import json
 from typing import Optional, Union
 from pydantic import BaseModel, Field, StrictBool, StrictFloat, StrictInt
 
+
 class Solar(BaseModel):
     """
     The household's solar panel system  # noqa: E501
     """
-    has_solar: StrictBool = Field(default=..., alias="hasSolar", description="Whether the household has solar")
-    size: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The size of the solar panel system in kW")
-    install_solar: Optional[StrictBool] = Field(default=None, alias="installSolar", description="Whether the household wants to install solar")
+
+    has_solar: StrictBool = Field(
+        default=..., alias="hasSolar", description="Whether the household has solar"
+    )
+    size: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None, description="The size of the solar panel system in kW"
+    )
+    install_solar: Optional[StrictBool] = Field(
+        default=None,
+        alias="installSolar",
+        description="Whether the household wants to install solar",
+    )
     __properties = ["hasSolar", "size", "installSolar"]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -50,10 +61,7 @@ class Solar(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         return _dict
 
     @classmethod
@@ -65,11 +73,11 @@ class Solar(BaseModel):
         if not isinstance(obj, dict):
             return Solar.parse_obj(obj)
 
-        _obj = Solar.parse_obj({
-            "has_solar": obj.get("hasSolar"),
-            "size": obj.get("size"),
-            "install_solar": obj.get("installSolar")
-        })
+        _obj = Solar.parse_obj(
+            {
+                "has_solar": obj.get("hasSolar"),
+                "size": obj.get("size"),
+                "install_solar": obj.get("installSolar"),
+            }
+        )
         return _obj
-
-

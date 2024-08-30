@@ -16,7 +16,7 @@ import re  # noqa: F401
 import io
 import warnings
 
-from pydantic import validate_arguments, ValidationError
+from pydantic import validate_call, ValidationError
 
 from typing_extensions import Annotated
 from pydantic import Field
@@ -26,10 +26,7 @@ from openapi_client.models.savings import Savings
 
 from openapi_client.api_client import ApiClient
 from openapi_client.api_response import ApiResponse
-from openapi_client.exceptions import (  # noqa: F401
-    ApiTypeError,
-    ApiValueError
-)
+from openapi_client.exceptions import ApiTypeError, ApiValueError  # noqa: F401
 
 
 class SavingsApi:
@@ -44,8 +41,14 @@ class SavingsApi:
             api_client = ApiClient.get_default()
         self.api_client = api_client
 
-    @validate_arguments
-    def calculate_savings(self, household : Annotated[Household, Field(..., description="Input a household's energy behaviour")], **kwargs) -> Savings:  # noqa: E501
+    @validate_call
+    def calculate_savings(
+        self,
+        household: Annotated[
+            Household, Field(..., description="Input a household's energy behaviour")
+        ],
+        **kwargs
+    ) -> Savings:  # noqa: E501
         """Calculate savings & get upfront cost  # noqa: E501
 
         Calculate the emissions savings, opex savings, and the upfront cost from electrifying a given household.  # noqa: E501
@@ -68,14 +71,20 @@ class SavingsApi:
                  returns the request thread.
         :rtype: Savings
         """
-        kwargs['_return_http_data_only'] = True
-        if '_preload_content' in kwargs:
+        kwargs["_return_http_data_only"] = True
+        if "_preload_content" in kwargs:
             message = "Error! Please call the calculate_savings_with_http_info method with `_preload_content` instead and obtain raw data from ApiResponse.raw_data"  # noqa: E501
             raise ValueError(message)
         return self.calculate_savings_with_http_info(household, **kwargs)  # noqa: E501
 
-    @validate_arguments
-    def calculate_savings_with_http_info(self, household : Annotated[Household, Field(..., description="Input a household's energy behaviour")], **kwargs) -> ApiResponse:  # noqa: E501
+    @validate_call
+    def calculate_savings_with_http_info(
+        self,
+        household: Annotated[
+            Household, Field(..., description="Input a household's energy behaviour")
+        ],
+        **kwargs
+    ) -> ApiResponse:  # noqa: E501
         """Calculate savings & get upfront cost  # noqa: E501
 
         Calculate the emissions savings, opex savings, and the upfront cost from electrifying a given household.  # noqa: E501
@@ -114,30 +123,28 @@ class SavingsApi:
 
         _params = locals()
 
-        _all_params = [
-            'household'
-        ]
+        _all_params = ["household"]
         _all_params.extend(
             [
-                'async_req',
-                '_return_http_data_only',
-                '_preload_content',
-                '_request_timeout',
-                '_request_auth',
-                '_content_type',
-                '_headers'
+                "async_req",
+                "_return_http_data_only",
+                "_preload_content",
+                "_request_timeout",
+                "_request_auth",
+                "_content_type",
+                "_headers",
             ]
         )
 
         # validate the arguments
-        for _key, _val in _params['kwargs'].items():
+        for _key, _val in _params["kwargs"].items():
             if _key not in _all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
                     " to method calculate_savings" % _key
                 )
             _params[_key] = _val
-        del _params['kwargs']
+        del _params["kwargs"]
 
         _collection_formats = {}
 
@@ -147,37 +154,40 @@ class SavingsApi:
         # process the query parameters
         _query_params = []
         # process the header parameters
-        _header_params = dict(_params.get('_headers', {}))
+        _header_params = dict(_params.get("_headers", {}))
         # process the form parameters
         _form_params = []
         _files = {}
         # process the body parameter
         _body_params = None
-        if _params['household'] is not None:
-            _body_params = _params['household']
+        if _params["household"] is not None:
+            _body_params = _params["household"]
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
+        _header_params["Accept"] = self.api_client.select_header_accept(
+            ["application/json"]
+        )  # noqa: E501
 
         # set the HTTP header `Content-Type`
-        _content_types_list = _params.get('_content_type',
-            self.api_client.select_header_content_type(
-                ['application/json']))
+        _content_types_list = _params.get(
+            "_content_type",
+            self.api_client.select_header_content_type(["application/json"]),
+        )
         if _content_types_list:
-                _header_params['Content-Type'] = _content_types_list
+            _header_params["Content-Type"] = _content_types_list
 
         # authentication setting
         _auth_settings = []  # noqa: E501
 
         _response_types_map = {
-            '200': "Savings",
-            '400': None,
-            '422': None,
+            "200": "Savings",
+            "400": None,
+            "422": None,
         }
 
         return self.api_client.call_api(
-            '/savings', 'POST',
+            "/savings",
+            "POST",
             _path_params,
             _query_params,
             _header_params,
@@ -186,9 +196,10 @@ class SavingsApi:
             files=_files,
             response_types_map=_response_types_map,
             auth_settings=_auth_settings,
-            async_req=_params.get('async_req'),
-            _return_http_data_only=_params.get('_return_http_data_only'),  # noqa: E501
-            _preload_content=_params.get('_preload_content', True),
-            _request_timeout=_params.get('_request_timeout'),
+            async_req=_params.get("async_req"),
+            _return_http_data_only=_params.get("_return_http_data_only"),  # noqa: E501
+            _preload_content=_params.get("_preload_content", True),
+            _request_timeout=_params.get("_request_timeout"),
             collection_formats=_collection_formats,
-            _request_auth=_params.get('_request_auth'))
+            _request_auth=_params.get("_request_auth"),
+        )

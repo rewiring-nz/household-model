@@ -21,18 +21,30 @@ import json
 from typing import Optional, Union
 from pydantic import BaseModel, Field, StrictFloat, StrictInt
 
+
 class EmissionsValues(BaseModel):
     """
     EmissionsValues
     """
-    before: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The household's emissions per week before electrification in kg CO2e to 2 dp.")
-    after: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The household's emissions per week after electrification in kg CO2e to 2 dp.")
-    difference: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="The emissions savings per week; the difference in emissions before & after electrification, in kg CO2e to 2 dp.")
+
+    before: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None,
+        description="The household's emissions per week before electrification in kg CO2e to 2 dp.",
+    )
+    after: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None,
+        description="The household's emissions per week after electrification in kg CO2e to 2 dp.",
+    )
+    difference: Optional[Union[StrictFloat, StrictInt]] = Field(
+        default=None,
+        description="The emissions savings per week; the difference in emissions before & after electrification, in kg CO2e to 2 dp.",
+    )
     __properties = ["before", "after", "difference"]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -50,10 +62,7 @@ class EmissionsValues(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         return _dict
 
     @classmethod
@@ -65,11 +74,11 @@ class EmissionsValues(BaseModel):
         if not isinstance(obj, dict):
             return EmissionsValues.parse_obj(obj)
 
-        _obj = EmissionsValues.parse_obj({
-            "before": obj.get("before"),
-            "after": obj.get("after"),
-            "difference": obj.get("difference")
-        })
+        _obj = EmissionsValues.parse_obj(
+            {
+                "before": obj.get("before"),
+                "after": obj.get("after"),
+                "difference": obj.get("difference"),
+            }
+        )
         return _obj
-
-

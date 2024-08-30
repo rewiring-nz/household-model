@@ -28,23 +28,41 @@ from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 
+
 class Household(BaseModel):
     """
     Household
     """
+
     location: Optional[LocationEnum] = None
-    occupancy: Optional[conint(strict=True, le=100, ge=1)] = Field(default=None, description="Number of occupants")
-    space_heating: Optional[SpaceHeatingEnum] = Field(default=None, alias="spaceHeating")
-    water_heating: Optional[WaterHeatingEnum] = Field(default=None, alias="waterHeating")
+    occupancy: Optional[conint(strict=True, le=100, ge=1)] = Field(
+        default=None, description="Number of occupants"
+    )
+    space_heating: Optional[SpaceHeatingEnum] = Field(
+        default=None, alias="spaceHeating"
+    )
+    water_heating: Optional[WaterHeatingEnum] = Field(
+        default=None, alias="waterHeating"
+    )
     cooktop: Optional[CooktopEnum] = None
     vehicles: Optional[conlist(Vehicle)] = None
     solar: Optional[Solar] = None
     battery: Optional[Battery] = None
-    __properties = ["location", "occupancy", "spaceHeating", "waterHeating", "cooktop", "vehicles", "solar", "battery"]
+    __properties = [
+        "location",
+        "occupancy",
+        "spaceHeating",
+        "waterHeating",
+        "cooktop",
+        "vehicles",
+        "solar",
+        "battery",
+    ]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -62,23 +80,20 @@ class Household(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         # override the default output from pydantic by calling `to_dict()` of each item in vehicles (list)
         _items = []
         if self.vehicles:
             for _item in self.vehicles:
                 if _item:
                     _items.append(_item.to_dict())
-            _dict['vehicles'] = _items
+            _dict["vehicles"] = _items
         # override the default output from pydantic by calling `to_dict()` of solar
         if self.solar:
-            _dict['solar'] = self.solar.to_dict()
+            _dict["solar"] = self.solar.to_dict()
         # override the default output from pydantic by calling `to_dict()` of battery
         if self.battery:
-            _dict['battery'] = self.battery.to_dict()
+            _dict["battery"] = self.battery.to_dict()
         return _dict
 
     @classmethod
@@ -90,16 +105,28 @@ class Household(BaseModel):
         if not isinstance(obj, dict):
             return Household.parse_obj(obj)
 
-        _obj = Household.parse_obj({
-            "location": obj.get("location"),
-            "occupancy": obj.get("occupancy"),
-            "space_heating": obj.get("spaceHeating"),
-            "water_heating": obj.get("waterHeating"),
-            "cooktop": obj.get("cooktop"),
-            "vehicles": [Vehicle.from_dict(_item) for _item in obj.get("vehicles")] if obj.get("vehicles") is not None else None,
-            "solar": Solar.from_dict(obj.get("solar")) if obj.get("solar") is not None else None,
-            "battery": Battery.from_dict(obj.get("battery")) if obj.get("battery") is not None else None
-        })
+        _obj = Household.parse_obj(
+            {
+                "location": obj.get("location"),
+                "occupancy": obj.get("occupancy"),
+                "space_heating": obj.get("spaceHeating"),
+                "water_heating": obj.get("waterHeating"),
+                "cooktop": obj.get("cooktop"),
+                "vehicles": (
+                    [Vehicle.from_dict(_item) for _item in obj.get("vehicles")]
+                    if obj.get("vehicles") is not None
+                    else None
+                ),
+                "solar": (
+                    Solar.from_dict(obj.get("solar"))
+                    if obj.get("solar") is not None
+                    else None
+                ),
+                "battery": (
+                    Battery.from_dict(obj.get("battery"))
+                    if obj.get("battery") is not None
+                    else None
+                ),
+            }
+        )
         return _obj
-
-

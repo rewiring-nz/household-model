@@ -22,19 +22,26 @@ from typing import Optional
 from pydantic import BaseModel, Field, StrictInt
 from openapi_client.models.opex_values import OpexValues
 
+
 class Opex(BaseModel):
     """
     Opex
     """
+
     per_week: Optional[OpexValues] = Field(default=None, alias="perWeek")
     per_year: Optional[OpexValues] = Field(default=None, alias="perYear")
     over_lifetime: Optional[OpexValues] = Field(default=None, alias="overLifetime")
-    operational_lifetime: Optional[StrictInt] = Field(default=None, alias="operationalLifetime", description="The assumed operational lifetime of the machines in years")
+    operational_lifetime: Optional[StrictInt] = Field(
+        default=None,
+        alias="operationalLifetime",
+        description="The assumed operational lifetime of the machines in years",
+    )
     __properties = ["perWeek", "perYear", "overLifetime", "operationalLifetime"]
 
     class Config:
         """Pydantic configuration"""
-        allow_population_by_field_name = True
+
+        populate_by_name = True
         validate_assignment = True
 
     def to_str(self) -> str:
@@ -52,19 +59,16 @@ class Opex(BaseModel):
 
     def to_dict(self):
         """Returns the dictionary representation of the model using alias"""
-        _dict = self.dict(by_alias=True,
-                          exclude={
-                          },
-                          exclude_none=True)
+        _dict = self.dict(by_alias=True, exclude={}, exclude_none=True)
         # override the default output from pydantic by calling `to_dict()` of per_week
         if self.per_week:
-            _dict['perWeek'] = self.per_week.to_dict()
+            _dict["perWeek"] = self.per_week.to_dict()
         # override the default output from pydantic by calling `to_dict()` of per_year
         if self.per_year:
-            _dict['perYear'] = self.per_year.to_dict()
+            _dict["perYear"] = self.per_year.to_dict()
         # override the default output from pydantic by calling `to_dict()` of over_lifetime
         if self.over_lifetime:
-            _dict['overLifetime'] = self.over_lifetime.to_dict()
+            _dict["overLifetime"] = self.over_lifetime.to_dict()
         return _dict
 
     @classmethod
@@ -76,12 +80,24 @@ class Opex(BaseModel):
         if not isinstance(obj, dict):
             return Opex.parse_obj(obj)
 
-        _obj = Opex.parse_obj({
-            "per_week": OpexValues.from_dict(obj.get("perWeek")) if obj.get("perWeek") is not None else None,
-            "per_year": OpexValues.from_dict(obj.get("perYear")) if obj.get("perYear") is not None else None,
-            "over_lifetime": OpexValues.from_dict(obj.get("overLifetime")) if obj.get("overLifetime") is not None else None,
-            "operational_lifetime": obj.get("operationalLifetime")
-        })
+        _obj = Opex.parse_obj(
+            {
+                "per_week": (
+                    OpexValues.from_dict(obj.get("perWeek"))
+                    if obj.get("perWeek") is not None
+                    else None
+                ),
+                "per_year": (
+                    OpexValues.from_dict(obj.get("perYear"))
+                    if obj.get("perYear") is not None
+                    else None
+                ),
+                "over_lifetime": (
+                    OpexValues.from_dict(obj.get("overLifetime"))
+                    if obj.get("overLifetime") is not None
+                    else None
+                ),
+                "operational_lifetime": obj.get("operationalLifetime"),
+            }
+        )
         return _obj
-
-
