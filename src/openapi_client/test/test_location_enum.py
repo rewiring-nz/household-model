@@ -13,26 +13,22 @@
 
 
 import unittest
+import datetime
 
-from openapi_client.api.savings_api import SavingsApi  # noqa: E501
+from openapi_client.models.location_enum import LocationEnum  # noqa: E501
 
+class TestLocationEnum(unittest.TestCase):
+    """LocationEnum unit test stubs"""
 
-class TestSavingsApi(unittest.TestCase):
-    """SavingsApi unit test stubs"""
-
-    def setUp(self) -> None:
-        self.api = SavingsApi()  # noqa: E501
-
-    def tearDown(self) -> None:
+    def setUp(self):
         pass
 
-    def test_calculate_savings(self) -> None:
-        """Test case for calculate_savings
-
-        Calculate savings & get upfront cost  # noqa: E501
-        """
+    def tearDown(self):
         pass
 
+    def testLocationEnum(self):
+        """Test LocationEnum"""
+        # inst = LocationEnum()
 
 if __name__ == '__main__':
     unittest.main()

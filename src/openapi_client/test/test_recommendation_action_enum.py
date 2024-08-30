@@ -13,26 +13,22 @@
 
 
 import unittest
+import datetime
 
-from openapi_client.api.savings_api import SavingsApi  # noqa: E501
+from openapi_client.models.recommendation_action_enum import RecommendationActionEnum  # noqa: E501
 
+class TestRecommendationActionEnum(unittest.TestCase):
+    """RecommendationActionEnum unit test stubs"""
 
-class TestSavingsApi(unittest.TestCase):
-    """SavingsApi unit test stubs"""
-
-    def setUp(self) -> None:
-        self.api = SavingsApi()  # noqa: E501
-
-    def tearDown(self) -> None:
+    def setUp(self):
         pass
 
-    def test_calculate_savings(self) -> None:
-        """Test case for calculate_savings
-
-        Calculate savings & get upfront cost  # noqa: E501
-        """
+    def tearDown(self):
         pass
 
+    def testRecommendationActionEnum(self):
+        """Test RecommendationActionEnum"""
+        # inst = RecommendationActionEnum()
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**fuel_type** | **str** |  | 
+**fuel_type** | [**VehicleFuelTypeEnum**](VehicleFuelTypeEnum.md) |  | 
 **kms_per_week** | **int** | Typical kilometres driven per week by this vehicle | [optional] 
 **switch_to_ev** | **bool** | Whether the household wants to switch to EV | [optional] 
 

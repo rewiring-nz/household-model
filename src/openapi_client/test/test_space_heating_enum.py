@@ -13,26 +13,22 @@
 
 
 import unittest
+import datetime
 
-from openapi_client.api.savings_api import SavingsApi  # noqa: E501
+from openapi_client.models.space_heating_enum import SpaceHeatingEnum  # noqa: E501
 
+class TestSpaceHeatingEnum(unittest.TestCase):
+    """SpaceHeatingEnum unit test stubs"""
 
-class TestSavingsApi(unittest.TestCase):
-    """SavingsApi unit test stubs"""
-
-    def setUp(self) -> None:
-        self.api = SavingsApi()  # noqa: E501
-
-    def tearDown(self) -> None:
+    def setUp(self):
         pass
 
-    def test_calculate_savings(self) -> None:
-        """Test case for calculate_savings
-
-        Calculate savings & get upfront cost  # noqa: E501
-        """
+    def tearDown(self):
         pass
 
+    def testSpaceHeatingEnum(self):
+        """Test SpaceHeatingEnum"""
+        # inst = SpaceHeatingEnum()
 
 if __name__ == '__main__':
     unittest.main()

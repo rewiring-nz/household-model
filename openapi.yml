@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Household savings
-  version: 0.0.3
+  version: 0.0.4
   description: |-
     This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
 tags:
@@ -39,34 +39,7 @@ components:
       type: object
       properties:
         location:
-          type: string
-          description: Where the household is located
-          enum:
-            - NORTHLAND
-            - AUCKLAND_NORTH
-            - AUCKLAND_CENTRAL
-            - AUCKLAND_EAST
-            - AUCKLAND_WEST
-            - AUCKLAND_SOUTH
-            - WAIKATO
-            - BAY_OF_PLENTY
-            - GISBORNE
-            - HAWKES_BAY
-            - TARANAKI
-            - MANAWATU_WANGANUI
-            - WELLINGTON
-            - TASMAN
-            - NELSON
-            - MARLBOROUGH
-            - WEST_COAST
-            - CANTERBURY
-            - OTAGO
-            - SOUTHLAND
-            - STEWART_ISLAND
-            - CHATHAM_ISLANDS
-            - GREAT_BARRIER_ISLAND
-            - OVERSEAS
-            - OTHER
+          $ref: '#/components/schemas/LocationEnum'
         occupancy:
           description: Number of occupants
           type: integer
@@ -74,35 +47,11 @@ components:
           minimum: 1
           example: 2
         spaceHeating:
-          description: The main method of space heating
-          type: string
-          enum:
-            - WOOD
-            - GAS
-            - LPG
-            - ELECTRIC_RESISTANCE
-            - ELECTRIC_HEAT_PUMP
-            - DONT_KNOW
+          $ref: '#/components/schemas/SpaceHeatingEnum'
         waterHeating:
-          description: The method of water heating
-          type: string
-          enum:
-            - GAS
-            - LPG
-            - ELECTRIC_RESISTANCE
-            - ELECTRIC_HEAT_PUMP
-            - SOLAR
-            - DONT_KNOW
+          $ref: '#/components/schemas/WaterHeatingEnum'
         cooktop:
-          description: The main energy source for cooking
-          type: string
-          enum:
-            - GAS
-            - LPG
-            - ELECTRIC_RESISTANCE
-            - ELECTRIC_INDUCTION
-            - WOOD
-            - DONT_KNOW
+          $ref: '#/components/schemas/CooktopEnum'
         vehicles:
           type: array
           items:
@@ -242,13 +191,7 @@ components:
         - fuelType
       properties:
         fuelType:
-          type: string
-          enum:
-            - ELECTRIC
-            - PLUG_IN_HYBRID
-            - HYBRID
-            - PETROL
-            - DIESEL
+          $ref: '#/components/schemas/VehicleFuelTypeEnum'
         kmsPerWeek:
           type: integer
           description: Typical kilometres driven per week by this vehicle
@@ -262,16 +205,85 @@ components:
         - action
       properties: 
         action:
-          type: string
-          description: The recommended action for this household to maximise their savings
-          enum:
-            - SPACE_HEATING
-            - WATER_HEATING
-            - COOKING
-            - VEHICLE
-            - SOLAR
-            - BATTERY
+          $ref: '#/components/schemas/RecommendationActionEnum'
         url:
           type: string
           description: A URL to a resource to give more information about this recommended action.
           example: https://www.rewiring.nz/electrification-guides/space-heating-and-cooling
+    LocationEnum:
+      type: string
+      description: Where the household is located
+      enum:
+        - NORTHLAND
+        - AUCKLAND_NORTH
+        - AUCKLAND_CENTRAL
+        - AUCKLAND_EAST
+        - AUCKLAND_WEST
+        - AUCKLAND_SOUTH
+        - WAIKATO
+        - BAY_OF_PLENTY
+        - GISBORNE
+        - HAWKES_BAY
+        - TARANAKI
+        - MANAWATU_WANGANUI
+        - WELLINGTON
+        - TASMAN
+        - NELSON
+        - MARLBOROUGH
+        - WEST_COAST
+        - CANTERBURY
+        - OTAGO
+        - SOUTHLAND
+        - STEWART_ISLAND
+        - CHATHAM_ISLANDS
+        - GREAT_BARRIER_ISLAND
+        - OVERSEAS
+        - OTHER
+    SpaceHeatingEnum:
+      description: The main method of space heating
+      type: string
+      enum:
+        - WOOD
+        - GAS
+        - LPG
+        - ELECTRIC_RESISTANCE
+        - ELECTRIC_HEAT_PUMP
+        - DONT_KNOW
+    WaterHeatingEnum:
+      description: The method of water heating
+      type: string
+      enum:
+        - GAS
+        - LPG
+        - ELECTRIC_RESISTANCE
+        - ELECTRIC_HEAT_PUMP
+        - SOLAR
+        - DONT_KNOW
+    CooktopEnum:
+      description: The main energy source for cooking
+      type: string
+      enum:
+        - GAS
+        - LPG
+        - ELECTRIC_RESISTANCE
+        - ELECTRIC_INDUCTION
+        - WOOD
+        - DONT_KNOW
+    VehicleFuelTypeEnum:
+      type: string
+      enum:
+        - ELECTRIC
+        - PLUG_IN_HYBRID
+        - HYBRID
+        - PETROL
+        - DIESEL
+    RecommendationActionEnum:
+      type: string
+      description: The recommended action for this household to maximise their savings
+      enum:
+        - SPACE_HEATING
+        - WATER_HEATING
+        - COOKING
+        - VEHICLE
+        - SOLAR
+        - BATTERY

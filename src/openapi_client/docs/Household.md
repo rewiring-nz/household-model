@@ -4,11 +4,11 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**location** | **str** | Where the household is located | [optional] 
+**location** | [**LocationEnum**](LocationEnum.md) |  | [optional] 
 **occupancy** | **int** | Number of occupants | [optional] 
-**space_heating** | **str** | The main method of space heating | [optional] 
-**water_heating** | **str** | The method of water heating | [optional] 
-**cooktop** | **str** | The main energy source for cooking | [optional] 
+**space_heating** | [**SpaceHeatingEnum**](SpaceHeatingEnum.md) |  | [optional] 
+**water_heating** | [**WaterHeatingEnum**](WaterHeatingEnum.md) |  | [optional] 
+**cooktop** | [**CooktopEnum**](CooktopEnum.md) |  | [optional] 
 **vehicles** | [**List[Vehicle]**](Vehicle.md) |  | [optional] 
 **solar** | [**Solar**](Solar.md) |  | [optional] 
 **battery** | [**Battery**](Battery.md) |  | [optional] 

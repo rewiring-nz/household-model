@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**action** | **str** | The recommended action for this household to maximise their savings | 
+**action** | [**RecommendationActionEnum**](RecommendationActionEnum.md) |  | 
 **url** | **str** | A URL to a resource to give more information about this recommended action. | [optional] 
 
 ## Example
