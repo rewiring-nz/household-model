@@ -5,7 +5,7 @@ from savings.opex.calculate_opex import (
     get_fixed_costs_per_year,
     NGAS_MACHINES,
     LPG_MACHINES,
-    get_home_heating_opex_savings,
+    get_space_heating_opex_savings,
     get_water_heating_opex_savings,
     get_cooktop_opex_savings,
     get_vehicle_opex_savings,
@@ -128,9 +128,9 @@ test_household = pd.Series(
 )
 
 
-class TestGetHomeHeatingOpexSavings:
-    def test_it_calculates_correctly_for_home_heating(self):
-        opex, savings = get_home_heating_opex_savings(test_household)
+class TestGetSpaceHeatingOpexSavings:
+    def test_it_calculates_correctly_for_space_heating(self):
+        opex, savings = get_space_heating_opex_savings(test_household)
         expected_opex = (2.7 / 2 * 0.242 * 365.25 * 15) + (
             2 * 9.3 / 8 * 0.242 * 365.25 * 15
         )

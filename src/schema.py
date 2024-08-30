@@ -131,16 +131,16 @@ NUM_COLS_TO_CAST_TO_INT = [
     "Home heating number_Wood fireplace",
     "Home heating number_Diesel heater",
     # Vehicles number col cast to int, with "More than five" converted to 6, and
-    'Vehicles',
+    "Vehicles",
 ]
-PROCESSED_COLS = RAW_COLS + ['home_heating_other_closest_match']
+PROCESSED_COLS = RAW_COLS + ["space_heating_other_closest_match"]
 
 
 # Enrichment
 
 ENRICHMENT_COLS_EMISSIONS = [
-    "home_heating_emissions",
-    "home_heating_emissions_savings",
+    "space_heating_emissions",
+    "space_heating_emissions_savings",
     "water_heating_emissions",
     "water_heating_emissions_savings",
     "cooktop_emissions",
@@ -164,8 +164,8 @@ ENRICHMENT_COLS_EMISSIONS = [
 ]
 
 ENRICHMENT_COLS_OPEX = [
-    "home_heating_opex",
-    "home_heating_opex_savings",
+    "space_heating_opex",
+    "space_heating_opex_savings",
     "water_heating_opex",
     "water_heating_opex_savings",
     "cooktop_opex",
@@ -178,7 +178,7 @@ ENRICHMENT_COLS_OPEX = [
 ]
 
 ENRICHMENT_COLS_UPFRONT_COST = [
-    "home_heating_upfront_cost",
+    "space_heating_upfront_cost",
     "water_heating_upfront_cost",
     "cooktop_upfront_cost",
     "solar_upfront_cost",

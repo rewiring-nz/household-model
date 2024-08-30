@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from savings.emissions.calculate_emissions import (
     get_cooktop_emissions_savings,
-    get_home_heating_emissions_savings,
+    get_space_heating_emissions_savings,
     get_water_heating_emissions_savings,
     get_vehicle_emissions_savings,
 )
@@ -11,11 +11,11 @@ from tests.process_test_data import get_test_data
 # Assumes electricity emission factor of 0.098 (not 100% renewable grid)
 
 
-class TestHomeHeating:
+class TestSpaceHeating:
     base_household = get_test_data("tests/base_household.csv")
 
     def test_it_calculates_savings_for_simple_central_ff_system(self):
-        emissions_before, savings = get_home_heating_emissions_savings(
+        emissions_before, savings = get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -30,7 +30,7 @@ class TestHomeHeating:
 
     def test_it_calculates_savings_for_multiple_individual_systems(self):
         expected_emissions = 14.3 * 0.025 * 2
-        assert get_home_heating_emissions_savings(
+        assert get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -41,7 +41,7 @@ class TestHomeHeating:
         ) == (expected_emissions, (expected_emissions - (2.7 / 2 * 0.098 * 2 * 2)))
 
     def test_it_handles_number_col_only(self):
-        assert get_home_heating_emissions_savings(
+        assert get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -55,7 +55,7 @@ class TestHomeHeating:
         )
 
     def test_it_accurately_calculates_for_existing_resistive_electric_heaters(self):
-        emissions, savings = get_home_heating_emissions_savings(
+        emissions, savings = get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -72,7 +72,7 @@ class TestHomeHeating:
 
     def test_it_does_not_replace_central_heat_pump(self):
         # Central heat pump is the only thing that doesn't need to get replaced
-        assert get_home_heating_emissions_savings(
+        assert get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -85,7 +85,7 @@ class TestHomeHeating:
         )
 
     def test_it_does_not_replace_underfloor_electric(self):
-        assert get_home_heating_emissions_savings(
+        assert get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -95,7 +95,7 @@ class TestHomeHeating:
         ) == (9.3 * 0.098, 0)
 
     def test_it_accurately_calculates_if_they_already_have_the_best_option(self):
-        assert get_home_heating_emissions_savings(
+        assert get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,
@@ -112,7 +112,7 @@ class TestHomeHeating:
             + (11.6 / 4 * 0.217)  # small gas
             + (9.3 / 8 * 0.098)  # electric resistace
         )
-        result = get_home_heating_emissions_savings(
+        result = get_space_heating_emissions_savings(
             pd.Series(
                 {
                     **self.base_household,

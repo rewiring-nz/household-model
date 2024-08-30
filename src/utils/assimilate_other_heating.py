@@ -1,11 +1,11 @@
 import pandas as pd
-from constants.machines.home_heating import (
+from constants.machines.space_heating import (
     CENTRAL_SYSTEMS,
 )
 
 
 def assimilate_other_heating(response: pd.Series) -> pd.Series:
-    heating_type = response['home_heating_other_closest_match']
+    heating_type = response["space_heating_other_closest_match"]
     # If they didn't have an "Other" value, leave it as is.
     if pd.isna(heating_type):
         return response

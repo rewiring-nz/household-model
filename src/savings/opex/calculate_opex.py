@@ -1,13 +1,13 @@
 import pandas as pd
 from typing import Optional, Tuple, List
 
-from constants.machines.home_heating import (
+from constants.machines.space_heating import (
     CENTRAL_SYSTEMS,
     INDIVIDUAL_SYSTEMS,
-    HOME_HEATING_KWH_PER_DAY,
-    HOME_HEATING_ELECTRIC_TYPES,
-    HOME_HEATING_REPLACEMENT_RATIOS,
-    HOME_HEATING_TYPE_TO_FUEL_TYPE,
+    SPACE_HEATING_KWH_PER_DAY,
+    SPACE_HEATING_ELECTRIC_TYPES,
+    SPACE_HEATING_REPLACEMENT_RATIOS,
+    SPACE_HEATING_TYPE_TO_FUEL_TYPE,
 )
 from constants.machines.cooktop import (
     COOKTOP_ELECTRIC_TYPES,
@@ -32,7 +32,7 @@ from constants.machines.vehicles import (
 from params import (
     SWITCH_TO,
     HOUSEHOLD_ENERGY_USE,
-    HOME_HEATING_SWITCH_TO_OPEX,
+    SPACE_HEATING_SWITCH_TO_OPEX,
     WATER_HEATING_SWITCH_TO_OPEX,
     COOKTOP_SWITCH_TO_OPEX,
     VEHICLE_SWITCH_TO_OPEX_FUEL,
@@ -70,11 +70,11 @@ def _get_machines_of_fuel_type(fuel_type: str, mapping: dict) -> List[str]:
 # Water heating needs to be treated separately
 # TODO: make consistent data schema so we don't have these kinds of inconsistencies
 NGAS_MACHINES = _get_machines_of_fuel_type(
-    'natural_gas', COOKTOP_TYPE_TO_FUEL_TYPE
-) + _get_machines_of_fuel_type('natural_gas', HOME_HEATING_TYPE_TO_FUEL_TYPE)
+    "natural_gas", COOKTOP_TYPE_TO_FUEL_TYPE
+) + _get_machines_of_fuel_type("natural_gas", SPACE_HEATING_TYPE_TO_FUEL_TYPE)
 LPG_MACHINES = _get_machines_of_fuel_type(
-    'lpg', COOKTOP_TYPE_TO_FUEL_TYPE
-) + _get_machines_of_fuel_type('lpg', HOME_HEATING_TYPE_TO_FUEL_TYPE)
+    "lpg", COOKTOP_TYPE_TO_FUEL_TYPE
+) + _get_machines_of_fuel_type("lpg", SPACE_HEATING_TYPE_TO_FUEL_TYPE)
 
 FIXED_COSTS_PER_YEAR = {
     "electricity": 689,  # on every home
@@ -94,7 +94,7 @@ FIXED_COSTS_PER_YEAR = {
 # TODO: The below is wrong, just use the direct results from the sheet
 # Use value from "Full home"!E25, when C8 Vehicle number is 0 and C12 Solar size is 5 kW
 TOTAL_ELECTRICITY_NEEDS = 13.5  # kWh per day
-POWER_BILL_NO_SOLAR = TOTAL_ELECTRICITY_NEEDS * COST_PER_FUEL_KWH_TODAY['electricity']
+POWER_BILL_NO_SOLAR = TOTAL_ELECTRICITY_NEEDS * COST_PER_FUEL_KWH_TODAY["electricity"]
 
 # How much of the avg total energy needs can solar provide (free)?
 SOLAR_SELF_CONSUMPTION_ON_APPLIANCES = 0.5  # C14
@@ -102,7 +102,7 @@ GENERATED_FROM_SOLAR = TOTAL_ELECTRICITY_NEEDS * SOLAR_SELF_CONSUMPTION_ON_APPLI
 
 # How much do you need from the grid, and how much does it cost?
 CONSUMED_FROM_GRID = TOTAL_ELECTRICITY_NEEDS - GENERATED_FROM_SOLAR  # kWh/day
-POWER_BILL_WITH_SOLAR = CONSUMED_FROM_GRID * COST_PER_FUEL_KWH_TODAY['electricity']
+POWER_BILL_WITH_SOLAR = CONSUMED_FROM_GRID * COST_PER_FUEL_KWH_TODAY["electricity"]
 
 # How much do you get from selling the rest to the grid?
 FEED_IN_TARIFF = 0.12  # $ per kWh
@@ -138,25 +138,25 @@ def enrich_opex(df: pd.DataFrame, with_solar=True) -> pd.DataFrame:
         pd.DataFrame: enriched dataframe with new ENRICHMENT_COLS_OPEX columns
     """
     # These are all values over the operational lifetime (15 years)
-    df['vehicle_opex'], df['vehicle_opex_savings'] = zip(
+    df["vehicle_opex"], df["vehicle_opex_savings"] = zip(
         *df.apply(get_vehicle_opex_savings, axis=1)
     )
-    df['home_heating_opex'], df['home_heating_opex_savings'] = zip(
-        *df.apply(get_home_heating_opex_savings, axis=1)
+    df["space_heating_opex"], df["space_heating_opex_savings"] = zip(
+        *df.apply(get_space_heating_opex_savings, axis=1)
     )
-    df['water_heating_opex'], df['water_heating_opex_savings'] = zip(
-        *df['Water heating'].apply(get_water_heating_opex_savings)
+    df["water_heating_opex"], df["water_heating_opex_savings"] = zip(
+        *df["Water heating"].apply(get_water_heating_opex_savings)
     )
 
-    df['cooktop_opex'], df['cooktop_opex_savings'] = zip(
+    df["cooktop_opex"], df["cooktop_opex_savings"] = zip(
         *df[COOKTOP_COLS].apply(get_cooktop_opex_savings, axis=1)
     )
-    df['fixed_costs_yearly'], df['fixed_costs_savings_yearly'] = zip(
+    df["fixed_costs_yearly"], df["fixed_costs_savings_yearly"] = zip(
         *df.apply(get_fixed_costs_per_year, axis=1)
     )
-    df['fixed_costs_lifetime'] = df['fixed_costs_yearly'] * OPERATIONAL_LIFETIME
-    df['fixed_costs_savings_lifetime'] = (
-        df['fixed_costs_savings_yearly'] * OPERATIONAL_LIFETIME
+    df["fixed_costs_lifetime"] = df["fixed_costs_yearly"] * OPERATIONAL_LIFETIME
+    df["fixed_costs_savings_lifetime"] = (
+        df["fixed_costs_savings_yearly"] * OPERATIONAL_LIFETIME
     )
 
     # Totals
@@ -165,58 +165,64 @@ def enrich_opex(df: pd.DataFrame, with_solar=True) -> pd.DataFrame:
 
     opex_extra_appliances_no_solar_lifetime = (
         ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-        * COST_PER_FUEL_KWH_TODAY['electricity']
+        * COST_PER_FUEL_KWH_TODAY["electricity"]
         * 365.25
         * OPERATIONAL_LIFETIME
     )
 
     ### without vehicles
-    df['total_opex_lifetime_without_vehicles'] = (
-        df['home_heating_opex']
-        + df['water_heating_opex']
-        + df['cooktop_opex']
-        + df['fixed_costs_lifetime']
+    df["total_opex_lifetime_without_vehicles"] = (
+        df["space_heating_opex"]
+        + df["water_heating_opex"]
+        + df["cooktop_opex"]
+        + df["fixed_costs_lifetime"]
         + opex_extra_appliances_no_solar_lifetime
     )
 
     # Extra appliances
 
     ### with vehicles
-    df['total_opex_lifetime_with_vehicles'] = (
-        df['total_opex_lifetime_without_vehicles'] + df['vehicle_opex']
+    df["total_opex_lifetime_with_vehicles"] = (
+        df["total_opex_lifetime_without_vehicles"] + df["vehicle_opex"]
     )
 
     ## Opex savings
 
-    df['total_opex_savings_lifetime_base'] = (
-        df['home_heating_opex_savings']
-        + df['water_heating_opex_savings']
-        + df['cooktop_opex_savings']
-        + df['fixed_costs_savings_lifetime']
+    df["total_opex_savings_lifetime_base"] = (
+        df["space_heating_opex_savings"]
+        + df["water_heating_opex_savings"]
+        + df["cooktop_opex_savings"]
+        + df["fixed_costs_savings_lifetime"]
         # zero savings from extra appliances as they will still exist after electrification
     )
 
     ### without vehicles
-    df['total_opex_savings_lifetime_without_vehicles'] = (
-        df['total_opex_savings_lifetime_base'] + AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH
-    ) if with_solar else df['total_opex_savings_lifetime_base']
-    df['opex_savings_without_vehicles_pct'] = (
+    df["total_opex_savings_lifetime_without_vehicles"] = (
+        (
+            df["total_opex_savings_lifetime_base"]
+            + AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH
+        )
+        if with_solar
+        else df["total_opex_savings_lifetime_base"]
+    )
+    df["opex_savings_without_vehicles_pct"] = (
         100
-        * df['total_opex_savings_lifetime_without_vehicles']
-        / df['total_opex_lifetime_without_vehicles']
+        * df["total_opex_savings_lifetime_without_vehicles"]
+        / df["total_opex_lifetime_without_vehicles"]
     )
 
     ### with vehicles
-    df['total_opex_savings_lifetime_with_vehicles'] = (
-        df['total_opex_savings_lifetime_base']
-        + df['vehicle_opex_savings']
+    df["total_opex_savings_lifetime_with_vehicles"] = (
+        df["total_opex_savings_lifetime_base"] + df["vehicle_opex_savings"]
     )
     if with_solar:
-        df['total_opex_savings_lifetime_with_vehicles'] += AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH
-    df['opex_savings_with_vehicles_pct'] = (
+        df[
+            "total_opex_savings_lifetime_with_vehicles"
+        ] += AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH
+    df["opex_savings_with_vehicles_pct"] = (
         100
-        * df['total_opex_savings_lifetime_with_vehicles']
-        / df['total_opex_lifetime_with_vehicles']
+        * df["total_opex_savings_lifetime_with_vehicles"]
+        / df["total_opex_lifetime_with_vehicles"]
     )
 
     return df
@@ -238,7 +244,7 @@ def get_fixed_costs_per_year(household: pd.Series) -> Tuple[float, float]:
     ngas_detected = False
     if (
         sum(household[NGAS_MACHINES].dropna()) > 0
-        or household['Water heating'] == 'Gas water heating'
+        or household["Water heating"] == "Gas water heating"
     ):
         costs += FIXED_COSTS_PER_YEAR["natural_gas"]
         ngas_detected = True
@@ -247,7 +253,7 @@ def get_fixed_costs_per_year(household: pd.Series) -> Tuple[float, float]:
     if not ngas_detected:
         if (
             sum(household[LPG_MACHINES].dropna()) > 0
-            or household['Water heating'] == 'LPG water heating'
+            or household["Water heating"] == "LPG water heating"
         ):
             costs += FIXED_COSTS_PER_YEAR["lpg"]
 
@@ -268,7 +274,7 @@ def get_cost_per_day(
     return cost
 
 
-def get_home_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
+def get_space_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
     """Calculates the cost from fossil fuel home heaters, and potential
     savings from switching fossil fuel home heaters to electric heat pump
     (split non-ducted).
@@ -291,7 +297,7 @@ def get_home_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
 
     for heater_type in central_systems:
         cost = get_cost_per_day(
-            heater_type, HOME_HEATING_KWH_PER_DAY, HOME_HEATING_TYPE_TO_FUEL_TYPE
+            heater_type, SPACE_HEATING_KWH_PER_DAY, SPACE_HEATING_TYPE_TO_FUEL_TYPE
         )
         total_opex_before += cost
 
@@ -304,13 +310,13 @@ def get_home_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
             continue
 
         # If it's a different electric type (e.g. resistive)
-        if heater_type in HOME_HEATING_ELECTRIC_TYPES:
+        if heater_type in SPACE_HEATING_ELECTRIC_TYPES:
             # but we are not switching existing electric machines, don't replace
-            if not SWITCH_TO["home_heating"]["switch_if_electric"]:
+            if not SWITCH_TO["space_heating"]["switch_if_electric"]:
                 continue
 
         # Get the number of [heat pumps] we need to replace the power output of this system
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[heater_type]
+        n_total_replacements += SPACE_HEATING_REPLACEMENT_RATIOS[heater_type]
 
     # Individual systems
 
@@ -326,7 +332,7 @@ def get_home_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
             continue
 
         cost = get_cost_per_day(
-            num_col, HOME_HEATING_KWH_PER_DAY, HOME_HEATING_TYPE_TO_FUEL_TYPE
+            num_col, SPACE_HEATING_KWH_PER_DAY, SPACE_HEATING_TYPE_TO_FUEL_TYPE
         )
         total_opex_before += cost * num_machines
 
@@ -338,15 +344,15 @@ def get_home_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
             continue
 
         # If not switching existing electric machines
-        if num_col in HOME_HEATING_ELECTRIC_TYPES:
-            if not SWITCH_TO["home_heating"]["switch_if_electric"]:
+        if num_col in SPACE_HEATING_ELECTRIC_TYPES:
+            if not SWITCH_TO["space_heating"]["switch_if_electric"]:
                 continue
 
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[num_col] * num_machines
+        n_total_replacements += SPACE_HEATING_REPLACEMENT_RATIOS[num_col] * num_machines
 
     # TODO "Other" free text field
 
-    total_opex_after += HOME_HEATING_SWITCH_TO_OPEX * n_total_replacements
+    total_opex_after += SPACE_HEATING_SWITCH_TO_OPEX * n_total_replacements
     total_savings = total_opex_before - total_opex_after
 
     return (
@@ -445,25 +451,25 @@ def get_vehicle_opex_savings(
     total_savings = 0
     for v in vehicle_stats:
 
-        if v['fuel_type'] not in ['Plug-in Hybrid', 'Hybrid']:
-            avg_opex_fuel = VEHICLE_OPEX_PER_DAY[v['fuel_type']]
-        if v['fuel_type'] == 'Plug-in Hybrid':
+        if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
+            avg_opex_fuel = VEHICLE_OPEX_PER_DAY[v["fuel_type"]]
+        if v["fuel_type"] == "Plug-in Hybrid":
             # Assume 60/40 split between petrol and electric
-            petrol_portion_opex = VEHICLE_OPEX_PER_DAY['Petrol'] * 0.6
-            electric_portion_opex = VEHICLE_OPEX_PER_DAY['Electric'] * 0.4
+            petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.6
+            electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.4
             avg_opex_fuel = petrol_portion_opex + electric_portion_opex
-        if v['fuel_type'] == 'Hybrid':
+        if v["fuel_type"] == "Hybrid":
             # Assume 70/30 split between petrol and electric
-            petrol_portion_opex = VEHICLE_OPEX_PER_DAY['Petrol'] * 0.7
-            electric_portion_opex = VEHICLE_OPEX_PER_DAY['Electric'] * 0.3
+            petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.7
+            electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.3
             avg_opex_fuel = petrol_portion_opex + electric_portion_opex
 
         # Get % of average vehicle use based on distance
-        pct_of_avg = v['distance_per_yr'] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
+        pct_of_avg = v["distance_per_yr"] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
         opex_fuel = avg_opex_fuel * pct_of_avg * 365.25 * OPERATIONAL_LIFETIME
 
         # Road User Charges (RUCs) per year
-        rucs = RUCS[v['fuel_type']] * v['distance_per_yr'] / 1000
+        rucs = RUCS[v["fuel_type"]] * v["distance_per_yr"] / 1000
 
         total_vehicle_opex = opex_fuel + rucs
         total_opex += total_vehicle_opex
@@ -473,14 +479,14 @@ def get_vehicle_opex_savings(
             VEHICLE_SWITCH_TO_OPEX_FUEL * pct_of_avg * 365.25 * OPERATIONAL_LIFETIME
         )
         ev_opex_rucs = (
-            RUCS[SWITCH_TO['vehicle']['switch_to_type']] * v['distance_per_yr'] / 1000
+            RUCS[SWITCH_TO["vehicle"]["switch_to_type"]] * v["distance_per_yr"] / 1000
         )
         ev_opex = ev_opex_fuel + ev_opex_rucs
 
         # Savings from switching
         savings = total_vehicle_opex - ev_opex
         if (
-            v['fuel_type'] in VEHICLE_ELECTRIC_TYPES
+            v["fuel_type"] in VEHICLE_ELECTRIC_TYPES
             and not SWITCH_TO["vehicle"]["switch_if_electric"]
         ):
             # Don't switch if they're already on electric
