@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from emissions_savings import (
+from savings.emissions.calculate_emissions import (
     get_cooktop_emissions_savings,
     get_home_heating_emissions_savings,
     get_water_heating_emissions_savings,
@@ -12,7 +12,7 @@ from tests.process_test_data import get_test_data
 
 
 class TestHomeHeating:
-    base_household = get_test_data('tests/base_household.csv')
+    base_household = get_test_data("tests/base_household.csv")
 
     def test_it_calculates_savings_for_simple_central_ff_system(self):
         emissions_before, savings = get_home_heating_emissions_savings(
@@ -137,24 +137,24 @@ class TestHomeHeating:
 
 class TestWaterHeating:
     def test_it_returns_none_for_dont_know(self):
-        assert get_water_heating_emissions_savings('Don’t know') == (None, None)
+        assert get_water_heating_emissions_savings("Don’t know") == (None, None)
 
     def test_it_calculates_correctly(self):
-        assert get_water_heating_emissions_savings('Gas water heating') == (
+        assert get_water_heating_emissions_savings("Gas water heating") == (
             6.88 * 0.217,
             6.88 * 0.217 - 2.07 * 0.098,
         )
 
     def test_it_does_not_replace_existing_electric(self):
         assert get_water_heating_emissions_savings(
-            'Electric (tank/cylinder, also known as ‘resistive’)'
+            "Electric (tank/cylinder, also known as ‘resistive’)"
         ) == (
             7.26 * 0.098,
             0,
         )
 
     def test_it_sets_savings_to_zero_for_solar(self):
-        assert get_water_heating_emissions_savings('Solar water heating') == (
+        assert get_water_heating_emissions_savings("Solar water heating") == (
             2.07 * 0.098,
             0,
         )
@@ -245,17 +245,17 @@ class TestCooktop:
 # TODO: mock out extract_vehicle_stats
 class TestVehicles:
     base = {
-        'Vehicles': 0,
-        'Vehicles fuel/energy type_Vehicle 1': None,
-        'Vehicles fuel/energy type_Vehicle 2': None,
-        'Vehicles fuel/energy type_Vehicle 3': None,
-        'Vehicles fuel/energy type_Vehicle 4': None,
-        'Vehicles fuel/energy type_Vehicle 5': None,
-        'Vehicles distance_Vehicle 1': None,
-        'Vehicles distance_Vehicle 2': None,
-        'Vehicles distance_Vehicle 3': None,
-        'Vehicles distance_Vehicle 4': None,
-        'Vehicles distance_Vehicle 5': None,
+        "Vehicles": 0,
+        "Vehicles fuel/energy type_Vehicle 1": None,
+        "Vehicles fuel/energy type_Vehicle 2": None,
+        "Vehicles fuel/energy type_Vehicle 3": None,
+        "Vehicles fuel/energy type_Vehicle 4": None,
+        "Vehicles fuel/energy type_Vehicle 5": None,
+        "Vehicles distance_Vehicle 1": None,
+        "Vehicles distance_Vehicle 2": None,
+        "Vehicles distance_Vehicle 3": None,
+        "Vehicles distance_Vehicle 4": None,
+        "Vehicles distance_Vehicle 5": None,
     }
     petrol_running = 32 * 0.242
     # petrol_embodied = 6700 / 15 / 365.25
@@ -283,8 +283,8 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'I’m not sure',
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "I’m not sure",
                 }
             )
         ) == (0, 0)
@@ -293,9 +293,9 @@ class TestVehicles:
         household = pd.Series(
             {
                 **self.base,
-                'Vehicles': 1,
-                'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                'Vehicles distance_Vehicle 1': '100-199km',
+                "Vehicles": 1,
+                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                "Vehicles distance_Vehicle 1": "100-199km",
             }
         )
         # petrol car
@@ -313,9 +313,9 @@ class TestVehicles:
         household = pd.Series(
             {
                 **self.base,
-                'Vehicles': 1,
-                'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                'Vehicles distance_Vehicle 1': 'I’m not sure',
+                "Vehicles": 1,
+                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                "Vehicles distance_Vehicle 1": "I’m not sure",
             }
         )
         # petrol car
@@ -331,13 +331,13 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 3,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 2': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 3': 'Diesel',
-                    'Vehicles distance_Vehicle 1': "0-50km",
-                    'Vehicles distance_Vehicle 2': "100-199km",
-                    'Vehicles distance_Vehicle 3': "200+ km",
+                    "Vehicles": 3,
+                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 2": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 3": "Diesel",
+                    "Vehicles distance_Vehicle 1": "0-50km",
+                    "Vehicles distance_Vehicle 2": "100-199km",
+                    "Vehicles distance_Vehicle 3": "200+ km",
                 }
             )
         )
@@ -359,9 +359,9 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Plug-in Hybrid',
-                    'Vehicles distance_Vehicle 1': "0-50km",
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "Plug-in Hybrid",
+                    "Vehicles distance_Vehicle 1": "0-50km",
                 }
             )
         )
@@ -378,9 +378,9 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Hybrid',
-                    'Vehicles distance_Vehicle 1': "0-50km",
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "Hybrid",
+                    "Vehicles distance_Vehicle 1": "0-50km",
                 }
             )
         )
@@ -397,13 +397,13 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 3,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 2': 'Electric',
-                    'Vehicles fuel/energy type_Vehicle 3': 'Plug-in Hybrid',  # PHEVs are still switched
-                    'Vehicles distance_Vehicle 1': "0-50km",
-                    'Vehicles distance_Vehicle 2': "100-199km",
-                    'Vehicles distance_Vehicle 3': "200+ km",
+                    "Vehicles": 3,
+                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 2": "Electric",
+                    "Vehicles fuel/energy type_Vehicle 3": "Plug-in Hybrid",  # PHEVs are still switched
+                    "Vehicles distance_Vehicle 1": "0-50km",
+                    "Vehicles distance_Vehicle 2": "100-199km",
+                    "Vehicles distance_Vehicle 3": "200+ km",
                 }
             )
         )
@@ -425,15 +425,15 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 4,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 2': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 3': 'Diesel',
-                    'Vehicles fuel/energy type_Vehicle 4': 'Hybrid',
-                    'Vehicles distance_Vehicle 1': "0-50km",
-                    'Vehicles distance_Vehicle 2': "0-50km",
-                    'Vehicles distance_Vehicle 3': "0-50km",
-                    'Vehicles distance_Vehicle 4': "0-50km",
+                    "Vehicles": 4,
+                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 2": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 3": "Diesel",
+                    "Vehicles fuel/energy type_Vehicle 4": "Hybrid",
+                    "Vehicles distance_Vehicle 1": "0-50km",
+                    "Vehicles distance_Vehicle 2": "0-50km",
+                    "Vehicles distance_Vehicle 3": "0-50km",
+                    "Vehicles distance_Vehicle 4": "0-50km",
                 }
             )
         )

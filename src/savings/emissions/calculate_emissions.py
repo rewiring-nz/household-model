@@ -55,24 +55,18 @@ EMISSIONS_OTHER_MACHINES = (
 
 def calculate_emissions(household: Household) -> Emissions:
     return Emissions(
-            perWeek=EmissionsValues(
-                before=500.5,
-                after=100.1,
-                difference=400.4
-            ),
-            perYear=EmissionsValues(
-                before=500.5*52,
-                after=100.1*52,
-                difference=400.4*52
-            ),
-            overLifetime=EmissionsValues(
-                before=500.5*52*15*1.1, # some random factor
-                after=100.1*52*15*1.1,
-                difference=400.4*52*15*1.1
-            ),
-            operationalLifetime=15
-        )
-    
+        perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
+        perYear=EmissionsValues(
+            before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52
+        ),
+        overLifetime=EmissionsValues(
+            before=500.5 * 52 * 15 * 1.1,  # some random factor
+            after=100.1 * 52 * 15 * 1.1,
+            difference=400.4 * 52 * 15 * 1.1,
+        ),
+        operationalLifetime=15,
+    )
+
 
 # TODO: unit test
 def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
@@ -86,17 +80,17 @@ def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     # Machines
-    df['home_heating_emissions'], df['home_heating_emissions_savings'] = zip(
+    df["home_heating_emissions"], df["home_heating_emissions_savings"] = zip(
         *df.apply(get_home_heating_emissions_savings, axis=1)
     )
-    df['water_heating_emissions'], df['water_heating_emissions_savings'] = zip(
-        *df['Water heating'].apply(get_water_heating_emissions_savings)
+    df["water_heating_emissions"], df["water_heating_emissions_savings"] = zip(
+        *df["Water heating"].apply(get_water_heating_emissions_savings)
     )
-    cooktop_cols = [x for x in df.columns if 'Cooktop_' in x]
-    df['cooktop_emissions'], df['cooktop_emissions_savings'] = zip(
+    cooktop_cols = [x for x in df.columns if "Cooktop_" in x]
+    df["cooktop_emissions"], df["cooktop_emissions_savings"] = zip(
         *df[cooktop_cols].apply(get_cooktop_emissions_savings, axis=1)
     )
-    df['vehicle_emissions'], df['vehicle_emissions_savings'] = zip(
+    df["vehicle_emissions"], df["vehicle_emissions_savings"] = zip(
         *df.apply(get_vehicle_emissions_savings, axis=1)
     )
 
@@ -105,67 +99,67 @@ def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
     ## Emissions
 
     ### without vehicles
-    df['total_emissions_without_vehicles'] = (
-        df['home_heating_emissions']
-        + df['water_heating_emissions']
-        + df['cooktop_emissions']
+    df["total_emissions_without_vehicles"] = (
+        df["home_heating_emissions"]
+        + df["water_heating_emissions"]
+        + df["cooktop_emissions"]
         + EMISSIONS_OTHER_MACHINES
     )
-    df['total_emissions_without_vehicles_year'] = (
-        df['total_emissions_without_vehicles'] * 365.25
+    df["total_emissions_without_vehicles_year"] = (
+        df["total_emissions_without_vehicles"] * 365.25
     )
-    df['total_emissions_without_vehicles_lifetime'] = (
-        df['total_emissions_without_vehicles_year'] * OPERATIONAL_LIFETIME
+    df["total_emissions_without_vehicles_lifetime"] = (
+        df["total_emissions_without_vehicles_year"] * OPERATIONAL_LIFETIME
     )
 
     ### with vehicles
-    df['total_emissions_with_vehicles'] = (
-        df['total_emissions_without_vehicles'] + df['vehicle_emissions']
+    df["total_emissions_with_vehicles"] = (
+        df["total_emissions_without_vehicles"] + df["vehicle_emissions"]
     )
-    df['total_emissions_with_vehicles_year'] = (
-        df['total_emissions_with_vehicles'] * 365.25
+    df["total_emissions_with_vehicles_year"] = (
+        df["total_emissions_with_vehicles"] * 365.25
     )
-    df['total_emissions_with_vehicles_lifetime'] = (
-        df['total_emissions_with_vehicles_year'] * OPERATIONAL_LIFETIME
+    df["total_emissions_with_vehicles_lifetime"] = (
+        df["total_emissions_with_vehicles_year"] * OPERATIONAL_LIFETIME
     )
 
     ## Emissions savings
 
     ### without vehicles
-    df['total_emissions_savings_without_vehicles'] = (
-        df['home_heating_emissions_savings']
-        + df['water_heating_emissions_savings']
-        + df['cooktop_emissions_savings']
+    df["total_emissions_savings_without_vehicles"] = (
+        df["home_heating_emissions_savings"]
+        + df["water_heating_emissions_savings"]
+        + df["cooktop_emissions_savings"]
         # Other machines are already assumed electric, so won't be switched and therefore won't bring any savings
     )
-    df['total_emissions_savings_without_vehicles_year'] = (
-        df['total_emissions_savings_without_vehicles'] * 365.25
+    df["total_emissions_savings_without_vehicles_year"] = (
+        df["total_emissions_savings_without_vehicles"] * 365.25
     )
-    df['total_emissions_savings_without_vehicles_lifetime'] = (
-        df['total_emissions_savings_without_vehicles_year'] * OPERATIONAL_LIFETIME
+    df["total_emissions_savings_without_vehicles_lifetime"] = (
+        df["total_emissions_savings_without_vehicles_year"] * OPERATIONAL_LIFETIME
     )
 
-    df['emissions_savings_without_vehicles_pct'] = (
+    df["emissions_savings_without_vehicles_pct"] = (
         100
-        * df['total_emissions_savings_without_vehicles']
-        / df['total_emissions_without_vehicles']
+        * df["total_emissions_savings_without_vehicles"]
+        / df["total_emissions_without_vehicles"]
     )
 
     ### with vehicles
-    df['total_emissions_savings_with_vehicles'] = (
-        df['total_emissions_savings_without_vehicles'] + df['vehicle_emissions_savings']
+    df["total_emissions_savings_with_vehicles"] = (
+        df["total_emissions_savings_without_vehicles"] + df["vehicle_emissions_savings"]
     )
-    df['total_emissions_savings_with_vehicles_year'] = (
-        df['total_emissions_savings_with_vehicles'] * 365.25
+    df["total_emissions_savings_with_vehicles_year"] = (
+        df["total_emissions_savings_with_vehicles"] * 365.25
     )
-    df['total_emissions_savings_with_vehicles_lifetime'] = (
-        df['total_emissions_savings_with_vehicles_year'] * OPERATIONAL_LIFETIME
+    df["total_emissions_savings_with_vehicles_lifetime"] = (
+        df["total_emissions_savings_with_vehicles_year"] * OPERATIONAL_LIFETIME
     )
 
-    df['emissions_savings_with_vehicles_pct'] = (
+    df["emissions_savings_with_vehicles_pct"] = (
         100
-        * df['total_emissions_savings_with_vehicles']
-        / df['total_emissions_with_vehicles']
+        * df["total_emissions_savings_with_vehicles"]
+        / df["total_emissions_with_vehicles"]
     )
 
     return df
@@ -364,17 +358,17 @@ def get_vehicle_emissions_savings(
     total_savings = 0
     for v in vehicle_stats:
 
-        if v['fuel_type'] not in ['Plug-in Hybrid', 'Hybrid']:
+        if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
             avg_running_emissions = get_emissions_per_day(
-                v['fuel_type'],
+                v["fuel_type"],
                 VEHICLE_KWH_PER_DAY,
                 VEHICLE_TYPE_TO_FUEL_TYPE,
             )
-        if v['fuel_type'] == 'Plug-in Hybrid':
+        if v["fuel_type"] == "Plug-in Hybrid":
             # Assume 60/40 split between petrol and electric
             petrol_portion_emissions = (
                 get_emissions_per_day(
-                    'Petrol',
+                    "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
                 )
@@ -382,7 +376,7 @@ def get_vehicle_emissions_savings(
             )
             electric_portion_emissions = (
                 get_emissions_per_day(
-                    'Electric',
+                    "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
                 )
@@ -391,11 +385,11 @@ def get_vehicle_emissions_savings(
             avg_running_emissions = (
                 petrol_portion_emissions + electric_portion_emissions
             )
-        if v['fuel_type'] == 'Hybrid':
+        if v["fuel_type"] == "Hybrid":
             # Assume 70/30 split between petrol and electric
             petrol_portion_emissions = (
                 get_emissions_per_day(
-                    'Petrol',
+                    "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
                 )
@@ -403,7 +397,7 @@ def get_vehicle_emissions_savings(
             )
             electric_portion_emissions = (
                 get_emissions_per_day(
-                    'Electric',
+                    "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
                 )
@@ -414,7 +408,7 @@ def get_vehicle_emissions_savings(
             )
 
         # Get % of average vehicle use based on distance
-        pct_of_avg = v['distance_per_yr'] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
+        pct_of_avg = v["distance_per_yr"] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
         running_emissions = avg_running_emissions * pct_of_avg
 
         # # The emissions from producing the car + battery, per day
@@ -455,7 +449,7 @@ def get_vehicle_emissions_savings(
         )
         savings = total_vehicle_emissions - ev_emissions
         if (
-            v['fuel_type'] in VEHICLE_ELECTRIC_TYPES
+            v["fuel_type"] in VEHICLE_ELECTRIC_TYPES
             and not SWITCH_TO["vehicle"]["switch_if_electric"]
         ):
             # Don't switch if they're already on electric

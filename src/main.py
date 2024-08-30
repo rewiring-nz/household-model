@@ -4,9 +4,9 @@ from openapi_client.models import (
     Household,
     Savings,
 )
-from savings.emissions_savings import calculate_emissions
-from savings.opex_savings import calculate_opex
-from savings.upfront_cost import calculate_upfront_cost
+from savings.emissions.calculate_emissions import calculate_emissions
+from savings.opex.calculate_opex import calculate_opex
+from savings.upfront_cost.calculate_upfront_cost import calculate_upfront_cost
 from models.recommendation import get_recommendation
 
 app = FastAPI()

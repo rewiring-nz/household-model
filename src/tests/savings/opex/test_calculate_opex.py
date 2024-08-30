@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from opex_savings import (
+from savings.opex.calculate_opex import (
     get_fixed_costs_per_year,
     NGAS_MACHINES,
     LPG_MACHINES,
@@ -13,7 +13,7 @@ from opex_savings import (
 from constants.machines.cooktop import COOKTOP_KWH_PER_DAY
 from tests.process_test_data import get_test_data
 
-base_household = get_test_data('tests/base_household.csv')
+base_household = get_test_data("tests/base_household.csv")
 
 
 class TestGetFixedCostSavings:
@@ -47,7 +47,7 @@ class TestGetFixedCostSavings:
             pd.Series(
                 {
                     **base_household,
-                    'Water heating': 'Gas water heating',
+                    "Water heating": "Gas water heating",
                 }
             )
         ) == (587 + 689, 587)
@@ -58,7 +58,7 @@ class TestGetFixedCostSavings:
                 {
                     **base_household,
                     **{x: 1 for x in NGAS_MACHINES},
-                    'Water heating': 'Gas water heating',
+                    "Water heating": "Gas water heating",
                 }
             )
         )
@@ -81,7 +81,7 @@ class TestGetFixedCostSavings:
             pd.Series(
                 {
                     **base_household,
-                    'Water heating': 'LPG water heating',
+                    "Water heating": "LPG water heating",
                 }
             )
         ) == (139 + 689, 139)
@@ -92,7 +92,7 @@ class TestGetFixedCostSavings:
                 {
                     **base_household,
                     **{x: 1 for x in LPG_MACHINES},
-                    'Water heating': 'LPG water heating',
+                    "Water heating": "LPG water heating",
                 }
             )
         )
@@ -105,7 +105,7 @@ class TestGetFixedCostSavings:
                     **base_household,
                     **{x: 1 for x in NGAS_MACHINES},
                     **{x: 1 for x in LPG_MACHINES},
-                    'Water heating': 'LPG water heating',
+                    "Water heating": "LPG water heating",
                 }
             )
         )
@@ -116,7 +116,7 @@ test_household = pd.Series(
     {
         **base_household,
         # 1 heat pump, 2 resistive, 1 biogas (not counted)
-        'Home heating_Heat pump split system (an individual unit in a room(s))': 1,
+        "Home heating_Heat pump split system (an individual unit in a room(s))": 1,
         "Home heating_Electric resistance heater (e.g. electric bar, fan, oil, ceramic panel)": 1,
         "Home heating_Other (please specify)": 1,
         "Home heating_Other (please specify)_0": "Biogas fireplace",
@@ -174,17 +174,17 @@ class TestGetCooktopOpexSavings:
 # TODO: mock out extract_vehicle_stats
 class TestVehicles:
     base = {
-        'Vehicles': 0,
-        'Vehicles fuel/energy type_Vehicle 1': None,
-        'Vehicles fuel/energy type_Vehicle 2': None,
-        'Vehicles fuel/energy type_Vehicle 3': None,
-        'Vehicles fuel/energy type_Vehicle 4': None,
-        'Vehicles fuel/energy type_Vehicle 5': None,
-        'Vehicles distance_Vehicle 1': None,
-        'Vehicles distance_Vehicle 2': None,
-        'Vehicles distance_Vehicle 3': None,
-        'Vehicles distance_Vehicle 4': None,
-        'Vehicles distance_Vehicle 5': None,
+        "Vehicles": 0,
+        "Vehicles fuel/energy type_Vehicle 1": None,
+        "Vehicles fuel/energy type_Vehicle 2": None,
+        "Vehicles fuel/energy type_Vehicle 3": None,
+        "Vehicles fuel/energy type_Vehicle 4": None,
+        "Vehicles fuel/energy type_Vehicle 5": None,
+        "Vehicles distance_Vehicle 1": None,
+        "Vehicles distance_Vehicle 2": None,
+        "Vehicles distance_Vehicle 3": None,
+        "Vehicles distance_Vehicle 4": None,
+        "Vehicles distance_Vehicle 5": None,
     }
     petrol_opex = (32 * 0.27) * 365.25 * 15
     diesel_opex = (28.4 * 0.21) * 365.25 * 15
@@ -200,8 +200,8 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'I’m not sure',
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "I’m not sure",
                 }
             )
         ) == (0, 0)
@@ -210,9 +210,9 @@ class TestVehicles:
         household = pd.Series(
             {
                 **self.base,
-                'Vehicles': 1,
-                'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                'Vehicles distance_Vehicle 1': '100-199km',
+                "Vehicles": 1,
+                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                "Vehicles distance_Vehicle 1": "100-199km",
             }
         )
         distance_per_week = 150  # taking the middle of the 100-199km range
@@ -232,9 +232,9 @@ class TestVehicles:
         household = pd.Series(
             {
                 **self.base,
-                'Vehicles': 1,
-                'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                'Vehicles distance_Vehicle 1': 'I’m not sure',
+                "Vehicles": 1,
+                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                "Vehicles distance_Vehicle 1": "I’m not sure",
             }
         )
         # petrol car
@@ -249,13 +249,13 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 3,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 2': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 3': 'Diesel',
-                    'Vehicles distance_Vehicle 1': "0-50km",
-                    'Vehicles distance_Vehicle 2': "100-199km",
-                    'Vehicles distance_Vehicle 3': "200+ km",
+                    "Vehicles": 3,
+                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 2": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 3": "Diesel",
+                    "Vehicles distance_Vehicle 1": "0-50km",
+                    "Vehicles distance_Vehicle 2": "100-199km",
+                    "Vehicles distance_Vehicle 3": "200+ km",
                 }
             )
         )
@@ -279,9 +279,9 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Plug-in Hybrid',
-                    'Vehicles distance_Vehicle 1': "0-50km",
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "Plug-in Hybrid",
+                    "Vehicles distance_Vehicle 1": "0-50km",
                 }
             )
         )
@@ -296,9 +296,9 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 1,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Hybrid',
-                    'Vehicles distance_Vehicle 1': "0-50km",
+                    "Vehicles": 1,
+                    "Vehicles fuel/energy type_Vehicle 1": "Hybrid",
+                    "Vehicles distance_Vehicle 1": "0-50km",
                 }
             )
         )
@@ -313,13 +313,13 @@ class TestVehicles:
             pd.Series(
                 {
                     **self.base,
-                    'Vehicles': 3,
-                    'Vehicles fuel/energy type_Vehicle 1': 'Petrol',
-                    'Vehicles fuel/energy type_Vehicle 2': 'Electric',
-                    'Vehicles fuel/energy type_Vehicle 3': 'Plug-in Hybrid',  # PHEVs are still switched
-                    'Vehicles distance_Vehicle 1': "0-50km",
-                    'Vehicles distance_Vehicle 2': "100-199km",
-                    'Vehicles distance_Vehicle 3': "200+ km",
+                    "Vehicles": 3,
+                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
+                    "Vehicles fuel/energy type_Vehicle 2": "Electric",
+                    "Vehicles fuel/energy type_Vehicle 3": "Plug-in Hybrid",  # PHEVs are still switched
+                    "Vehicles distance_Vehicle 1": "0-50km",
+                    "Vehicles distance_Vehicle 2": "100-199km",
+                    "Vehicles distance_Vehicle 3": "200+ km",
                 }
             )
         )
