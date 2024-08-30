@@ -44,6 +44,21 @@ WATER_HEATING_SWITCH_TO_UPFRONT_COST = (
 SOLAR_COST_PER_KW = 20500 / 9  # Doesn't take into account inverter
 SOLAR_UPFRONT_COST = SOLAR_SIZE * SOLAR_COST_PER_KW
 
+from openapi_client.models import (
+    Household,
+    UpfrontCost,
+)
+
+
+def calculate_upfront_cost(household: Household) -> UpfrontCost:
+    return UpfrontCost(
+        solar=15000.12,
+        battery=7000.31,
+        cooktop=500.50,
+        waterHeating=3000.15,
+        spaceHeating=3300.12,
+    )
+
 
 # TODO: unit tests
 def enrich_upfront_cost(df: pd.DataFrame, with_solar=True) -> pd.DataFrame:

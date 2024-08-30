@@ -58,3 +58,22 @@ mock_emissions = Emissions(
     ),
     operationalLifetime=15,
 )
+
+mock_opex = Opex(
+    perWeek=OpexValues(before=300.52, after=140.11, difference=160.41),
+    perYear=OpexValues(before=300.52 * 52, after=140.11 * 52, difference=160.41 * 52),
+    overLifetime=OpexValues(
+        before=300.52 * 52 * 15 * 1.1,  # some random factor
+        after=140.11 * 52 * 15 * 1.1,
+        difference=160.41 * 52 * 15 * 1.1,
+    ),
+    operationalLifetime=15,
+)
+
+mock_upfront_cost = UpfrontCost(
+    solar=15000.12,
+    battery=7000.31,
+    cooktop=500.50,
+    waterHeating=3000.15,
+    spaceHeating=3300.12,
+)

@@ -40,6 +40,25 @@ from params import (
 )
 from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
 
+from openapi_client.models import (
+    Household,
+    Opex,
+    OpexValues,
+)
+
+
+def calculate_opex(household: Household) -> Opex:
+    return Opex(
+        perWeek=OpexValues(before=500.5, after=100.1, difference=400.4),
+        perYear=OpexValues(before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52),
+        overLifetime=OpexValues(
+            before=500.5 * 52 * 15 * 1.1,  # some random factor
+            after=100.1 * 52 * 15 * 1.1,
+            difference=400.4 * 52 * 15 * 1.1,
+        ),
+        operationalLifetime=15,
+    )
+
 
 # TODO: unit tests
 
