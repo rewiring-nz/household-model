@@ -19,166 +19,60 @@ from savings.emissions.get_machine_emissions import (
 def calculate_emissions(
     current_household: Household, electrified_household: Household
 ) -> Emissions:
+    """Calculate emissions for current and electrified households over various periods."""
 
-    # Weekly
-    space_heating_emissions_weekly_before = get_appliance_emissions(
-        current_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
-    )
-    space_heating_emissions_weekly_after = get_appliance_emissions(
-        electrified_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
-    )
-    water_heating_emissions_weekly_before = get_appliance_emissions(
-        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.WEEKLY
-    )
-    water_heating_emissions_weekly_after = get_appliance_emissions(
-        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.WEEKLY
-    )
-    cooktop_emissions_weekly_before = get_appliance_emissions(
-        current_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
-    )
-    cooktop_emissions_weekly_after = get_appliance_emissions(
-        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
-    )
-    vehicle_emissions_weekly_before = get_vehicle_emissions(
-        current_household.vehicles, PeriodEnum.WEEKLY
-    )
-    vehicle_emissions_weekly_after = get_vehicle_emissions(
-        electrified_household.vehicles, PeriodEnum.WEEKLY
-    )
-    other_emissions_weekly_before = get_other_appliance_emissions(PeriodEnum.WEEKLY)
-    other_emissions_weekly_after = get_other_appliance_emissions(PeriodEnum.WEEKLY)
+    periods = [PeriodEnum.WEEKLY, PeriodEnum.YEARLY, PeriodEnum.OPERATIONAL_LIFETIME]
 
-    # We use the function to get emissions over longer periods, rather than relying on straight multiplication for emissions over operational lifetime, since macroeconomic factors can change things.
-
-    # Yearly
-    space_heating_emissions_yearly_before = get_appliance_emissions(
-        current_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.YEARLY
-    )
-    space_heating_emissions_yearly_after = get_appliance_emissions(
-        electrified_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.YEARLY
-    )
-    water_heating_emissions_yearly_before = get_appliance_emissions(
-        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.YEARLY
-    )
-    water_heating_emissions_yearly_after = get_appliance_emissions(
-        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.YEARLY
-    )
-    cooktop_emissions_yearly_before = get_appliance_emissions(
-        current_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
-    )
-    cooktop_emissions_yearly_after = get_appliance_emissions(
-        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
-    )
-    vehicle_emissions_yearly_before = get_vehicle_emissions(
-        current_household.vehicles, PeriodEnum.YEARLY
-    )
-    vehicle_emissions_yearly_after = get_vehicle_emissions(
-        electrified_household.vehicles, PeriodEnum.YEARLY
-    )
-    other_emissions_yearly_before = get_other_appliance_emissions(PeriodEnum.YEARLY)
-    other_emissions_yearly_after = get_other_appliance_emissions(PeriodEnum.YEARLY)
-
-    # Operational lifetime
-    space_heating_emissions_lifetime_before = get_appliance_emissions(
-        current_household.space_heating,
-        SPACE_HEATING_INFO,
-        PeriodEnum.OPERATIONAL_LIFETIME,
-    )
-    space_heating_emissions_lifetime_after = get_appliance_emissions(
-        electrified_household.space_heating,
-        SPACE_HEATING_INFO,
-        PeriodEnum.OPERATIONAL_LIFETIME,
-    )
-    water_heating_emissions_lifetime_before = get_appliance_emissions(
-        current_household.water_heating,
-        WATER_HEATING_INFO,
-        PeriodEnum.OPERATIONAL_LIFETIME,
-    )
-    water_heating_emissions_lifetime_after = get_appliance_emissions(
-        electrified_household.water_heating,
-        WATER_HEATING_INFO,
-        PeriodEnum.OPERATIONAL_LIFETIME,
-    )
-    cooktop_emissions_lifetime_before = get_appliance_emissions(
-        current_household.cooktop, COOKTOP_INFO, PeriodEnum.OPERATIONAL_LIFETIME
-    )
-    cooktop_emissions_lifetime_after = get_appliance_emissions(
-        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.OPERATIONAL_LIFETIME
-    )
-    vehicle_emissions_lifetime_before = get_vehicle_emissions(
-        current_household.vehicles, PeriodEnum.OPERATIONAL_LIFETIME
-    )
-    vehicle_emissions_lifetime_after = get_vehicle_emissions(
-        electrified_household.vehicles, PeriodEnum.OPERATIONAL_LIFETIME
-    )
-    other_emissions_lifetime_before = get_other_appliance_emissions(
-        PeriodEnum.OPERATIONAL_LIFETIME
-    )
-    other_emissions_lifetime_after = get_other_appliance_emissions(
-        PeriodEnum.OPERATIONAL_LIFETIME
-    )
-
-    # Total emissions before
-    weekly_before = (
-        space_heating_emissions_weekly_before
-        + water_heating_emissions_weekly_before
-        + cooktop_emissions_weekly_before
-        + vehicle_emissions_weekly_before
-        + other_emissions_weekly_before
-    )
-    yearly_before = (
-        space_heating_emissions_yearly_before
-        + water_heating_emissions_yearly_before
-        + cooktop_emissions_yearly_before
-        + vehicle_emissions_yearly_before
-        + other_emissions_yearly_before
-    )
-    lifetime_before = (
-        space_heating_emissions_lifetime_before
-        + water_heating_emissions_lifetime_before
-        + cooktop_emissions_lifetime_before
-        + vehicle_emissions_lifetime_before
-        + other_emissions_lifetime_before
-    )
-
-    # Total emissions after
-    weekly_after = (
-        space_heating_emissions_weekly_after
-        + water_heating_emissions_weekly_after
-        + cooktop_emissions_weekly_after
-        + vehicle_emissions_weekly_after
-        + other_emissions_weekly_after
-    )
-    yearly_after = (
-        space_heating_emissions_yearly_after
-        + water_heating_emissions_yearly_after
-        + cooktop_emissions_yearly_after
-        + vehicle_emissions_yearly_after
-        + other_emissions_yearly_after
-    )
-    lifetime_after = (
-        space_heating_emissions_lifetime_after
-        + water_heating_emissions_lifetime_after
-        + cooktop_emissions_lifetime_after
-        + vehicle_emissions_lifetime_after
-        + other_emissions_lifetime_after
-    )
+    emissions_before = {
+        period: _get_emissions_for_period(current_household, period)
+        for period in periods
+    }
+    emissions_after = {
+        period: _get_emissions_for_period(electrified_household, period)
+        for period in periods
+    }
 
     return Emissions(
-        perWeek=EmissionsValues(
-            before=round(weekly_before, 2),
-            after=round(weekly_after, 2),
-            difference=round(weekly_after - weekly_before, 2),
+        perWeek=_calculate_emissions_values(
+            emissions_before[PeriodEnum.WEEKLY], emissions_after[PeriodEnum.WEEKLY]
         ),
-        perYear=EmissionsValues(
-            before=round(yearly_before, 2),
-            after=round(yearly_after, 2),
-            difference=round(yearly_after - yearly_before, 2),
+        perYear=_calculate_emissions_values(
+            emissions_before[PeriodEnum.YEARLY], emissions_after[PeriodEnum.YEARLY]
         ),
-        overLifetime=EmissionsValues(
-            before=round(lifetime_before, 2),
-            after=round(lifetime_after, 2),
-            difference=round(lifetime_after - lifetime_before, 2),
+        overLifetime=_calculate_emissions_values(
+            emissions_before[PeriodEnum.OPERATIONAL_LIFETIME],
+            emissions_after[PeriodEnum.OPERATIONAL_LIFETIME],
         ),
         operationalLifetime=OPERATIONAL_LIFETIME,
+    )
+
+
+def _get_emissions_for_period(household: Household, period: PeriodEnum) -> dict:
+    """Calculate emissions for a given household and period."""
+    return {
+        "space_heating": get_appliance_emissions(
+            household.space_heating, SPACE_HEATING_INFO, period
+        ),
+        "water_heating": get_appliance_emissions(
+            household.water_heating, WATER_HEATING_INFO, period
+        ),
+        "cooktop": get_appliance_emissions(household.cooktop, COOKTOP_INFO, period),
+        "vehicles": get_vehicle_emissions(household.vehicles, period),
+        "other": get_other_appliance_emissions(period),
+    }
+
+
+def _calculate_totals(emissions: dict) -> float:
+    """Sum all emissions."""
+    return sum(emissions.values())
+
+
+def _calculate_emissions_values(before: dict, after: dict) -> EmissionsValues:
+    """Calculate emissions values for before and after scenarios."""
+    before_total = _calculate_totals(before)
+    after_total = _calculate_totals(after)
+    return EmissionsValues(
+        before=round(before_total, 2),
+        after=round(after_total, 2),
+        difference=round(after_total - before_total, 2),
     )
