@@ -34,6 +34,10 @@ class TestGetSpaceHeatingEmissions:
         result = get_space_heating_emissions(mock_household, PeriodEnum.DAILY)
         assert result == mock_emissions_daily
 
+    def test_it_returns_weekly_emissions(self, _):
+        result = get_space_heating_emissions(mock_household, PeriodEnum.WEEKLY)
+        assert result == mock_emissions_daily * 7
+
     def test_it_returns_yearly_emissions(self, _):
         result = get_space_heating_emissions(mock_household, PeriodEnum.YEARLY)
         assert result == mock_emissions_daily * 365.25

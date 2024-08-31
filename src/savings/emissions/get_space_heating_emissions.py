@@ -51,6 +51,8 @@ def get_space_heating_emissions(
     )
     if period == PeriodEnum.DAILY:
         return em_daily
+    if period == PeriodEnum.WEEKLY:
+        return em_daily * 7
     if period == PeriodEnum.YEARLY:
         return em_daily * 365.25
     if period == PeriodEnum.OPERATIONAL_LIFETIME:

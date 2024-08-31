@@ -60,6 +60,8 @@ EMISSIONS_OTHER_MACHINES = (
 
 
 def calculate_emissions(household: Household) -> Emissions:
+    space_heating_emissions_before_daily = get_space_heating_emissions(household)
+
     return Emissions(
         perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
         perYear=EmissionsValues(
