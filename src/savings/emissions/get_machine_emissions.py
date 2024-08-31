@@ -1,30 +1,15 @@
+from typing import List
+
+from openapi_client.models.vehicle import Vehicle
+from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
+
 from constants.fuel_stats import EMISSIONS_FACTORS
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-from openapi_client.models.vehicle import Vehicle
-from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
-from params import OPERATIONAL_LIFETIME
-from constants.utils import PeriodEnum
-
-import pandas as pd
-from typing import List, Optional, Tuple
-
-from constants.fuel_stats import EMISSIONS_FACTORS
-from constants.machines.cooktop import COOKTOP_INFO
-from constants.machines.space_heating import (
-    SPACE_HEATING_INFO,
-)
 from constants.machines.vehicles import (
-    VEHICLE_ELECTRIC_TYPES,
     VEHICLE_INFO,
-    VEHICLE_TYPE_TO_FUEL_TYPE,
-    VEHICLE_FUEL_TYPE_COLS,
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
-    VEHICLE_EMBODIED_EMISSIONS,
-    extract_vehicle_stats,
 )
-from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
 from params import OPERATIONAL_LIFETIME
 

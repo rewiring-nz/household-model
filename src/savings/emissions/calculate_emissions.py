@@ -1,19 +1,18 @@
-from savings.emissions.get_machine_emissions import (
-    get_appliance_emissions,
-    get_other_appliance_emissions,
-)
 from openapi_client.models import (
     Household,
     Emissions,
     EmissionsValues,
 )
+
 from constants.utils import PeriodEnum
-from constants.machines.space_heating import (
-    SPACE_HEATING_INFO,
-)
+from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.machines.cooktop import COOKTOP_INFO
 from params import OPERATIONAL_LIFETIME
+from savings.emissions.get_machine_emissions import (
+    get_appliance_emissions,
+    get_other_appliance_emissions,
+)
 
 
 def calculate_emissions(

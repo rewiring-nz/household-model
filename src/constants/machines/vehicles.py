@@ -1,6 +1,8 @@
-import pandas as pd
 from typing import List, TypedDict
-from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, FuelTypeEnum
+
+import pandas as pd
+
+from constants.fuel_stats import FuelTypeEnum
 from constants.machines.machine_info import MachineInfoMap
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 

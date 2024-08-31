@@ -1,10 +1,18 @@
+from unittest import TestCase
+from unittest.mock import patch
+
+from openapi_client.models import (
+    SpaceHeatingEnum,
+    CooktopEnum,
+    WaterHeatingEnum,
+)
+
 from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
 from constants.machines.machine_info import MachineInfoMap
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
+from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
-from openapi_client.models.cooktop_enum import CooktopEnum
-from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
     _convert_to_period,
@@ -12,8 +20,6 @@ from savings.emissions.get_machine_emissions import (
     get_other_appliance_emissions,
     get_vehicle_emissions,
 )
-from unittest.mock import patch
-from unittest import TestCase
 from tests.mocks import (
     mock_household,
     mock_vehicle_petrol,
@@ -22,9 +28,6 @@ from tests.mocks import (
     mock_vehicle_hev,
     mock_vehicle_phev,
 )
-from openapi_client.models import SpaceHeatingEnum
-from constants.machines.space_heating import SPACE_HEATING_INFO
-
 
 mock_emissions_daily = 12.3
 mock_emissions_weekly = 12.3 * 7
