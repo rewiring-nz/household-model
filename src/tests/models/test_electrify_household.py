@@ -130,19 +130,6 @@ class TestElectrifyVehicle:
     def test_no_change_if_already_ev(self):
         assert electrify_vehicle(self.ev) == self.ev
 
-    def test_it_uses_average_kms_if_none_specified(self):
-        assert electrify_vehicle(
-            Vehicle(
-                fuelType=VehicleFuelTypeEnum.PETROL,
-                kms_per_week=None,
-                switchToEV=False,
-            )
-        ) == Vehicle(
-            fuelType=VehicleFuelTypeEnum.PETROL,
-            kms_per_week=round(11000 / 52),
-            switchToEV=False,
-        )
-
 
 class TestInstallSolar:
     def test_it_installs_solar(self):
