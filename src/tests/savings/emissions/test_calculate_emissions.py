@@ -3,7 +3,6 @@ import pytest
 from savings.emissions.calculate_emissions import (
     get_vehicle_emissions_savings,
 )
-from tests.process_test_data import get_test_data
 
 
 # ============ OLD ============

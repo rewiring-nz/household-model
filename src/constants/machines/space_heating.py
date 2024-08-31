@@ -1,6 +1,6 @@
 from openapi_client.models import SpaceHeatingEnum
 from constants.fuel_stats import FuelTypeEnum
-from savings.emissions.get_appliance_emissions import ApplianceInfo
+from constants.machines.appliance import ApplianceInfo
 
 # kwh_per_day are from values in Machines!D75:J75, which are average for the whole house
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0

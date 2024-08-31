@@ -1,4 +1,8 @@
+from constants.machines.cooktop import COOKTOP_INFO
+from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
+from openapi_client.models.cooktop_enum import CooktopEnum
+from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from savings.emissions.get_appliance_emissions import (
     get_appliance_emissions,
     _convert_to_period,
@@ -21,15 +25,28 @@ mock_emissions_daily = 12.3
     return_value=mock_emissions_daily,
 )
 class TestGetApplianceEmissions:
-    def test_it_calls_get_emissions_per_day_correctly(
-        self, mock_get_emissions_per_day, mock_convert_to_period
+    def test_it_calls_get_emissions_for_space_heating_correctly(
+        self, mock_get_emissions_per_day, _
     ):
-        get_appliance_emissions(mock_household, SPACE_HEATING_INFO)
+        get_appliance_emissions(mock_household.space_heating, SPACE_HEATING_INFO)
         mock_get_emissions_per_day.assert_called_once_with(
             SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO
         )
-        mock_convert_to_period.assert_called_once_with(
-            mock_emissions_daily, PeriodEnum.DAILY
+
+    def test_it_calls_get_emissions_for_water_heating_correctly(
+        self, mock_get_emissions_per_day, _
+    ):
+        get_appliance_emissions(mock_household.water_heating, WATER_HEATING_INFO)
+        mock_get_emissions_per_day.assert_called_once_with(
+            WaterHeatingEnum.GAS, WATER_HEATING_INFO
+        )
+
+    def test_it_calls_get_emissions_for_cooktop_correctly(
+        self, mock_get_emissions_per_day, _
+    ):
+        get_appliance_emissions(mock_household.cooktop, COOKTOP_INFO)
+        mock_get_emissions_per_day.assert_called_once_with(
+            CooktopEnum.ELECTRIC_RESISTANCE, COOKTOP_INFO
         )
 
 

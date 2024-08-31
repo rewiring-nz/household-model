@@ -8,6 +8,7 @@ class FuelTypeEnum(str, Enum):
     WOOD = "WOOD"
     PETROL = "PETROL"
     DIESEL = "DIESEL"
+    SOLAR = "SOLAR"  # this is direct solar, e.g. roof solar water heaters
 
 
 # From 'Misc'!B154
@@ -20,6 +21,7 @@ EMISSIONS_FACTORS = {
     "wood": 0.025,
     "petrol": 0.242,
     "diesel": 0.253,
+    "solar": 0,
     # Excluding coal for now, as it skews results
     # 'coal': 0.9,  # TODO: check this, UK source from https://www.rensmart.com/Calculators/KWH-to-CO2
 }
@@ -33,6 +35,7 @@ COST_PER_FUEL_KWH_TODAY = {
     "wood": 0.113,  # C54
     "petrol": 0.27,  # C57
     "diesel": 0.21,  # C58
+    "solar": 0,
 }
 # TODO: Use this price when doing lifetime opex calculations
 COST_PER_FUEL_KWH_AVG_15_YEARS = {
@@ -42,4 +45,5 @@ COST_PER_FUEL_KWH_AVG_15_YEARS = {
     "wood": 0.112,
     "petrol": 0.273,
     "diesel": 0.206,
+    "solar": 0,
 }

@@ -1,15 +1,12 @@
-from openapi_client.models import (
-    SpaceHeatingEnum,
-)
-
 from constants.fuel_stats import EMISSIONS_FACTORS
 from typing import Optional
 
 from params import HOUSEHOLD_ENERGY_USE
+from savings.emissions.get_appliance_emissions import ApplianceEnum
 
 
 def get_emissions_per_day(
-    machine_type: SpaceHeatingEnum,
+    machine_type: ApplianceEnum,
     machine_stats_map: dict,
 ) -> float:
     energy = machine_stats_map[machine_type]["kwh_per_day"]

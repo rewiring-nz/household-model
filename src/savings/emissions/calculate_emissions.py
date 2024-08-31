@@ -61,6 +61,12 @@ def calculate_emissions(
     space_heating_emissions_weekly_after = get_appliance_emissions(
         electrified_household, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
     )
+    water_heating_emissions_weekly_before = get_appliance_emissions(
+        current_household, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
+    )
+    water_heating_emissions_weekly_after = get_appliance_emissions(
+        electrified_household, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
+    )
 
     # We use the function to get emissions over longer periods, rather than relying on straight multiplication for emissions over operational lifetime, since macroeconomic factors can change things.
 

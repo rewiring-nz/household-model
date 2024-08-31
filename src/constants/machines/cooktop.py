@@ -1,3 +1,39 @@
+from openapi_client.models import CooktopEnum
+from constants.fuel_stats import FuelTypeEnum
+from constants.machines.appliance import ApplianceInfo
+
+# kwh_per_day are from values in Machines!D196:G196
+# https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
+
+COOKTOP_INFO: ApplianceInfo = {
+    CooktopEnum.GAS: {
+        "kwh_per_day": 1.94,
+        "fuel_type": FuelTypeEnum.NATURAL_GAS,
+    },
+    CooktopEnum.LPG: {
+        "kwh_per_day": 1.94,
+        "fuel_type": FuelTypeEnum.LPG,
+    },
+    CooktopEnum.ELECTRIC_RESISTANCE: {
+        "kwh_per_day": 0.83,
+        "fuel_type": FuelTypeEnum.ELECTRICITY,
+    },
+    CooktopEnum.ELECTRIC_INDUCTION: {
+        "kwh_per_day": 0.75,
+        "fuel_type": FuelTypeEnum.ELECTRICITY,
+    },
+    # CooktopEnum.WOOD: {
+    #     "kwh_per_day": 14.44, # Need a value for this
+    #     "fuel_type": FuelTypeEnum.WOOD,
+    # },
+    CooktopEnum.DONT_KNOW: {
+        "kwh_per_day": None,
+        "fuel_type": None,
+    },
+}
+
+# ======= OLD =========
+
 # Cooktops kWh/day
 # From 'Machines'!D192
 COOKTOP_COLS = [
@@ -21,10 +57,10 @@ COOKTOP_ELECTRIC_TYPES = [
 ]
 
 COOKTOP_TYPE_TO_FUEL_TYPE = {
-    "Cooktop_Gas cooktop": 'natural_gas',
-    "Cooktop_LPG cooktop": 'lpg',
-    "Cooktop_Electric resistance cooktop": 'electricity',
-    "Cooktop_Electric induction cooktop": 'electricity',
+    "Cooktop_Gas cooktop": "natural_gas",
+    "Cooktop_LPG cooktop": "lpg",
+    "Cooktop_Electric resistance cooktop": "electricity",
+    "Cooktop_Electric induction cooktop": "electricity",
 }
 
 # From 'Machines'!D196
