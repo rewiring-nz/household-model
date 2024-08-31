@@ -2,23 +2,9 @@ import pandas as pd
 from typing import Optional, Tuple
 
 from constants.fuel_stats import EMISSIONS_FACTORS
-from constants.machines.home_heating import (
-    HOME_HEATING_ELECTRIC_TYPES,
-    HOME_HEATING_KWH_PER_DAY,
-    HOME_HEATING_TYPE_TO_FUEL_TYPE,
-    CENTRAL_SYSTEMS,
-    INDIVIDUAL_SYSTEMS,
-    HOME_HEATING_REPLACEMENT_RATIOS,
-)
-from constants.machines.cooktop import (
-    COOKTOP_KWH_PER_DAY,
-    COOKTOP_TYPE_TO_FUEL_TYPE,
-    COOKTOP_ELECTRIC_TYPES,
-)
-from constants.machines.water_heating import (
-    WATER_HEATING_KWH_PER_DAY,
-    WATER_HEATING_ELECTRIC_TYPES,
-    WATER_HEATING_TYPE_TO_FUEL_TYPE,
+from constants.machines.cooktop import COOKTOP_INFO
+from constants.machines.space_heating import (
+    SPACE_HEATING_INFO,
 )
 from constants.machines.vehicles import (
     VEHICLE_KWH_PER_DAY,
@@ -30,12 +16,10 @@ from constants.machines.vehicles import (
     extract_vehicle_stats,
 )
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+from constants.machines.water_heating import WATER_HEATING_INFO
+from constants.utils import PeriodEnum
 from params import (
     SWITCH_TO,
-    HOUSEHOLD_ENERGY_USE,
-    HOME_HEATING_SWITCH_TO_EMISSIONS,
-    WATER_HEATING_SWITCH_TO_EMISSIONS,
-    COOKTOP_SWITCH_TO_EMISSIONS,
     VEHICLE_SWITCH_TO_EMISSIONS_RUNNING,
     VEHICLE_SWITCH_TO_EMISSIONS_EMBODIED,
     OPERATIONAL_LIFETIME,
@@ -46,304 +30,152 @@ from openapi_client.models import (
     Emissions,
     EmissionsValues,
 )
+from savings.emissions.get_appliance_emissions import (
+    get_appliance_emissions,
+    get_other_appliance_emissions,
+)
+from savings.emissions.get_emissions_per_day import get_emissions_per_day_old
 
-# Other machines (space cooling, refrigeration, laundry, lighting, etc. assume all electric)
-EMISSIONS_OTHER_MACHINES = (
-    ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
-)  # kgCO2e/day
 
+def calculate_emissions(
+    current_household: Household, electrified_household: Household
+) -> Emissions:
 
-def calculate_emissions(household: Household) -> Emissions:
+    # Weekly
+    space_heating_emissions_weekly_before = get_appliance_emissions(
+        current_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
+    )
+    space_heating_emissions_weekly_after = get_appliance_emissions(
+        electrified_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.WEEKLY
+    )
+    water_heating_emissions_weekly_before = get_appliance_emissions(
+        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.WEEKLY
+    )
+    water_heating_emissions_weekly_after = get_appliance_emissions(
+        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.WEEKLY
+    )
+    cooktop_emissions_weekly_before = get_appliance_emissions(
+        current_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
+    )
+    cooktop_emissions_weekly_after = get_appliance_emissions(
+        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
+    )
+    # TODO: vehicle emissions
+    other_emissions_weekly_before = get_other_appliance_emissions(PeriodEnum.WEEKLY)
+    other_emissions_weekly_after = get_other_appliance_emissions(PeriodEnum.WEEKLY)
+
+    # We use the function to get emissions over longer periods, rather than relying on straight multiplication for emissions over operational lifetime, since macroeconomic factors can change things.
+
+    # Yearly
+    space_heating_emissions_yearly_before = get_appliance_emissions(
+        current_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.YEARLY
+    )
+    space_heating_emissions_yearly_after = get_appliance_emissions(
+        electrified_household.space_heating, SPACE_HEATING_INFO, PeriodEnum.YEARLY
+    )
+    water_heating_emissions_yearly_before = get_appliance_emissions(
+        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.YEARLY
+    )
+    water_heating_emissions_yearly_after = get_appliance_emissions(
+        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.YEARLY
+    )
+    cooktop_emissions_yearly_before = get_appliance_emissions(
+        current_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
+    )
+    cooktop_emissions_yearly_after = get_appliance_emissions(
+        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
+    )
+    other_emissions_yearly_before = get_other_appliance_emissions(PeriodEnum.YEARLY)
+    other_emissions_yearly_after = get_other_appliance_emissions(PeriodEnum.YEARLY)
+
+    # Operational lifetime
+    space_heating_emissions_lifetime_before = get_appliance_emissions(
+        current_household.space_heating,
+        SPACE_HEATING_INFO,
+        PeriodEnum.OPERATIONAL_LIFETIME,
+    )
+    space_heating_emissions_lifetime_after = get_appliance_emissions(
+        electrified_household.space_heating,
+        SPACE_HEATING_INFO,
+        PeriodEnum.OPERATIONAL_LIFETIME,
+    )
+    water_heating_emissions_lifetime_before = get_appliance_emissions(
+        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.LIFETIME
+    )
+    water_heating_emissions_lifetime_after = get_appliance_emissions(
+        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.LIFETIME
+    )
+    cooktop_emissions_lifetime_before = get_appliance_emissions(
+        current_household.cooktop, COOKTOP_INFO, PeriodEnum.LIFETIME
+    )
+    cooktop_emissions_lifetime_after = get_appliance_emissions(
+        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.LIFETIME
+    )
+    other_emissions_lifetime_before = get_other_appliance_emissions(
+        PeriodEnum.OPERATIONAL_LIFETIME
+    )
+    other_emissions_lifetime_after = get_other_appliance_emissions(
+        PeriodEnum.OPERATIONAL_LIFETIME
+    )
+
+    # Total emissions before
+    weekly_before = (
+        space_heating_emissions_weekly_before
+        + water_heating_emissions_weekly_before
+        + cooktop_emissions_weekly_before
+        + other_emissions_weekly_before
+    )
+    yearly_before = (
+        space_heating_emissions_yearly_before
+        + water_heating_emissions_yearly_before
+        + cooktop_emissions_yearly_before
+        + other_emissions_yearly_before
+    )
+    lifetime_before = (
+        space_heating_emissions_lifetime_before
+        + water_heating_emissions_lifetime_before
+        + cooktop_emissions_lifetime_before
+        + other_emissions_lifetime_before
+    )
+
+    # Total emissions after
+    weekly_after = (
+        space_heating_emissions_weekly_after
+        + water_heating_emissions_weekly_after
+        + cooktop_emissions_weekly_after
+        + other_emissions_weekly_after
+    )
+    yearly_after = (
+        space_heating_emissions_yearly_after
+        + water_heating_emissions_yearly_after
+        + cooktop_emissions_yearly_after
+        + other_emissions_yearly_after
+    )
+    lifetime_after = (
+        space_heating_emissions_lifetime_after
+        + water_heating_emissions_lifetime_after
+        + cooktop_emissions_lifetime_after
+        + other_emissions_lifetime_after
+    )
+
     return Emissions(
-        perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
+        perWeek=EmissionsValues(
+            before=weekly_before,
+            after=weekly_after,
+            difference=weekly_after - weekly_before,
+        ),
         perYear=EmissionsValues(
-            before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52
+            before=yearly_before,
+            after=yearly_after,
+            difference=yearly_after - yearly_before,
         ),
         overLifetime=EmissionsValues(
-            before=500.5 * 52 * 15 * 1.1,  # some random factor
-            after=100.1 * 52 * 15 * 1.1,
-            difference=400.4 * 52 * 15 * 1.1,
+            before=lifetime_before,
+            after=lifetime_after,
+            difference=lifetime_after - lifetime_before,
         ),
-        operationalLifetime=15,
+        operationalLifetime=OPERATIONAL_LIFETIME,
     )
-
-
-# TODO: unit test
-def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
-    """Enriches survey data with emissions and emissions savings data
-
-    Args:
-        df (pd.DataFrame): processed survey data
-
-    Returns:
-        pd.DataFrame: enriched dataframe with new ENRICHMENT_COLS_EMISSIONS columns
-    """
-
-    # Machines
-    df["home_heating_emissions"], df["home_heating_emissions_savings"] = zip(
-        *df.apply(get_home_heating_emissions_savings, axis=1)
-    )
-    df["water_heating_emissions"], df["water_heating_emissions_savings"] = zip(
-        *df["Water heating"].apply(get_water_heating_emissions_savings)
-    )
-    cooktop_cols = [x for x in df.columns if "Cooktop_" in x]
-    df["cooktop_emissions"], df["cooktop_emissions_savings"] = zip(
-        *df[cooktop_cols].apply(get_cooktop_emissions_savings, axis=1)
-    )
-    df["vehicle_emissions"], df["vehicle_emissions_savings"] = zip(
-        *df.apply(get_vehicle_emissions_savings, axis=1)
-    )
-
-    # Totals
-
-    ## Emissions
-
-    ### without vehicles
-    df["total_emissions_without_vehicles"] = (
-        df["home_heating_emissions"]
-        + df["water_heating_emissions"]
-        + df["cooktop_emissions"]
-        + EMISSIONS_OTHER_MACHINES
-    )
-    df["total_emissions_without_vehicles_year"] = (
-        df["total_emissions_without_vehicles"] * 365.25
-    )
-    df["total_emissions_without_vehicles_lifetime"] = (
-        df["total_emissions_without_vehicles_year"] * OPERATIONAL_LIFETIME
-    )
-
-    ### with vehicles
-    df["total_emissions_with_vehicles"] = (
-        df["total_emissions_without_vehicles"] + df["vehicle_emissions"]
-    )
-    df["total_emissions_with_vehicles_year"] = (
-        df["total_emissions_with_vehicles"] * 365.25
-    )
-    df["total_emissions_with_vehicles_lifetime"] = (
-        df["total_emissions_with_vehicles_year"] * OPERATIONAL_LIFETIME
-    )
-
-    ## Emissions savings
-
-    ### without vehicles
-    df["total_emissions_savings_without_vehicles"] = (
-        df["home_heating_emissions_savings"]
-        + df["water_heating_emissions_savings"]
-        + df["cooktop_emissions_savings"]
-        # Other machines are already assumed electric, so won't be switched and therefore won't bring any savings
-    )
-    df["total_emissions_savings_without_vehicles_year"] = (
-        df["total_emissions_savings_without_vehicles"] * 365.25
-    )
-    df["total_emissions_savings_without_vehicles_lifetime"] = (
-        df["total_emissions_savings_without_vehicles_year"] * OPERATIONAL_LIFETIME
-    )
-
-    df["emissions_savings_without_vehicles_pct"] = (
-        100
-        * df["total_emissions_savings_without_vehicles"]
-        / df["total_emissions_without_vehicles"]
-    )
-
-    ### with vehicles
-    df["total_emissions_savings_with_vehicles"] = (
-        df["total_emissions_savings_without_vehicles"] + df["vehicle_emissions_savings"]
-    )
-    df["total_emissions_savings_with_vehicles_year"] = (
-        df["total_emissions_savings_with_vehicles"] * 365.25
-    )
-    df["total_emissions_savings_with_vehicles_lifetime"] = (
-        df["total_emissions_savings_with_vehicles_year"] * OPERATIONAL_LIFETIME
-    )
-
-    df["emissions_savings_with_vehicles_pct"] = (
-        100
-        * df["total_emissions_savings_with_vehicles"]
-        / df["total_emissions_with_vehicles"]
-    )
-
-    return df
-
-
-def get_emissions_per_day(
-    machine_type: str,
-    energy_per_day_map: dict,
-    type_to_fuel_map: dict,
-    household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE,
-) -> float:
-    energy = energy_per_day_map[machine_type] * household_energy_use  # kWh/day
-    fuel_type = type_to_fuel_map[machine_type]
-    emissions = energy * EMISSIONS_FACTORS[fuel_type]  # kgCO2e/kWh
-    return emissions
-
-
-def get_home_heating_emissions_savings(
-    household: pd.Series, household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE
-) -> Tuple[float, float]:
-    """Calculates the emissions from fossil fuel home heaters, and potential
-    savings from switching fossil fuel home heaters to electric heat pump
-    (split non-ducted).
-
-    Args:
-        household (pd.Series): info on the household including home heating info
-
-    Returns:
-        float: kgCO2e/day emitted from fossil fuel heating sources
-        float: kgCO2e/day saved if they electrified all their heating
-    """
-    total_emissions_before = 0
-    total_emissions_after = 0
-    n_total_replacements = 0
-
-    # Central systems
-
-    central_systems = household[CENTRAL_SYSTEMS]
-    central_systems = central_systems[central_systems == 1].index.tolist()
-
-    for heater_type in central_systems:
-        emissions = get_emissions_per_day(
-            heater_type,
-            HOME_HEATING_KWH_PER_DAY,
-            HOME_HEATING_TYPE_TO_FUEL_TYPE,
-            household_energy_use,
-        )
-        total_emissions_before += emissions
-
-        # If it's a central heat pump or underfloor electric, don't replace
-        if heater_type in (
-            "Home heating_Heat pump central system (one indoor unit for the entire home)",
-            "Home heating_Underfloor electric heating",
-        ):
-            total_emissions_after += emissions
-            continue
-
-        # If it's a different electric type (e.g. resistive)
-        if heater_type in HOME_HEATING_ELECTRIC_TYPES:
-            # but we are not switching existing electric machines, don't replace
-            if not SWITCH_TO["home_heating"]["switch_if_electric"]:
-                continue
-
-        # Get the number of [heat pumps] we need to replace the power output of this system
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[heater_type]
-
-    # Individual systems
-
-    # Coalesce boolean columns with number columns for individual systems
-    for bool_col, num_col in INDIVIDUAL_SYSTEMS.items():
-        household[num_col] = (
-            pd.Series([household.get(num_col), household.get(bool_col)]).dropna().max()
-        )
-
-    for num_col in set(INDIVIDUAL_SYSTEMS.values()):
-        num_machines = household[num_col]
-        if pd.isna(num_machines) or num_machines == 0:
-            continue
-
-        emissions = get_emissions_per_day(
-            num_col,
-            HOME_HEATING_KWH_PER_DAY,
-            HOME_HEATING_TYPE_TO_FUEL_TYPE,
-            household_energy_use,
-        )
-        total_emissions_before += emissions * num_machines
-
-        # If it's a heat pump, don't replace
-        if num_col in (
-            "Home heating number_Heat pump split system (an individual unit in a room(s))",
-        ):
-            total_emissions_after += emissions * num_machines
-            continue
-
-        # # If it's a different electric type (e.g. resistive) but we are not switching existing electric machines, don't replace
-        if (
-            num_col in HOME_HEATING_ELECTRIC_TYPES
-            and not SWITCH_TO["home_heating"]["switch_if_electric"]
-        ):
-            continue
-
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[num_col] * num_machines
-
-    # TODO "Other" free text field
-    total_emissions_after += HOME_HEATING_SWITCH_TO_EMISSIONS * n_total_replacements
-    total_savings = total_emissions_before - total_emissions_after
-    return total_emissions_before, total_savings
-
-
-# TODO: unit test
-def get_water_heating_emissions_savings(
-    machine_type: str, household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE
-) -> Tuple[Optional[float], Optional[float]]:
-    """Calculates the emissions savings from switching water heating
-
-    Args:
-        machine_type (str): the type of water heating
-
-    Returns:
-        Optional[float]: kgCO2e/day emitted from fossil fuel heating sources
-        Optional[float]: kgCO2e/day saved if they switched to electric
-    """
-    # Basically the formula in 'Full home'!D79
-
-    if machine_type == "Don’t know":
-        return None, None
-
-    energy = WATER_HEATING_KWH_PER_DAY[machine_type] * household_energy_use  # kWh/day
-    fuel_type = WATER_HEATING_TYPE_TO_FUEL_TYPE[machine_type]
-    emissions = energy * EMISSIONS_FACTORS[fuel_type]  # kgCO2e/kWh
-
-    savings = emissions - WATER_HEATING_SWITCH_TO_EMISSIONS
-    if (
-        machine_type in WATER_HEATING_ELECTRIC_TYPES
-        and not SWITCH_TO["water_heating"]["switch_if_electric"]
-    ):
-        savings = 0
-    return emissions, savings
-
-
-def get_cooktop_emissions_savings(
-    cooktop_types: pd.Series,
-    household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE,
-) -> Tuple[Optional[float], Optional[float]]:
-    """Calculates the emissions savings from switching fossil fuel cooktop
-    to electric induction, if they don't already have an electric cooktop
-
-    Args:
-        cooktop_types (pd.Series): the number of each type of cooktop
-
-    Returns:
-        Optional[float]: kgCO2e/day emitted by fossil fuel machines
-        Optional[float]: kgCO2e/day saved if they switched all their cooktops to electric
-    """
-
-    cooktops = cooktop_types[cooktop_types == 1].index.tolist()
-
-    # If they don't know, return None (not zero)
-    if len(cooktops) == 1 and cooktops[0] == "Cooktop_Don't know":
-        return None, None
-
-    # Ignore savings for ones they don't know about
-    cooktops_filtered = [x for x in cooktops if x != "Cooktop_Don't know"]
-
-    # For everyone else, calculating savings for switching to electric induction
-    total_emissions = 0
-    total_savings = 0
-    for ct in cooktops_filtered:
-        emissions = get_emissions_per_day(
-            ct,
-            COOKTOP_KWH_PER_DAY,
-            COOKTOP_TYPE_TO_FUEL_TYPE,
-            household_energy_use,
-        )
-        total_emissions += emissions
-        savings = emissions - COOKTOP_SWITCH_TO_EMISSIONS
-        if (
-            ct in COOKTOP_ELECTRIC_TYPES
-            and not SWITCH_TO["cooktop"]["switch_if_electric"]
-        ):
-            # Don't switch if they're already on electric
-            savings = 0
-        total_savings += savings
-    return total_emissions, total_savings
 
 
 def get_vehicle_emissions_savings(
@@ -359,7 +191,7 @@ def get_vehicle_emissions_savings(
     for v in vehicle_stats:
 
         if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
-            avg_running_emissions = get_emissions_per_day(
+            avg_running_emissions = get_emissions_per_day_old(
                 v["fuel_type"],
                 VEHICLE_KWH_PER_DAY,
                 VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -367,7 +199,7 @@ def get_vehicle_emissions_savings(
         if v["fuel_type"] == "Plug-in Hybrid":
             # Assume 60/40 split between petrol and electric
             petrol_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -375,7 +207,7 @@ def get_vehicle_emissions_savings(
                 * 0.6
             )
             electric_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -388,7 +220,7 @@ def get_vehicle_emissions_savings(
         if v["fuel_type"] == "Hybrid":
             # Assume 70/30 split between petrol and electric
             petrol_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -396,7 +228,7 @@ def get_vehicle_emissions_savings(
                 * 0.7
             )
             electric_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,

@@ -2,12 +2,12 @@ import pandas as pd
 import math
 from typing import Optional, Tuple
 
-from constants.machines.home_heating import (
+from constants.machines.space_heating import (
     CENTRAL_SYSTEMS,
     INDIVIDUAL_SYSTEMS,
-    HOME_HEATING_UPFRONT_COST,
-    HOME_HEATING_ELECTRIC_TYPES,
-    HOME_HEATING_REPLACEMENT_RATIOS,
+    SPACE_HEATING_UPFRONT_COST,
+    SPACE_HEATING_ELECTRIC_TYPES,
+    SPACE_HEATING_REPLACEMENT_RATIOS,
 )
 from constants.machines.cooktop import (
     COOKTOP_ELECTRIC_TYPES,
@@ -20,23 +20,25 @@ from constants.machines.water_heating import (
 )
 from params import SWITCH_TO, SOLAR_SIZE
 
-HOME_HEATING_SWITCH_TO_UPFRONT_COST = (
-    HOME_HEATING_UPFRONT_COST[SWITCH_TO['home_heating']['switch_to_type']]["item_price"]
-    + HOME_HEATING_UPFRONT_COST[SWITCH_TO['home_heating']['switch_to_type']][
+SPACE_HEATING_SWITCH_TO_UPFRONT_COST = (
+    SPACE_HEATING_UPFRONT_COST[SWITCH_TO["space_heating"]["switch_to_type"]][
+        "item_price"
+    ]
+    + SPACE_HEATING_UPFRONT_COST[SWITCH_TO["space_heating"]["switch_to_type"]][
         "install_cost"
     ]
 )
 
 COOKTOP_SWITCH_TO_UPFRONT_COST = (
-    COOKTOP_UPFRONT_COST[SWITCH_TO['cooktop']['switch_to_type']]["item_price"]
-    + COOKTOP_UPFRONT_COST[SWITCH_TO['cooktop']['switch_to_type']]["install_cost"]
+    COOKTOP_UPFRONT_COST[SWITCH_TO["cooktop"]["switch_to_type"]]["item_price"]
+    + COOKTOP_UPFRONT_COST[SWITCH_TO["cooktop"]["switch_to_type"]]["install_cost"]
 )
 
 WATER_HEATING_SWITCH_TO_UPFRONT_COST = (
-    WATER_HEATING_UPFRONT_COST[SWITCH_TO['water_heating']['switch_to_type']][
+    WATER_HEATING_UPFRONT_COST[SWITCH_TO["water_heating"]["switch_to_type"]][
         "item_price"
     ]
-    + WATER_HEATING_UPFRONT_COST[SWITCH_TO['water_heating']['switch_to_type']][
+    + WATER_HEATING_UPFRONT_COST[SWITCH_TO["water_heating"]["switch_to_type"]][
         "install_cost"
     ]
 )
@@ -70,28 +72,28 @@ def enrich_upfront_cost(df: pd.DataFrame, with_solar=True) -> pd.DataFrame:
     Returns:
         pd.DataFrame: enriched dataframe with new ENRICHMENT_COLS_UPFRONT_COST columns
     """
-    df['home_heating_upfront_cost'] = df.apply(get_home_heating_upfront_cost, axis=1)
-    df['water_heating_upfront_cost'] = df['Water heating'].apply(
+    df["space_heating_upfront_cost"] = df.apply(get_space_heating_upfront_cost, axis=1)
+    df["water_heating_upfront_cost"] = df["Water heating"].apply(
         get_water_heating_upfront_cost
     )
-    df['cooktop_upfront_cost'] = df[COOKTOP_COLS].apply(
+    df["cooktop_upfront_cost"] = df[COOKTOP_COLS].apply(
         get_cooktop_upfront_cost, axis=1
     )
-    df['solar_upfront_cost'] = 0
+    df["solar_upfront_cost"] = 0
     if with_solar:
-        df['solar_upfront_cost'] = df['Solar'].apply(
-            lambda x: 0 if x == 'Yes' else SOLAR_COST_PER_KW * 7
+        df["solar_upfront_cost"] = df["Solar"].apply(
+            lambda x: 0 if x == "Yes" else SOLAR_COST_PER_KW * 7
         )
-    df['total_upfront_cost'] = (
-        df['home_heating_upfront_cost']
-        + df['water_heating_upfront_cost']
-        + df['cooktop_upfront_cost']
-        + df['solar_upfront_cost']
+    df["total_upfront_cost"] = (
+        df["space_heating_upfront_cost"]
+        + df["water_heating_upfront_cost"]
+        + df["cooktop_upfront_cost"]
+        + df["solar_upfront_cost"]
     )
     return df
 
 
-def get_home_heating_upfront_cost(household: pd.Series) -> Tuple[float, float]:
+def get_space_heating_upfront_cost(household: pd.Series) -> Tuple[float, float]:
     """Calculates the upfront cost of switching fossil fuel home heaters to electric heat pump
     (split non-ducted).
 
@@ -117,13 +119,13 @@ def get_home_heating_upfront_cost(household: pd.Series) -> Tuple[float, float]:
             continue
 
         # If it's a different electric type (e.g. resistive)
-        if heater_type in HOME_HEATING_ELECTRIC_TYPES:
+        if heater_type in SPACE_HEATING_ELECTRIC_TYPES:
             # but we are not switching existing electric machines, don't replace
-            if not SWITCH_TO["home_heating"]["switch_if_electric"]:
+            if not SWITCH_TO["space_heating"]["switch_if_electric"]:
                 continue
 
         # Get the number of [heat pumps] we need to replace the power output of this system
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[heater_type]
+        n_total_replacements += SPACE_HEATING_REPLACEMENT_RATIOS[heater_type]
 
     # Individual systems
 
@@ -143,18 +145,18 @@ def get_home_heating_upfront_cost(household: pd.Series) -> Tuple[float, float]:
             == "Home heating number_Heat pump split system (an individual unit in a room(s))"
             # If not switching existing electric machines
             or (
-                num_col in HOME_HEATING_ELECTRIC_TYPES
-                and not SWITCH_TO["home_heating"]["switch_if_electric"]
+                num_col in SPACE_HEATING_ELECTRIC_TYPES
+                and not SWITCH_TO["space_heating"]["switch_if_electric"]
             )
         ):
             continue
 
-        n_total_replacements += HOME_HEATING_REPLACEMENT_RATIOS[num_col] * num_machines
+        n_total_replacements += SPACE_HEATING_REPLACEMENT_RATIOS[num_col] * num_machines
 
     # TODO "Other" free text field
 
     # Round up replacement ratio for capex
-    total_upfront_cost = HOME_HEATING_SWITCH_TO_UPFRONT_COST * math.ceil(
+    total_upfront_cost = SPACE_HEATING_SWITCH_TO_UPFRONT_COST * math.ceil(
         n_total_replacements
     )
 
