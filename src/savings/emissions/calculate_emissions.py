@@ -30,6 +30,7 @@ from constants.machines.vehicles import (
     extract_vehicle_stats,
 )
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+from constants.utils import PeriodEnum
 from params import (
     SWITCH_TO,
     HOUSEHOLD_ENERGY_USE,
@@ -60,7 +61,9 @@ EMISSIONS_OTHER_MACHINES = (
 
 
 def calculate_emissions(household: Household) -> Emissions:
-    space_heating_emissions_before_daily = get_space_heating_emissions(household)
+    space_heating_emissions_weekly_before = get_space_heating_emissions(
+        household, PeriodEnum.WEEKLY
+    )
 
     return Emissions(
         perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),

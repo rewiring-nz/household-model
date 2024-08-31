@@ -11,7 +11,7 @@ from tests.mocks import (
 from openapi_client.models import Savings
 
 
-@patch("main.get_recommendation", return_value=mock_recommendation)
+@patch("main.recommend_next_action", return_value=mock_recommendation)
 @patch("main.calculate_upfront_cost", return_value=mock_upfront_cost)
 @patch("main.calculate_opex", return_value=mock_opex)
 @patch("main.calculate_emissions", return_value=mock_emissions)
@@ -22,7 +22,7 @@ class TestCalculateHouseholdSavings(TestCase):
         mock_calculate_emissions,
         mock_calculate_opex,
         mock_calculate_upfront_cost,
-        mock_get_recommendation,
+        mock_recommend_next_action,
     ):
         calculate_household_savings(mock_household)
         mock_calculate_emissions.assert_called_once_with(mock_household)
@@ -32,7 +32,7 @@ class TestCalculateHouseholdSavings(TestCase):
         mock_calculate_emissions,
         mock_calculate_opex,
         mock_calculate_upfront_cost,
-        mock_get_recommendation,
+        mock_recommend_next_action,
     ):
         calculate_household_savings(mock_household)
         mock_calculate_opex.assert_called_once_with(mock_household)
@@ -42,27 +42,27 @@ class TestCalculateHouseholdSavings(TestCase):
         mock_calculate_emissions,
         mock_calculate_opex,
         mock_calculate_upfront_cost,
-        mock_get_recommendation,
+        mock_recommend_next_action,
     ):
         calculate_household_savings(mock_household)
         mock_calculate_upfront_cost.assert_called_once_with(mock_household)
 
-    def test_it_calls_get_recommendation_correctly(
+    def test_it_calls_recommend_next_action_correctly(
         self,
         mock_calculate_emissions,
         mock_calculate_opex,
         mock_calculate_upfront_cost,
-        mock_get_recommendation,
+        mock_recommend_next_action,
     ):
         calculate_household_savings(mock_household)
-        mock_get_recommendation.assert_called_once_with(mock_household)
+        mock_recommend_next_action.assert_called_once_with(mock_household)
 
     def test_it_returns_savings(
         self,
         mock_calculate_emissions,
         mock_calculate_opex,
         mock_calculate_upfront_cost,
-        mock_get_recommendation,
+        mock_recommend_next_action,
     ):
         result = calculate_household_savings(mock_household)
         assert result == Savings(

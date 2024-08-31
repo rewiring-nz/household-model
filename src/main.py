@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from models.electrify_household import electrify_household
 from openapi_client.models import (
     Household,
     Savings,
@@ -7,7 +8,7 @@ from openapi_client.models import (
 from savings.emissions.calculate_emissions import calculate_emissions
 from savings.opex.calculate_opex import calculate_opex
 from savings.upfront_cost.calculate_upfront_cost import calculate_upfront_cost
-from models.recommendation import get_recommendation
+from models.recommend_next_action import recommend_next_action
 
 app = FastAPI()
 
@@ -36,11 +37,12 @@ def health_check():
 
 
 @app.post("/savings")
-def calculate_household_savings(household: Household) -> Savings:
-    emissions = calculate_emissions(household)
-    opex = calculate_opex(household)
-    upfront_cost = calculate_upfront_cost(household)
-    recommendation = get_recommendation(household)
+def calculate_household_savings(current_household: Household) -> Savings:
+    electrified_household = electrify_household(current_household)
+    emissions = calculate_emissions(current_household)
+    opex = calculate_opex(current_household)
+    upfront_cost = calculate_upfront_cost(current_household)
+    recommendation = recommend_next_action(current_household)
 
     savings = Savings(
         emissions=emissions,
