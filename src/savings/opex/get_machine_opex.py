@@ -121,8 +121,8 @@ def get_vehicle_opex(
         weighted_opex_daily = avg_opex_daily * weighting_factor
 
         # Add Road User Charges (RUCs), weighted on kms per year
-        rucs = RUCS[vehicle.fuel_type] * vehicle.kms_per_week * 52 / 1000
-        weighted_opex_daily += rucs
+        rucs_daily = RUCS[vehicle.fuel_type] * vehicle.kms_per_week * 52 / 1000 / 365.25
+        weighted_opex_daily += rucs_daily
 
         # Convert to given period
         opex_period = _convert_to_period(weighted_opex_daily, period)
