@@ -1,9 +1,13 @@
-from openapi_client.models.cooktop_enum import CooktopEnum
-from openapi_client.models.household import Household
-from openapi_client.models.space_heating_enum import SpaceHeatingEnum
-from openapi_client.models.vehicle import Vehicle
-from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
-from openapi_client.models.water_heating_enum import WaterHeatingEnum
+from openapi_client.models import (
+    Battery,
+    CooktopEnum,
+    Household,
+    Solar,
+    SpaceHeatingEnum,
+    Vehicle,
+    VehicleFuelTypeEnum,
+    WaterHeatingEnum,
+)
 
 
 def electrify_household(current_household: Household) -> Household:
@@ -15,8 +19,8 @@ def electrify_household(current_household: Household) -> Household:
             "water_heating": electrify_water_heating(current_household.water_heating),
             "cooktop": electrify_cooktop(current_household.cooktop),
             "vehicles": [electrify_vehicle(v) for v in current_household.vehicles],
-            "solar": current_household.solar,
-            "battery": current_household.battery,
+            "solar": install_solar(current_household.solar),
+            "battery": install_battery(current_household.battery),
         }
     )
     return electrified_household
@@ -83,4 +87,18 @@ def electrify_vehicle(current: Vehicle) -> Vehicle:
         return current.copy(
             update={"fuel_type": VehicleFuelTypeEnum.ELECTRIC, "switch_to_ev": None}
         )
+    return current
+
+
+def install_solar(current: Solar) -> Solar:
+    """Gets solar if user wants"""
+    if current.install_solar:
+        return current.copy(update={"has_solar": True, "install_solar": None})
+    return current
+
+
+def install_battery(current: Battery) -> Battery:
+    """Gets battery if user wants"""
+    if current.install_battery:
+        return current.copy(update={"has_battery": True, "install_battery": None})
     return current

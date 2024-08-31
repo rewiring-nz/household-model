@@ -1,19 +1,23 @@
 from models.electrify_household import (
     electrify_cooktop,
     electrify_household,
+    install_battery,
+    install_solar,
     electrify_space_heating,
     electrify_vehicle,
     electrify_water_heating,
 )
-from openapi_client.models import CooktopEnum
-from openapi_client.models.battery import Battery
-from openapi_client.models.household import Household
-from openapi_client.models.location_enum import LocationEnum
-from openapi_client.models.solar import Solar
-from openapi_client.models.space_heating_enum import SpaceHeatingEnum
-from openapi_client.models.vehicle import Vehicle
-from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
-from openapi_client.models.water_heating_enum import WaterHeatingEnum
+from openapi_client.models import (
+    Battery,
+    CooktopEnum,
+    Household,
+    LocationEnum,
+    Solar,
+    SpaceHeatingEnum,
+    Vehicle,
+    VehicleFuelTypeEnum,
+    WaterHeatingEnum,
+)
 from tests.mocks import mock_household, mock_vehicle_diesel, mock_solar, mock_battery
 
 
@@ -24,14 +28,14 @@ class TestElectrifyHousehold:
             **{
                 "location": LocationEnum.AUCKLAND_CENTRAL,
                 "occupancy": 4,
-                "space_heating": SpaceHeatingEnum.WOOD,
-                "water_heating": WaterHeatingEnum.GAS,
-                "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,
+                "space_heating": SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+                "water_heating": WaterHeatingEnum.ELECTRIC_HEAT_PUMP,
+                "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,  # don't swap if already electric
                 "vehicles": [
                     Vehicle(
                         fuel_type=VehicleFuelTypeEnum.ELECTRIC,
                         kms_per_week=250,
-                        switch_to_ev=True,
+                        switch_to_ev=None,
                     ),
                     mock_vehicle_diesel,  # did not want to switch this one
                 ],
@@ -147,3 +151,37 @@ class TestElectrifyVehicle:
 
     def test_no_change_if_already_ev(self):
         assert electrify_vehicle(self.ev) == self.ev
+
+
+class TestInstallSolar:
+    def test_it_installs_solar(self):
+        assert install_solar(
+            Solar(has_solar=False, size=7, install_solar=True)
+        ) == Solar(has_solar=True, size=7, install_solar=None)
+
+    def test_it_does_not_install_solar_if_false(self):
+        assert install_solar(
+            Solar(has_solar=False, size=7, install_solar=False)
+        ) == Solar(has_solar=False, size=7, install_solar=False)
+
+    def test_no_change_if_already_has_solar(self):
+        assert install_solar(
+            Solar(has_solar=True, size=7, install_solar=None)
+        ) == Solar(has_solar=True, size=7, install_solar=None)
+
+
+class TestInstallBattery:
+    def test_it_installs_battery(self):
+        assert install_battery(
+            Battery(has_battery=False, size=7, install_battery=True)
+        ) == Battery(has_battery=True, size=7, install_battery=None)
+
+    def test_it_does_not_install_battery_if_false(self):
+        assert install_battery(
+            Battery(has_battery=False, size=7, install_battery=False)
+        ) == Battery(has_battery=False, size=7, install_battery=False)
+
+    def test_no_change_if_already_has_battery(self):
+        assert install_battery(
+            Battery(has_battery=True, size=7, install_battery=None)
+        ) == Battery(has_battery=True, size=7, install_battery=None)
