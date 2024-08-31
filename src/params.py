@@ -20,6 +20,9 @@ from constants.machines.vehicles import (
 )
 
 OPERATIONAL_LIFETIME = 15
+
+# ============ OLD ============
+
 HOUSEHOLD_ENERGY_USE = 1  # % of average
 SOLAR_SIZE = 5  # kW
 
