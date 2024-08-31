@@ -37,14 +37,13 @@ VEHICLE_INFO: MachineInfoMap = {
 # TODO: Get the value per vehicle, not per capita (because 1 vehicle could be shared by multiple people)
 VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA = 11000
 
-
-# in $/yr/1000km https://www.whattheruc.com/
+# Road User Charges (RUCs) in $/yr/1000km https://www.whattheruc.com/
 RUCS = {
-    "Electric": 76,
-    "Plug-in Hybrid": 38,
-    "Hybrid": 0,
-    "Petrol": 0,
-    "Diesel": 76,
+    VehicleFuelTypeEnum.ELECTRIC: 76,
+    VehicleFuelTypeEnum.PLUG_IN_HYBRID: 38,
+    VehicleFuelTypeEnum.HYBRID: 0,
+    VehicleFuelTypeEnum.PETROL: 0,
+    VehicleFuelTypeEnum.DIESEL: 76,
 }
 
 # ======= OLD =========

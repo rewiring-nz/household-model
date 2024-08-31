@@ -3,10 +3,11 @@ from typing import List
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
-from constants.fuel_stats import EMISSIONS_FACTORS
+from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, EMISSIONS_FACTORS
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
+    RUCS,
     VEHICLE_INFO,
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
 )
@@ -25,11 +26,11 @@ def get_opex_per_day(
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
 
     Returns:
-        float: machine's opex in NZD per day to 2dp
+        float: machine's opex in NZD per day, unrounded
     """
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    opex = energy * EMISSIONS_FACTORS[fuel_type]
+    opex = energy * COST_PER_FUEL_KWH_TODAY[fuel_type]
     return opex
 
 
@@ -45,13 +46,13 @@ def get_appliance_opex(
         period (PeriodEnum, optional): the period over which to calculate the opex. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily opex value. Defaults to PeriodEnum.DAILY.
 
     Returns:
-        float: NZD emitted from appliance over given period to 2dp
+        float: cost of operating appliance over given period in NZD to 2dp
     """
     opex_daily = get_opex_per_day(
         appliance,
         appliance_info,
     )
-    return _convert_to_period(opex_daily, period)
+    return round(_convert_to_period(opex_daily, period), 2)
 
 
 def get_other_appliance_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
@@ -63,10 +64,12 @@ def get_other_appliance_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
         period (PeriodEnum, optional): the period over which to calculate the opex. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily opex value. Defaults to PeriodEnum.DAILY.
 
     Returns:
-        float: NZD emitted from other appliances over given period to 2dp
+        float: cost of operating other appliances over given period in NZD to 2dp
     """
-    opex_daily = ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
-    return _convert_to_period(opex_daily, period)
+    opex_daily = (
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * COST_PER_FUEL_KWH_TODAY["electricity"]
+    )
+    return round(_convert_to_period(opex_daily, period), 2)
 
 
 def get_vehicle_opex(
@@ -99,6 +102,10 @@ def get_vehicle_opex(
             vehicle.kms_per_week * 52 / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
         )
         weighted_opex_daily = avg_opex_daily * weighting_factor
+
+        # Add Road User Charges (RUCs), weighted on kms per year
+        rucs = RUCS[vehicle.fuel_type] * vehicle.kms_per_week * 52 / 1000
+        weighted_opex_daily += rucs
 
         # Convert to given period
         opex_period = _convert_to_period(weighted_opex_daily, period)
