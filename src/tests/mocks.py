@@ -48,6 +48,28 @@ mock_household = Household(
     }
 )
 
+mock_household_electrified = Household(
+    **{
+        "location": LocationEnum.AUCKLAND_CENTRAL,
+        "occupancy": 4,
+        "space_heating": SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+        "water_heating": WaterHeatingEnum.ELECTRIC_HEAT_PUMP,
+        "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,  # don't swap if already electric
+        "vehicles": [
+            Vehicle(
+                fuel_type=VehicleFuelTypeEnum.ELECTRIC,
+                kms_per_week=250,
+                switch_to_ev=None,
+            ),
+            mock_vehicle_diesel,  # did not want to switch this one
+        ],
+        "solar": Solar(has_solar=True, size=7, install_solar=None),
+        "battery": Battery(
+            has_battery=False, capacity=13, install_battery=False
+        ),  # Did not want a battery
+    }
+)
+
 mock_emissions = Emissions(
     perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
     perYear=EmissionsValues(before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52),

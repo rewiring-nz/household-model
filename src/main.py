@@ -38,10 +38,12 @@ def health_check():
 
 @app.post("/savings")
 def calculate_household_savings(current_household: Household) -> Savings:
+
     electrified_household = electrify_household(current_household)
-    emissions = calculate_emissions(current_household)
-    opex = calculate_opex(current_household)
-    upfront_cost = calculate_upfront_cost(current_household)
+
+    emissions = calculate_emissions(current_household, electrified_household)
+    opex = calculate_opex(current_household, electrified_household)
+    upfront_cost = calculate_upfront_cost(current_household, electrified_household)
     recommendation = recommend_next_action(current_household)
 
     savings = Savings(
