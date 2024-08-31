@@ -8,8 +8,8 @@ ApplianceEnum = SpaceHeatingEnum | WaterHeatingEnum | CooktopEnum
 
 
 class ApplianceTypeInfo(TypedDict):
-    kwh_per_day: Optional[float]
-    fuel_type: Optional[FuelTypeEnum]
+    kwh_per_day: Optional[float]  # kWh/day
+    fuel_type: Optional[FuelTypeEnum]  # kgCO2e/kWh
 
 
 ApplianceInfo = Dict[ApplianceEnum, ApplianceTypeInfo]

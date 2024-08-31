@@ -1,14 +1,18 @@
+from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
+from constants.machines.appliance import ApplianceEnum, ApplianceInfo
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
-from savings.emissions.get_appliance_emissions import (
+from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
     _convert_to_period,
+    get_emissions_per_day,
     get_other_appliance_emissions,
 )
 from unittest.mock import patch
+from unittest import TestCase
 from tests.mocks import mock_household
 from openapi_client.models import SpaceHeatingEnum
 from constants.machines.space_heating import SPACE_HEATING_INFO
@@ -18,12 +22,57 @@ mock_emissions_daily = 12.3
 mock_emissions_weekly = 12.3 * 7
 
 
+class TestGetEmissionsPerDay(TestCase):
+    mock_appliance_info: ApplianceInfo = {
+        CooktopEnum.GAS: {"kwh_per_day": 10.0, "fuel_type": FuelTypeEnum.NATURAL_GAS},
+        SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {
+            "kwh_per_day": 5.0,
+            "fuel_type": FuelTypeEnum.ELECTRICITY,
+        },
+    }
+
+    def test_get_emissions_per_day_gas_cooktop(self):
+        emissions = get_emissions_per_day(CooktopEnum.GAS, self.mock_appliance_info)
+        expected_emissions = 10.0 * EMISSIONS_FACTORS[FuelTypeEnum.NATURAL_GAS]
+        assert emissions == expected_emissions
+
+    def test_get_emissions_per_day_electric_heat_pump(self):
+        emissions = get_emissions_per_day(
+            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
+        )
+        expected_emissions = 5.0 * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
+        assert emissions == expected_emissions
+
+    def test_get_emissions_per_day_handles_missing_fuel_type(self):
+        mock_appliance_info = {
+            CooktopEnum.GAS: {"kwh_per_day": 10.0, "fuel_type": None}
+        }
+        with self.assertRaises(KeyError):
+            get_emissions_per_day(CooktopEnum.GAS, mock_appliance_info)
+
+    def test_get_emissions_per_day_handles_missing_kwh_per_day(self):
+        mock_appliance_info = {
+            CooktopEnum.GAS: {
+                "kwh_per_day": None,
+                "fuel_type": FuelTypeEnum.NATURAL_GAS,
+            }
+        }
+        with self.assertRaises(TypeError):
+            get_emissions_per_day(CooktopEnum.GAS, mock_appliance_info)
+
+    def test_get_emissions_per_day_handles_invalid_machine_type(self):
+        invalid_machine_type = CooktopEnum.GAS
+        invalid_mock_appliance_info = {}
+        with self.assertRaises(KeyError):
+            get_emissions_per_day(invalid_machine_type, invalid_mock_appliance_info)
+
+
 @patch(
-    "savings.emissions.get_appliance_emissions._convert_to_period",
+    "savings.emissions.get_machine_emissions._convert_to_period",
     return_value=mock_emissions_weekly,
 )
 @patch(
-    "savings.emissions.get_appliance_emissions.get_emissions_per_day",
+    "savings.emissions.get_machine_emissions.get_emissions_per_day",
     return_value=mock_emissions_daily,
 )
 class TestGetApplianceEmissions:
@@ -73,7 +122,7 @@ class TestGetApplianceEmissions:
 
 
 @patch(
-    "savings.emissions.get_appliance_emissions._convert_to_period",
+    "savings.emissions.get_machine_emissions._convert_to_period",
     return_value=mock_emissions_weekly,
 )
 class TestGetOtherApplianceEmissions:
