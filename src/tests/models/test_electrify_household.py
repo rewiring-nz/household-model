@@ -1,8 +1,10 @@
 from models.electrify_household import (
+    electrify_cooktop,
     electrify_household,
     electrify_space_heating,
     electrify_water_heating,
 )
+from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from tests.mocks import mock_household
@@ -58,4 +60,23 @@ class TestElectrifyWaterHeating:
         assert (
             electrify_water_heating(WaterHeatingEnum.ELECTRIC_HEAT_PUMP)
             == WaterHeatingEnum.ELECTRIC_HEAT_PUMP
+        )
+
+
+class TestElectrifyCooktop:
+    def test_it_replaces_fossil_fuel_cooktops_with_heat_pump(self):
+        assert electrify_cooktop(CooktopEnum.GAS) == CooktopEnum.ELECTRIC_INDUCTION
+        assert electrify_cooktop(CooktopEnum.LPG) == CooktopEnum.ELECTRIC_INDUCTION
+        assert electrify_cooktop(CooktopEnum.WOOD) == CooktopEnum.ELECTRIC_INDUCTION
+
+    def test_no_change_if_resistive(self):
+        assert (
+            electrify_cooktop(CooktopEnum.ELECTRIC_RESISTANCE)
+            == CooktopEnum.ELECTRIC_RESISTANCE
+        )
+
+    def test_no_change_if_already_induction(self):
+        assert (
+            electrify_cooktop(CooktopEnum.ELECTRIC_INDUCTION)
+            == CooktopEnum.ELECTRIC_INDUCTION
         )

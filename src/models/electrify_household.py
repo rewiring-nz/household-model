@@ -31,6 +31,7 @@ def electrify_space_heating(current: SpaceHeatingEnum) -> SpaceHeatingEnum:
     Returns:
         SpaceHeatingEnum: electrified space heater
     """
+    # Doesn't actually need current heating, because it will always replace with heat pump.
     return SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
 
 
@@ -39,11 +40,30 @@ def electrify_water_heating(current: WaterHeatingEnum) -> WaterHeatingEnum:
     Resistive and solar water heaters are NOT swapped for heat pumps.
 
     Args:
-        current (WaterHeatingEnum): current space heater
+        current (WaterHeatingEnum): current water heater
 
     Returns:
-        WaterHeatingEnum: electrified space heater
+        WaterHeatingEnum: electrified water heater
     """
-    if current not in [WaterHeatingEnum.ELECTRIC_RESISTANCE, WaterHeatingEnum.SOLAR]:
-        return WaterHeatingEnum.ELECTRIC_HEAT_PUMP
-    return current
+    if current in [
+        WaterHeatingEnum.ELECTRIC_RESISTANCE,
+        WaterHeatingEnum.SOLAR,
+        WaterHeatingEnum.ELECTRIC_HEAT_PUMP,
+    ]:
+        return current
+    return WaterHeatingEnum.ELECTRIC_HEAT_PUMP
+
+
+def electrify_cooktop(current: CooktopEnum) -> CooktopEnum:
+    """Converts current cooktop to electrified option
+    Resistive cooktops are NOT swapped for induction.
+
+    Args:
+        current (CooktopEnum): current cooktop
+
+    Returns:
+        CooktopEnum: electrified cooktop
+    """
+    if current in [CooktopEnum.ELECTRIC_RESISTANCE, CooktopEnum.ELECTRIC_INDUCTION]:
+        return current
+    return CooktopEnum.ELECTRIC_INDUCTION
