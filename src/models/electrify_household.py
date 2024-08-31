@@ -1,3 +1,4 @@
+from constants.machines.vehicles import VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
 from openapi_client.models import (
     Battery,
     CooktopEnum,
@@ -83,11 +84,22 @@ def electrify_vehicle(current: Vehicle) -> Vehicle:
     Returns:
         Vehicle: electrified vehicle
     """
-    if current.switch_to_ev:
-        return current.copy(
+    vehicle = current.copy(
+        update={
+            "kms_per_week": (
+                # average per capita is  212 km/week
+                # TODO: use average per vehicle, not capita
+                round(VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA / 52)
+                if current.kms_per_week is None
+                else current.kms_per_week
+            )
+        }
+    )
+    if vehicle.switch_to_ev:
+        return vehicle.copy(
             update={"fuel_type": VehicleFuelTypeEnum.ELECTRIC, "switch_to_ev": None}
         )
-    return current
+    return vehicle
 
 
 def install_solar(current: Solar) -> Solar:
