@@ -32,7 +32,6 @@ from constants.machines.vehicles import (
 from params import (
     SWITCH_TO,
     HOUSEHOLD_ENERGY_USE,
-    SPACE_HEATING_SWITCH_TO_OPEX,
     WATER_HEATING_SWITCH_TO_OPEX,
     COOKTOP_SWITCH_TO_OPEX,
     VEHICLE_SWITCH_TO_OPEX_FUEL,
@@ -352,7 +351,7 @@ def get_space_heating_opex_savings(household: pd.Series) -> Tuple[float, float]:
 
     # TODO "Other" free text field
 
-    total_opex_after += SPACE_HEATING_SWITCH_TO_OPEX * n_total_replacements
+    # total_opex_after += SPACE_HEATING_SWITCH_TO_OPEX * n_total_replacements
     total_savings = total_opex_before - total_opex_after
 
     return (

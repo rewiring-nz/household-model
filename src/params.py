@@ -1,7 +1,4 @@
 from constants.fuel_stats import EMISSIONS_FACTORS, COST_PER_FUEL_KWH_TODAY
-from constants.machines.space_heating import (
-    SPACE_HEATING_KWH_PER_DAY,
-)
 from constants.machines.cooktop import (
     COOKTOP_KWH_PER_DAY,
     COOKTOP_OPEX_15_YRS,
@@ -52,14 +49,6 @@ SWITCH_TO = {
 
 # Home heating
 
-SPACE_HEATING_SWITCH_TO_EMISSIONS = (
-    SPACE_HEATING_KWH_PER_DAY[SWITCH_TO["space_heating"]["switch_to_type"]]
-    * EMISSIONS_FACTORS["electricity"]
-)
-SPACE_HEATING_SWITCH_TO_OPEX = (
-    SPACE_HEATING_KWH_PER_DAY[SWITCH_TO["space_heating"]["switch_to_type"]]
-    * COST_PER_FUEL_KWH_TODAY["electricity"]
-)
 
 # Water heating
 
