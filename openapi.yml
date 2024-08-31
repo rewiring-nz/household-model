@@ -124,7 +124,7 @@ components:
           type: number
           example: 100.10
         difference:
-          description: The emissions savings per week; the difference in emissions before & after electrification, in kg CO2e to 2 dp.
+          description: The difference in emissions before & after electrification, in kg CO2e to 2 dp.
           type: number
           example: 400.40
     OpexValues:
@@ -138,7 +138,7 @@ components:
           type: number
           example: 100.10
         difference:
-          description: The savings value; the difference in opex costs before & after electrification, in NZD to 2 dp.
+          description: The difference in opex costs before & after electrification, in NZD to 2 dp.
           type: number
           example: 400.40
     OperationalLifetime:

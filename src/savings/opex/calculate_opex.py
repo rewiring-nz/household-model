@@ -44,7 +44,9 @@ from openapi_client.models import (
 )
 
 
-def calculate_opex(household: Household) -> Opex:
+def calculate_opex(
+    current_household: Household, electrified_household: Household
+) -> Opex:
     return Opex(
         perWeek=OpexValues(before=500.5, after=100.1, difference=400.4),
         perYear=OpexValues(before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52),

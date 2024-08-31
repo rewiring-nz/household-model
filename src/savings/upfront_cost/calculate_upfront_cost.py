@@ -52,7 +52,9 @@ from openapi_client.models import (
 )
 
 
-def calculate_upfront_cost(household: Household) -> UpfrontCost:
+def calculate_upfront_cost(
+    current_household: Household, electrified_household: Household
+) -> UpfrontCost:
     return UpfrontCost(
         solar=15000.12,
         battery=7000.31,

@@ -2,13 +2,13 @@ from aenum import Enum
 
 
 class FuelTypeEnum(str, Enum):
-    ELECTRICITY = "ELECTRICITY"
-    NATURAL_GAS = "NATURAL_GAS"
-    LPG = "LPG"
-    WOOD = "WOOD"
-    PETROL = "PETROL"
-    DIESEL = "DIESEL"
-    SOLAR = "SOLAR"  # this is direct solar, e.g. roof solar water heaters
+    ELECTRICITY = "electricity"
+    NATURAL_GAS = "natural_gas"
+    LPG = "lpg"
+    WOOD = "wood"
+    PETROL = "petrol"
+    DIESEL = "diesel"
+    SOLAR = "solar"  # this is direct solar, e.g. roof solar water heaters
 
 
 # From 'Misc'!B154

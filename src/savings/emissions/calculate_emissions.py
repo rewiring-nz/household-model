@@ -100,16 +100,20 @@ def calculate_emissions(
         PeriodEnum.OPERATIONAL_LIFETIME,
     )
     water_heating_emissions_lifetime_before = get_appliance_emissions(
-        current_household.water_heating, WATER_HEATING_INFO, PeriodEnum.LIFETIME
+        current_household.water_heating,
+        WATER_HEATING_INFO,
+        PeriodEnum.OPERATIONAL_LIFETIME,
     )
     water_heating_emissions_lifetime_after = get_appliance_emissions(
-        electrified_household.water_heating, WATER_HEATING_INFO, PeriodEnum.LIFETIME
+        electrified_household.water_heating,
+        WATER_HEATING_INFO,
+        PeriodEnum.OPERATIONAL_LIFETIME,
     )
     cooktop_emissions_lifetime_before = get_appliance_emissions(
-        current_household.cooktop, COOKTOP_INFO, PeriodEnum.LIFETIME
+        current_household.cooktop, COOKTOP_INFO, PeriodEnum.OPERATIONAL_LIFETIME
     )
     cooktop_emissions_lifetime_after = get_appliance_emissions(
-        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.LIFETIME
+        electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.OPERATIONAL_LIFETIME
     )
     other_emissions_lifetime_before = get_other_appliance_emissions(
         PeriodEnum.OPERATIONAL_LIFETIME
