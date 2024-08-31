@@ -15,7 +15,12 @@ from savings.emissions.get_machine_emissions import (
 )
 from unittest.mock import patch
 from unittest import TestCase
-from tests.mocks import mock_household, mock_vehicle_petrol
+from tests.mocks import (
+    mock_household,
+    mock_vehicle_petrol,
+    mock_vehicle_diesel,
+    mock_vehicle_ev,
+)
 from openapi_client.models import SpaceHeatingEnum
 from constants.machines.space_heating import SPACE_HEATING_INFO
 
@@ -153,6 +158,27 @@ class TestGetVehicleEmissionsPerDay(TestCase):
     def test_it_calculates_daily_emissions_for_one_petrol_car(self):
         result = get_vehicle_emissions([mock_vehicle_petrol])
         expected = 32 * 0.242 * (250 * 52 / 11000)
+        assert result == expected
+
+    def test_it_calculates_daily_emissions_for_one_diesel_car(self):
+        result = get_vehicle_emissions([mock_vehicle_diesel])
+        expected = 28.4 * 0.253 * (50 * 52 / 11000)
+        assert result == expected
+
+    def test_it_calculates_daily_emissions_for_one_ev(self):
+        result = get_vehicle_emissions([mock_vehicle_ev])
+        expected = 8.027 * 0.098 * (250 * 52 / 11000)
+        assert result == expected
+
+    def test_it_combines_vehicles_correctly(self):
+        result = get_vehicle_emissions(
+            [mock_vehicle_petrol, mock_vehicle_diesel, mock_vehicle_ev]
+        )
+        expected = (
+            (32 * 0.242 * (250 * 52 / 11000))
+            + (28.4 * 0.253 * (50 * 52 / 11000))
+            + (8.027 * 0.098 * (250 * 52 / 11000))
+        )
         assert result == expected
 
 
