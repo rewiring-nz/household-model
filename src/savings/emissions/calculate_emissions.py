@@ -32,13 +32,9 @@ from openapi_client.models import (
 )
 from savings.emissions.get_appliance_emissions import (
     get_appliance_emissions,
+    get_other_appliance_emissions,
 )
 from savings.emissions.get_emissions_per_day import get_emissions_per_day_old
-
-# Other machines (space cooling, refrigeration, laundry, lighting, etc. assume all electric)
-EMISSIONS_OTHER_MACHINES = (
-    ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
-)  # kgCO2e/day
 
 
 def calculate_emissions(
@@ -65,7 +61,8 @@ def calculate_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
     )
     # TODO: vehicle emissions
-    # TODO: EMISSIONS_OTHER_MACHINES
+    other_emissions_weekly_before = get_other_appliance_emissions(PeriodEnum.WEEKLY)
+    other_emissions_weekly_after = get_other_appliance_emissions(PeriodEnum.WEEKLY)
 
     # We use the function to get emissions over longer periods, rather than relying on straight multiplication for emissions over operational lifetime, since macroeconomic factors can change things.
 
@@ -88,6 +85,8 @@ def calculate_emissions(
     cooktop_emissions_yearly_after = get_appliance_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
     )
+    other_emissions_yearly_before = get_other_appliance_emissions(PeriodEnum.YEARLY)
+    other_emissions_yearly_after = get_other_appliance_emissions(PeriodEnum.YEARLY)
 
     # Operational lifetime
     space_heating_emissions_lifetime_before = get_appliance_emissions(
@@ -112,22 +111,31 @@ def calculate_emissions(
     cooktop_emissions_lifetime_after = get_appliance_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.LIFETIME
     )
+    other_emissions_lifetime_before = get_other_appliance_emissions(
+        PeriodEnum.OPERATIONAL_LIFETIME
+    )
+    other_emissions_lifetime_after = get_other_appliance_emissions(
+        PeriodEnum.OPERATIONAL_LIFETIME
+    )
 
     # Total emissions before
     weekly_before = (
         space_heating_emissions_weekly_before
         + water_heating_emissions_weekly_before
         + cooktop_emissions_weekly_before
+        + other_emissions_weekly_before
     )
     yearly_before = (
         space_heating_emissions_yearly_before
         + water_heating_emissions_yearly_before
         + cooktop_emissions_yearly_before
+        + other_emissions_yearly_before
     )
     lifetime_before = (
         space_heating_emissions_lifetime_before
         + water_heating_emissions_lifetime_before
         + cooktop_emissions_lifetime_before
+        + other_emissions_lifetime_before
     )
 
     # Total emissions after
@@ -135,16 +143,19 @@ def calculate_emissions(
         space_heating_emissions_weekly_after
         + water_heating_emissions_weekly_after
         + cooktop_emissions_weekly_after
+        + other_emissions_weekly_after
     )
     yearly_after = (
         space_heating_emissions_yearly_after
         + water_heating_emissions_yearly_after
         + cooktop_emissions_yearly_after
+        + other_emissions_yearly_after
     )
     lifetime_after = (
         space_heating_emissions_lifetime_after
         + water_heating_emissions_lifetime_after
         + cooktop_emissions_lifetime_after
+        + other_emissions_lifetime_after
     )
 
     return Emissions(

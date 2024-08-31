@@ -32,8 +32,6 @@ from constants.machines.vehicles import (
 from params import (
     SWITCH_TO,
     HOUSEHOLD_ENERGY_USE,
-    WATER_HEATING_SWITCH_TO_OPEX,
-    COOKTOP_SWITCH_TO_OPEX,
     VEHICLE_SWITCH_TO_OPEX_FUEL,
     OPERATIONAL_LIFETIME,
 )
@@ -382,7 +380,7 @@ def get_water_heating_opex_savings(
         * 365.25
         * OPERATIONAL_LIFETIME
     )
-    savings = cost - WATER_HEATING_SWITCH_TO_OPEX
+    # savings = cost - WATER_HEATING_SWITCH_TO_OPEX
     if (
         machine_type in WATER_HEATING_ELECTRIC_TYPES
         and not SWITCH_TO["water_heating"]["switch_if_electric"]
@@ -426,7 +424,7 @@ def get_cooktop_opex_savings(
             * OPERATIONAL_LIFETIME
         )
         total_opex += cost
-        savings = cost - COOKTOP_SWITCH_TO_OPEX
+        # savings = cost - COOKTOP_SWITCH_TO_OPEX
         if (
             ct in COOKTOP_ELECTRIC_TYPES
             and not SWITCH_TO["cooktop"]["switch_if_electric"]
