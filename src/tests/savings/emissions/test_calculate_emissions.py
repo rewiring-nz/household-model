@@ -1,12 +1,8 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from savings.emissions.calculate_emissions import calculate_emissions
 from constants.utils import PeriodEnum
-from constants.machines.space_heating import SPACE_HEATING_INFO
-from constants.machines.water_heating import WATER_HEATING_INFO
-from constants.machines.cooktop import COOKTOP_INFO
 from params import OPERATIONAL_LIFETIME
-from openapi_client.models import Emissions, EmissionsValues, Household, Vehicle
 from tests.mocks import mock_household, mock_household_electrified
 
 
