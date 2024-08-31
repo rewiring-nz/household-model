@@ -164,19 +164,19 @@ def calculate_emissions(
 
     return Emissions(
         perWeek=EmissionsValues(
-            before=weekly_before,
-            after=weekly_after,
-            difference=weekly_after - weekly_before,
+            before=round(weekly_before, 2),
+            after=round(weekly_after, 2),
+            difference=round(weekly_after - weekly_before, 2),
         ),
         perYear=EmissionsValues(
-            before=yearly_before,
-            after=yearly_after,
-            difference=yearly_after - yearly_before,
+            before=round(yearly_before, 2),
+            after=round(yearly_after, 2),
+            difference=round(yearly_after - yearly_before, 2),
         ),
         overLifetime=EmissionsValues(
-            before=lifetime_before,
-            after=lifetime_after,
-            difference=lifetime_after - lifetime_before,
+            before=round(lifetime_before, 2),
+            after=round(lifetime_after, 2),
+            difference=round(lifetime_after - lifetime_before, 2),
         ),
         operationalLifetime=OPERATIONAL_LIFETIME,
     )
