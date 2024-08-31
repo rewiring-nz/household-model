@@ -9,14 +9,14 @@ from openapi_client.models.water_heating_enum import WaterHeatingEnum
 def electrify_household(current_household: Household) -> Household:
     electrified_household = Household(
         **{
-            **current_household,
+            "location": current_household.location,
+            "occupancy": current_household.occupancy,
             "space_heating": electrify_space_heating(current_household.space_heating),
             "water_heating": electrify_water_heating(current_household.water_heating),
             "cooktop": electrify_cooktop(current_household.cooktop),
-            # "vehicles": [
-            #     mock_vehicle_petrol,
-            #     mock_vehicle_diesel,
-            # ],
+            "vehicles": [electrify_vehicle(v) for v in current_household.vehicles],
+            "solar": current_household.solar,
+            "battery": current_household.battery,
         }
     )
     return electrified_household
@@ -80,5 +80,7 @@ def electrify_vehicle(current: Vehicle) -> Vehicle:
         Vehicle: electrified vehicle
     """
     if current.switch_to_ev:
-        return current.copy(update={"fuel_type": VehicleFuelTypeEnum.ELECTRIC})
+        return current.copy(
+            update={"fuel_type": VehicleFuelTypeEnum.ELECTRIC, "switch_to_ev": None}
+        )
     return current

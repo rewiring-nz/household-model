@@ -5,12 +5,42 @@ from models.electrify_household import (
     electrify_vehicle,
     electrify_water_heating,
 )
-from openapi_client.models.cooktop_enum import CooktopEnum
+from openapi_client.models import CooktopEnum
+from openapi_client.models.battery import Battery
+from openapi_client.models.household import Household
+from openapi_client.models.location_enum import LocationEnum
+from openapi_client.models.solar import Solar
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
-from tests.mocks import mock_household
+from tests.mocks import mock_household, mock_vehicle_diesel, mock_solar, mock_battery
+
+
+class TestElectrifyHousehold:
+    def test_it_electrifies_household_correctly(self):
+        electrified = electrify_household(mock_household)
+        assert electrified == Household(
+            **{
+                "location": LocationEnum.AUCKLAND_CENTRAL,
+                "occupancy": 4,
+                "space_heating": SpaceHeatingEnum.WOOD,
+                "water_heating": WaterHeatingEnum.GAS,
+                "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,
+                "vehicles": [
+                    Vehicle(
+                        fuel_type=VehicleFuelTypeEnum.ELECTRIC,
+                        kms_per_week=250,
+                        switch_to_ev=True,
+                    ),
+                    mock_vehicle_diesel,  # did not want to switch this one
+                ],
+                "solar": Solar(has_solar=True, size=7, install_solar=None),
+                "battery": Battery(
+                    has_battery=False, capacity=13, install_battery=False
+                ),  # Did not want a battery
+            }
+        )
 
 
 class TestElectrifySpaceHeating:
@@ -90,7 +120,7 @@ class TestElectrifyVehicle:
     ev = Vehicle(
         fuelType=VehicleFuelTypeEnum.ELECTRIC,
         kms_per_week=mock_kms_per_week,
-        switchToEV=True,
+        switchToEV=None,
     )
 
     def test_it_replaces_vehicle_with_ev_if_switch_to_ev_is_true(self):
