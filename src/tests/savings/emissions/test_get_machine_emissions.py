@@ -204,6 +204,49 @@ class TestGetVehicleEmissionsPerDay(TestCase):
         )
         assert result == expected
 
+    @patch(
+        "savings.emissions.get_machine_emissions._convert_to_period",
+    )
+    def test_it_calls_convert_to_period_correctly(self, mock_convert_to_period):
+        get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
+        assert len(mock_convert_to_period.call_args_list) == 2
+        mock_convert_to_period.assert_any_call(
+            self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
+        )
+        mock_convert_to_period.assert_any_call(
+            self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
+        )
+
+    @patch(
+        "savings.emissions.get_machine_emissions._convert_to_period",
+    )
+    def test_it_calls_convert_to_period_correctly_with_default(
+        self, mock_convert_to_period
+    ):
+        get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
+        assert len(mock_convert_to_period.call_args_list) == 2
+        mock_convert_to_period.assert_any_call(
+            self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
+        )
+        mock_convert_to_period.assert_any_call(
+            self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
+        )
+
+    def test_it_returns_emissions_with_default_period(self):
+        result = get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
+        assert result == (self.petrol * (250 * 52 / 11000)) + (
+            self.ev * (250 * 52 / 11000)
+        )
+
+    def test_it_returns_emissions_with_specified_period(self):
+        result = get_vehicle_emissions(
+            [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
+        )
+        assert (
+            result
+            == ((self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))) * 7
+        )
+
 
 class TestConvertToPeriod:
     def test_it_returns_daily_emissions(self):
