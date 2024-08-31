@@ -29,8 +29,8 @@ mock_vehicle_diesel = Vehicle(
     switch_to_ev=False,
 )
 
-mock_solar = Solar(has_solar=False, siz=7, install_solar=True)
-mock_battery = Battery(has_battery=False, capacity=13, install_battery=True)
+mock_solar = Solar(has_solar=False, size=7, install_solar=True)
+mock_battery = Battery(has_battery=False, capacity=13, install_battery=False)
 
 mock_household = Household(
     **{
