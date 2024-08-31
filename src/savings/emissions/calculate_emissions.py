@@ -45,12 +45,13 @@ from openapi_client.models import (
     Household,
     Emissions,
     EmissionsValues,
+    SpaceHeatingEnum,
 )
 from savings.emissions.get_space_heating_emissions import (
     get_space_heating_emissions,
     get_space_heating_emissions_savings,  # TODO: remove once we're working just with the emissions func
 )
-
+from savings.emissions.get_emissions_per_day import get_emissions_per_day_old
 
 # Other machines (space cooling, refrigeration, laundry, lighting, etc. assume all electric)
 EMISSIONS_OTHER_MACHINES = (
@@ -170,18 +171,6 @@ def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_emissions_per_day(
-    machine_type: str,
-    energy_per_day_map: dict,
-    type_to_fuel_map: dict,
-    household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE,
-) -> float:
-    energy = energy_per_day_map[machine_type] * household_energy_use  # kWh/day
-    fuel_type = type_to_fuel_map[machine_type]
-    emissions = energy * EMISSIONS_FACTORS[fuel_type]  # kgCO2e/kWh
-    return emissions
-
-
 # TODO: unit test
 def get_water_heating_emissions_savings(
     machine_type: str, household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE
@@ -241,7 +230,7 @@ def get_cooktop_emissions_savings(
     total_emissions = 0
     total_savings = 0
     for ct in cooktops_filtered:
-        emissions = get_emissions_per_day(
+        emissions = get_emissions_per_day_old(
             ct,
             COOKTOP_KWH_PER_DAY,
             COOKTOP_TYPE_TO_FUEL_TYPE,
@@ -272,7 +261,7 @@ def get_vehicle_emissions_savings(
     for v in vehicle_stats:
 
         if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
-            avg_running_emissions = get_emissions_per_day(
+            avg_running_emissions = get_emissions_per_day_old(
                 v["fuel_type"],
                 VEHICLE_KWH_PER_DAY,
                 VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -280,7 +269,7 @@ def get_vehicle_emissions_savings(
         if v["fuel_type"] == "Plug-in Hybrid":
             # Assume 60/40 split between petrol and electric
             petrol_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -288,7 +277,7 @@ def get_vehicle_emissions_savings(
                 * 0.6
             )
             electric_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -301,7 +290,7 @@ def get_vehicle_emissions_savings(
         if v["fuel_type"] == "Hybrid":
             # Assume 70/30 split between petrol and electric
             petrol_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Petrol",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,
@@ -309,7 +298,7 @@ def get_vehicle_emissions_savings(
                 * 0.7
             )
             electric_portion_emissions = (
-                get_emissions_per_day(
+                get_emissions_per_day_old(
                     "Electric",
                     VEHICLE_KWH_PER_DAY,
                     VEHICLE_TYPE_TO_FUEL_TYPE,

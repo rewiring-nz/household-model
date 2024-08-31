@@ -1,3 +1,38 @@
+from openapi_client.models import SpaceHeatingEnum
+from constants.fuel_stats import FuelTypeEnum
+
+# kwh_per_day are from values in Machines!D75:J75, which are average for the whole house
+# https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
+
+SPACE_HEATING_STATS = {
+    SpaceHeatingEnum.WOOD: {
+        "kwh_per_day": 14.44,
+        "fuel_type": FuelTypeEnum.WOOD,
+    },
+    SpaceHeatingEnum.GAS: {
+        "kwh_per_day": 11.73,
+        "fuel_type": FuelTypeEnum.NATURAL_GAS,
+    },
+    SpaceHeatingEnum.LPG: {
+        "kwh_per_day": 11.73,
+        "fuel_type": FuelTypeEnum.LPG,
+    },
+    SpaceHeatingEnum.ELECTRIC_RESISTANCE: {
+        "kwh_per_day": 9.39,
+        "fuel_type": FuelTypeEnum.ELECTRICITY,
+    },
+    SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {
+        "kwh_per_day": 2.3,
+        "fuel_type": FuelTypeEnum.ELECTRICITY,
+    },
+    SpaceHeatingEnum.DONT_KNOW: {
+        "kwh_per_day": None,
+        "fuel_type": None,
+    },
+}
+
+# ======= OLD =========
+
 # These are multi-choice boolean (yes/no) columns. Households may have more than one type.
 SPACE_HEATING_BOOL_COLS = [
     "Home heating_Heat pump split system (an individual unit in a room(s))",
@@ -50,6 +85,7 @@ INDIVIDUAL_SYSTEMS = {
     "Home heating_Electric resistance heater (e.g. electric bar, fan, oil, ceramic panel)": "Home heating number_Electric resistance heater (e.g. electric bar, fan, oil, ceramic panel)",
     "Home heating_Diesel heater (MISSING FROM SURVEY)": "Home heating number_Diesel heater",
 }
+
 
 # Using the values in Machines!D71:J71 which are average for the whole house
 # then dividing by reasonable-ish ratios based on the SPACE_HEATING_REPLACEMENT_RATIOS
@@ -111,6 +147,7 @@ SPACE_HEATING_TYPE_TO_FUEL_TYPE = {
 SPACE_HEATING_ELECTRIC_TYPES = [
     k for k, v in SPACE_HEATING_TYPE_TO_FUEL_TYPE.items() if v == "electricity"
 ]
+
 
 # TODO: Turn these into nested dicts with fields per heater type like "opex_15_yrs", "upfront_cost", "power_output"
 

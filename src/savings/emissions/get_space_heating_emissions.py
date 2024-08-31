@@ -3,9 +3,9 @@ from typing import Optional, Tuple
 
 from constants.fuel_stats import EMISSIONS_FACTORS
 from constants.machines.space_heating import (
-    SPACE_HEATING_ELECTRIC_TYPES,
     SPACE_HEATING_KWH_PER_DAY,
     SPACE_HEATING_TYPE_TO_FUEL_TYPE,
+    SPACE_HEATING_ELECTRIC_TYPES,
     CENTRAL_SYSTEMS,
     INDIVIDUAL_SYSTEMS,
     SPACE_HEATING_REPLACEMENT_RATIOS,
@@ -22,17 +22,41 @@ from params import (
     VEHICLE_SWITCH_TO_EMISSIONS_EMBODIED,
     OPERATIONAL_LIFETIME,
 )
+from openapi_client.models import Household
+from savings.emissions.get_emissions_per_day import (
+    get_emissions_per_day,
+    get_emissions_per_day_old,
+)
+from constants.utils import PeriodEnum
+from constants.machines.space_heating import SPACE_HEATING_STATS
 
 
 def get_space_heating_emissions(
-    household: pd.Series, household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE
-) -> Tuple[float, float]:
-    pass
+    household: Household,
+    period: PeriodEnum = PeriodEnum.DAILY,
+) -> float:
+    """Calculates the emissions from space heater(s) in given household
+
+    Args:
+    household (Household): object describing a household's energy behaviour
+        period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
+
+    Returns:
+        float: kgCO2e emitted from space heating over given period
+    """
+    em_daily = get_emissions_per_day(
+        household.space_heating,
+        SPACE_HEATING_STATS,
+    )
+    if period == PeriodEnum.DAILY:
+        return em_daily
 
 
 def get_space_heating_emissions_savings(
-    household: pd.Series, household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE
-) -> Tuple[float, float]:
+    household: pd.Series,
+    household_energy_use: Optional[float] = HOUSEHOLD_ENERGY_USE,
+    period: PeriodEnum = PeriodEnum.DAILY,
+) -> float:
     """Calculates the emissions from fossil fuel home heaters, and potential
     savings from switching fossil fuel home heaters to electric heat pump
     (split non-ducted).
@@ -41,8 +65,7 @@ def get_space_heating_emissions_savings(
         household (pd.Series): info on the household including home heating info
 
     Returns:
-        float: kgCO2e/day emitted from fossil fuel heating sources
-        float: kgCO2e/day saved if they electrified all their heating
+        float: kgCO2e/day emitted from space heating
     """
     total_emissions_before = 0
     total_emissions_after = 0
@@ -54,7 +77,7 @@ def get_space_heating_emissions_savings(
     central_systems = central_systems[central_systems == 1].index.tolist()
 
     for heater_type in central_systems:
-        emissions = get_emissions_per_day(
+        emissions = get_emissions_per_day_old(
             heater_type,
             SPACE_HEATING_KWH_PER_DAY,
             SPACE_HEATING_TYPE_TO_FUEL_TYPE,
@@ -92,7 +115,7 @@ def get_space_heating_emissions_savings(
         if pd.isna(num_machines) or num_machines == 0:
             continue
 
-        emissions = get_emissions_per_day(
+        emissions = get_emissions_per_day_old(
             num_col,
             SPACE_HEATING_KWH_PER_DAY,
             SPACE_HEATING_TYPE_TO_FUEL_TYPE,
