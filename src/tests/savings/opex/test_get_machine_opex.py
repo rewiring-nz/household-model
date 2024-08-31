@@ -32,6 +32,8 @@ from tests.mocks import (
 mock_opex_daily = 12.3
 mock_opex_weekly = 12.3 * 7
 
+# TODO: update these, currently a straight copy from test_get_machine_emissions.py
+
 
 class TestGetOpexPerDay(TestCase):
     mock_appliance_info: MachineInfoMap = {

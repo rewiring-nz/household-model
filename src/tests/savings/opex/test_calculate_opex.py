@@ -5,6 +5,8 @@ from constants.utils import PeriodEnum
 from params import OPERATIONAL_LIFETIME
 from tests.mocks import mock_household, mock_household_electrified
 
+# TODO: update these, currently a straight copy from test_calculate_emissions.py
+
 
 class TestCalculateOpex(unittest.TestCase):
 

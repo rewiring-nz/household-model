@@ -1,36 +1,19 @@
 import pandas as pd
-from typing import Optional, Tuple, List
+from typing import Tuple, List
 
 from constants.machines.space_heating import (
-    CENTRAL_SYSTEMS,
-    INDIVIDUAL_SYSTEMS,
-    SPACE_HEATING_KWH_PER_DAY,
-    SPACE_HEATING_ELECTRIC_TYPES,
-    SPACE_HEATING_REPLACEMENT_RATIOS,
+    SPACE_HEATING_INFO,
     SPACE_HEATING_TYPE_TO_FUEL_TYPE,
 )
 from constants.machines.cooktop import (
-    COOKTOP_ELECTRIC_TYPES,
-    COOKTOP_KWH_PER_DAY,
-    COOKTOP_COLS,
+    COOKTOP_INFO,
     COOKTOP_TYPE_TO_FUEL_TYPE,
 )
 from constants.machines.water_heating import (
-    WATER_HEATING_ELECTRIC_TYPES,
-    WATER_HEATING_OPEX_15_YRS,
-    WATER_HEATING_KWH_PER_DAY,
-    WATER_HEATING_TYPE_TO_FUEL_TYPE,
+    WATER_HEATING_INFO,
 )
-from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-from constants.machines.vehicles import (
-    extract_vehicle_stats,
-    VEHICLE_ELECTRIC_TYPES,
-    VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
-    RUCS,
-)
+from constants.utils import PeriodEnum
 from params import (
-    SWITCH_TO,
-    HOUSEHOLD_ENERGY_USE,
     OPERATIONAL_LIFETIME,
 )
 from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
@@ -40,21 +23,73 @@ from openapi_client.models import (
     Opex,
     OpexValues,
 )
+from savings.opex.get_solar_savings import get_solar_savings
+from savings.opex.get_machine_opex import (
+    get_appliance_opex,
+    get_fixed_costs,
+    get_other_appliance_opex,
+    get_vehicle_opex,
+)
 
 
 def calculate_opex(
     current_household: Household, electrified_household: Household
 ) -> Opex:
-    return Opex(
-        perWeek=OpexValues(before=500.5, after=100.1, difference=400.4),
-        perYear=OpexValues(before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52),
-        overLifetime=OpexValues(
-            before=500.5 * 52 * 15 * 1.1,  # some random factor
-            after=100.1 * 52 * 15 * 1.1,
-            difference=400.4 * 52 * 15 * 1.1,
-        ),
-        operationalLifetime=15,
+
+    # Weekly
+    weekly_before = _get_total_opex(current_household, PeriodEnum.WEEKLY)
+    weekly_after = _get_total_opex(electrified_household, PeriodEnum.WEEKLY)
+
+    # Yearly
+    yearly_before = _get_total_opex(current_household, PeriodEnum.YEARLY)
+    yearly_after = _get_total_opex(electrified_household, PeriodEnum.YEARLY)
+
+    # Operational lifetime
+    lifetime_before = _get_total_opex(
+        current_household, PeriodEnum.OPERATIONAL_LIFETIME
     )
+    lifetime_after = _get_total_opex(
+        electrified_household, PeriodEnum.OPERATIONAL_LIFETIME
+    )
+
+    return Opex(
+        perWeek=OpexValues(
+            before=round(weekly_before, 2),
+            after=round(weekly_after, 2),
+            difference=round(weekly_after - weekly_before, 2),
+        ),
+        perYear=OpexValues(
+            before=round(yearly_before, 2),
+            after=round(yearly_after, 2),
+            difference=round(yearly_after - yearly_before, 2),
+        ),
+        overLifetime=OpexValues(
+            before=round(lifetime_before, 2),
+            after=round(lifetime_after, 2),
+            difference=round(lifetime_after - lifetime_before, 2),
+        ),
+        operationalLifetime=OPERATIONAL_LIFETIME,
+    )
+
+
+def _get_total_opex(household: Household, period: PeriodEnum):
+    appliance_opex = _get_total_appliance_opex(household, period)
+    vehicle_opex = get_vehicle_opex(household.vehicles, period)
+    other_opex = get_other_appliance_opex(period)
+    fixed_costs = get_fixed_costs(household, period)
+    solar_savings = get_solar_savings(household.solar)
+    return appliance_opex + vehicle_opex + other_opex + fixed_costs - solar_savings
+
+
+def _get_total_appliance_opex(household: Household, period: PeriodEnum):
+    return (
+        get_appliance_opex(household.space_heating, SPACE_HEATING_INFO, period)
+        + get_appliance_opex(household.water_heating, WATER_HEATING_INFO, period)
+        + get_appliance_opex(household.cooktop, COOKTOP_INFO, period)
+    )
+
+
+# ============ OLD ============
 
 
 # TODO: unit tests
@@ -122,107 +157,6 @@ AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_LIFETIME = (
 AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH = 1035 * OPERATIONAL_LIFETIME
 # with 2 vehicles, 7 kWh solar panel, no battery, 12c feed-in
 AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH = 1685 * OPERATIONAL_LIFETIME
-
-
-# TODO: unit test
-def enrich_opex(df: pd.DataFrame, with_solar=True) -> pd.DataFrame:
-    """Enriches survey data with opex and opex savings data
-
-    Args:
-        df (pd.DataFrame): processed survey data
-
-    Returns:
-        pd.DataFrame: enriched dataframe with new ENRICHMENT_COLS_OPEX columns
-    """
-    # These are all values over the operational lifetime (15 years)
-    df["vehicle_opex"], df["vehicle_opex_savings"] = zip(
-        *df.apply(get_vehicle_opex_savings, axis=1)
-    )
-    df["space_heating_opex"], df["space_heating_opex_savings"] = zip(
-        *df.apply(get_space_heating_opex_savings, axis=1)
-    )
-    df["water_heating_opex"], df["water_heating_opex_savings"] = zip(
-        *df["Water heating"].apply(get_water_heating_opex_savings)
-    )
-
-    df["cooktop_opex"], df["cooktop_opex_savings"] = zip(
-        *df[COOKTOP_COLS].apply(get_cooktop_opex_savings, axis=1)
-    )
-    df["fixed_costs_yearly"], df["fixed_costs_savings_yearly"] = zip(
-        *df.apply(get_fixed_costs_per_year, axis=1)
-    )
-    df["fixed_costs_lifetime"] = df["fixed_costs_yearly"] * OPERATIONAL_LIFETIME
-    df["fixed_costs_savings_lifetime"] = (
-        df["fixed_costs_savings_yearly"] * OPERATIONAL_LIFETIME
-    )
-
-    # Totals
-
-    ## Opex
-
-    opex_extra_appliances_no_solar_lifetime = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-        * COST_PER_FUEL_KWH_TODAY["electricity"]
-        * 365.25
-        * OPERATIONAL_LIFETIME
-    )
-
-    ### without vehicles
-    df["total_opex_lifetime_without_vehicles"] = (
-        df["space_heating_opex"]
-        + df["water_heating_opex"]
-        + df["cooktop_opex"]
-        + df["fixed_costs_lifetime"]
-        + opex_extra_appliances_no_solar_lifetime
-    )
-
-    # Extra appliances
-
-    ### with vehicles
-    df["total_opex_lifetime_with_vehicles"] = (
-        df["total_opex_lifetime_without_vehicles"] + df["vehicle_opex"]
-    )
-
-    ## Opex savings
-
-    df["total_opex_savings_lifetime_base"] = (
-        df["space_heating_opex_savings"]
-        + df["water_heating_opex_savings"]
-        + df["cooktop_opex_savings"]
-        + df["fixed_costs_savings_lifetime"]
-        # zero savings from extra appliances as they will still exist after electrification
-    )
-
-    ### without vehicles
-    df["total_opex_savings_lifetime_without_vehicles"] = (
-        (
-            df["total_opex_savings_lifetime_base"]
-            + AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH
-        )
-        if with_solar
-        else df["total_opex_savings_lifetime_base"]
-    )
-    df["opex_savings_without_vehicles_pct"] = (
-        100
-        * df["total_opex_savings_lifetime_without_vehicles"]
-        / df["total_opex_lifetime_without_vehicles"]
-    )
-
-    ### with vehicles
-    df["total_opex_savings_lifetime_with_vehicles"] = (
-        df["total_opex_savings_lifetime_base"] + df["vehicle_opex_savings"]
-    )
-    if with_solar:
-        df[
-            "total_opex_savings_lifetime_with_vehicles"
-        ] += AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH
-    df["opex_savings_with_vehicles_pct"] = (
-        100
-        * df["total_opex_savings_lifetime_with_vehicles"]
-        / df["total_opex_lifetime_with_vehicles"]
-    )
-
-    return df
 
 
 def get_fixed_costs_per_year(household: pd.Series) -> Tuple[float, float]:

@@ -1,5 +1,6 @@
 from typing import List
 
+from openapi_client.models.household import Household
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
@@ -113,6 +114,11 @@ def get_vehicle_opex(
         # Add to total
         total_opex += opex_period
     return total_opex
+
+
+def get_fixed_costs(household: Household) -> float:
+    # TODO base on get_fixed_costs_per_year()
+    return 0
 
 
 def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
