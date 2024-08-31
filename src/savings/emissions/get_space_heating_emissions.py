@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 from constants.fuel_stats import EMISSIONS_FACTORS
 from constants.machines.space_heating import (
     SPACE_HEATING_KWH_PER_DAY,
+    SPACE_HEATING_OPERATIONAL_LIFETIME_YEARS,
     SPACE_HEATING_TYPE_TO_FUEL_TYPE,
     SPACE_HEATING_ELECTRIC_TYPES,
     CENTRAL_SYSTEMS,
@@ -50,6 +51,10 @@ def get_space_heating_emissions(
     )
     if period == PeriodEnum.DAILY:
         return em_daily
+    if period == PeriodEnum.YEARLY:
+        return em_daily * 365.25
+    if period == PeriodEnum.OPERATIONAL_LIFETIME:
+        return em_daily * 365.25 * SPACE_HEATING_OPERATIONAL_LIFETIME_YEARS
 
 
 def get_space_heating_emissions_savings(

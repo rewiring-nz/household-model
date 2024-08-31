@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from constants.utils import PeriodEnum
 from savings.emissions.calculate_emissions import (
     get_space_heating_emissions,
     get_space_heating_emissions_savings,
@@ -9,8 +10,6 @@ from tests.process_test_data import get_test_data
 from tests.mocks import mock_household
 from openapi_client.models import SpaceHeatingEnum
 from constants.machines.space_heating import SPACE_HEATING_STATS
-
-# Assumes electricity emission factor of 0.098 (not 100% renewable grid)
 
 
 mock_emissions_daily = 12.3
@@ -26,6 +25,27 @@ class TestGetSpaceHeatingEmissions:
         mock_get_emissions_per_day.assert_called_once_with(
             SpaceHeatingEnum.WOOD, SPACE_HEATING_STATS
         )
+
+    def test_it_returns_daily_emissions_by_default(self, _):
+        result = get_space_heating_emissions(mock_household)
+        assert result == mock_emissions_daily
+
+    def test_it_returns_daily_emissions_if_specified(self, _):
+        result = get_space_heating_emissions(mock_household, PeriodEnum.DAILY)
+        assert result == mock_emissions_daily
+
+    def test_it_returns_yearly_emissions(self, _):
+        result = get_space_heating_emissions(mock_household, PeriodEnum.YEARLY)
+        assert result == mock_emissions_daily * 365.25
+
+    def test_it_returns_operational_lifetime_emissions(self, _):
+        result = get_space_heating_emissions(
+            mock_household, PeriodEnum.OPERATIONAL_LIFETIME
+        )
+        assert result == mock_emissions_daily * 365.25 * 15
+
+
+# Assumes electricity emission factor of 0.098 (not 100% renewable grid)
 
 
 class TestSpaceHeating:

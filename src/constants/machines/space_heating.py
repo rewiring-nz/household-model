@@ -30,6 +30,7 @@ SPACE_HEATING_STATS = {
         "fuel_type": None,
     },
 }
+SPACE_HEATING_OPERATIONAL_LIFETIME_YEARS = 15
 
 # ======= OLD =========
 
