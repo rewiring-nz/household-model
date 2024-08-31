@@ -50,7 +50,6 @@ from openapi_client.models import (
 )
 from savings.emissions.get_space_heating_emissions import (
     get_space_heating_emissions,
-    get_space_heating_emissions_savings,  # TODO: remove once we're working just with the emissions func
 )
 from savings.emissions.get_emissions_per_day import get_emissions_per_day_old
 
@@ -60,22 +59,63 @@ EMISSIONS_OTHER_MACHINES = (
 )  # kgCO2e/day
 
 
-def calculate_emissions(household: Household) -> Emissions:
+def calculate_emissions(
+    current_household: Household, electrified_household: Household
+) -> Emissions:
+
+    # Weekly
     space_heating_emissions_weekly_before = get_space_heating_emissions(
-        household, PeriodEnum.WEEKLY
+        current_household, PeriodEnum.WEEKLY
+    )
+    space_heating_emissions_weekly_after = get_space_heating_emissions(
+        electrified_household, PeriodEnum.WEEKLY
     )
 
+    # We use the function to get emissions over longer periods, rather than relying on straight multiplication for emissions over operational lifetime, since macroeconomic factors can change things.
+
+    # Yearly
+    space_heating_emissions_yearly_before = get_space_heating_emissions(
+        current_household, PeriodEnum.YEARLY
+    )
+    space_heating_emissions_yearly_after = get_space_heating_emissions(
+        electrified_household, PeriodEnum.YEARLY
+    )
+
+    # Operational lifetime
+    space_heating_emissions_lifetime_before = get_space_heating_emissions(
+        current_household, PeriodEnum.OPERATIONAL_LIFETIME
+    )
+    space_heating_emissions_lifetime_after = get_space_heating_emissions(
+        electrified_household, PeriodEnum.OPERATIONAL_LIFETIME
+    )
+
+    # Total emissions before
+    weekly_before = space_heating_emissions_weekly_before  # + water_heating_emissions_weekly_before etc.
+    yearly_before = space_heating_emissions_yearly_before  # + water_heating_emissions_yearly_before etc.
+    lifetime_before = space_heating_emissions_lifetime_before  # + water_heating_emissions_lifetime_before etc.
+
+    # Total emissions after
+    weekly_after = space_heating_emissions_weekly_after  # + water_heating_emissions_weekly_after etc.
+    yearly_after = space_heating_emissions_yearly_after  # + water_heating_emissions_yearly_after etc.
+    lifetime_after = space_heating_emissions_lifetime_after  # + water_heating_emissions_lifetime_after etc.
+
     return Emissions(
-        perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
+        perWeek=EmissionsValues(
+            before=weekly_before,
+            after=weekly_after,
+            difference=weekly_after - weekly_before,
+        ),
         perYear=EmissionsValues(
-            before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52
+            before=yearly_before,
+            after=yearly_after,
+            difference=yearly_after - yearly_before,
         ),
         overLifetime=EmissionsValues(
-            before=500.5 * 52 * 15 * 1.1,  # some random factor
-            after=100.1 * 52 * 15 * 1.1,
-            difference=400.4 * 52 * 15 * 1.1,
+            before=lifetime_before,
+            after=lifetime_after,
+            difference=lifetime_after - lifetime_before,
         ),
-        operationalLifetime=15,
+        operationalLifetime=OPERATIONAL_LIFETIME,
     )
 
 
@@ -91,9 +131,6 @@ def enrich_emissions(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     # Machines
-    df["space_heating_emissions"], df["space_heating_emissions_savings"] = zip(
-        *df.apply(get_space_heating_emissions_savings, axis=1)
-    )
     df["water_heating_emissions"], df["water_heating_emissions_savings"] = zip(
         *df["Water heating"].apply(get_water_heating_emissions_savings)
     )
