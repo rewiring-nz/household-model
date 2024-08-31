@@ -1,11 +1,12 @@
 from constants.fuel_stats import EMISSIONS_FACTORS
-from constants.machines.appliance import ApplianceEnum, ApplianceInfo
+from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+from openapi_client.models.vehicle import Vehicle
 from params import OPERATIONAL_LIFETIME
 from constants.utils import PeriodEnum
 
 import pandas as pd
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from constants.fuel_stats import EMISSIONS_FACTORS
 from constants.machines.cooktop import COOKTOP_INFO
@@ -13,8 +14,8 @@ from constants.machines.space_heating import (
     SPACE_HEATING_INFO,
 )
 from constants.machines.vehicles import (
-    VEHICLE_KWH_PER_DAY,
     VEHICLE_ELECTRIC_TYPES,
+    VEHICLE_INFO,
     VEHICLE_TYPE_TO_FUEL_TYPE,
     VEHICLE_FUEL_TYPE_COLS,
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
@@ -24,23 +25,18 @@ from constants.machines.vehicles import (
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
-from params import (
-    SWITCH_TO,
-    VEHICLE_SWITCH_TO_EMISSIONS_RUNNING,
-    VEHICLE_SWITCH_TO_EMISSIONS_EMBODIED,
-    OPERATIONAL_LIFETIME,
-)
+from params import OPERATIONAL_LIFETIME
 
 
 def get_emissions_per_day(
-    machine_type: ApplianceEnum,
-    machine_stats_map: ApplianceInfo,
+    machine_type: MachineEnum,
+    machine_stats_map: MachineInfoMap,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
     Args:
-        machine_type (ApplianceEnum): the type of machine, e.g. a gas cooktop
-        machine_stats_map (ApplianceInfo): info about the machine's energy use per day and its fuel type
+        machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
+        machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
 
     Returns:
         float: machine's emissions in kgCO2e per day
@@ -52,14 +48,14 @@ def get_emissions_per_day(
 
 
 def get_appliance_emissions(
-    appliance: ApplianceEnum,
-    appliance_info: ApplianceInfo,
+    appliance: MachineEnum,
+    appliance_info: MachineInfoMap,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     """Calculates the emissions from appliance in given household
 
     Args:
-        appliance (ApplianceEnum): the appliance
+        appliance (MachineEnum): the appliance
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
 
     Returns:
@@ -89,116 +85,30 @@ def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> floa
     return _convert_to_period(emissions_daily, period)
 
 
-# def get_vehicle_emissions(
-#     household: pd.Series,
-# ) -> Tuple[Optional[float], Optional[float]]:
-#     vehicle_stats = extract_vehicle_stats(household)
+def get_vehicle_emissions(
+    vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY
+) -> float:
+    total_emissions = 0
+    for vehicle in vehicles:
+        # PHEV: Assume 60/40 split between petrol and electric
+        # HEV: Assume 70/30 split between petrol and electric
+        avg_emissions_daily = get_emissions_per_day(
+            vehicle.fuel_type,
+            VEHICLE_INFO,
+        )
 
-#     if len(vehicle_stats) == 0:
-#         return 0, 0
+        # Weight the emissions based on how much they use the vehicle compared to average
+        weighting_factor = (
+            vehicle.kms_per_week * 52 / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
+        )
+        weighted_emissions_daily = avg_emissions_daily * weighting_factor
 
-#     total_emissions = 0
-#     total_savings = 0
-#     for v in vehicle_stats:
+        # Convert to given period
+        emissions_period = _convert_to_period(weighted_emissions_daily, period)
 
-#         if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
-#             avg_running_emissions = get_emissions_per_day_old(
-#                 v["fuel_type"],
-#                 VEHICLE_KWH_PER_DAY,
-#                 VEHICLE_TYPE_TO_FUEL_TYPE,
-#             )
-#         if v["fuel_type"] == "Plug-in Hybrid":
-#             # Assume 60/40 split between petrol and electric
-#             petrol_portion_emissions = (
-#                 get_emissions_per_day_old(
-#                     "Petrol",
-#                     VEHICLE_KWH_PER_DAY,
-#                     VEHICLE_TYPE_TO_FUEL_TYPE,
-#                 )
-#                 * 0.6
-#             )
-#             electric_portion_emissions = (
-#                 get_emissions_per_day_old(
-#                     "Electric",
-#                     VEHICLE_KWH_PER_DAY,
-#                     VEHICLE_TYPE_TO_FUEL_TYPE,
-#                 )
-#                 * 0.4
-#             )
-#             avg_running_emissions = (
-#                 petrol_portion_emissions + electric_portion_emissions
-#             )
-#         if v["fuel_type"] == "Hybrid":
-#             # Assume 70/30 split between petrol and electric
-#             petrol_portion_emissions = (
-#                 get_emissions_per_day_old(
-#                     "Petrol",
-#                     VEHICLE_KWH_PER_DAY,
-#                     VEHICLE_TYPE_TO_FUEL_TYPE,
-#                 )
-#                 * 0.7
-#             )
-#             electric_portion_emissions = (
-#                 get_emissions_per_day_old(
-#                     "Electric",
-#                     VEHICLE_KWH_PER_DAY,
-#                     VEHICLE_TYPE_TO_FUEL_TYPE,
-#                 )
-#                 * 0.3
-#             )
-#             avg_running_emissions = (
-#                 petrol_portion_emissions + electric_portion_emissions
-#             )
-
-#         # Get % of average vehicle use based on distance
-#         pct_of_avg = v["distance_per_yr"] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
-#         running_emissions = avg_running_emissions * pct_of_avg
-
-#         # # The emissions from producing the car + battery, per day
-#         # # TODO: make it optional to include/exclude embodied emissions
-#         # if v['fuel_type'] not in ['Plug-in Hybrid', 'Hybrid']:
-#         #     embodied_emissions = (
-#         #         VEHICLE_EMBODIED_EMISSIONS[v['fuel_type']]
-#         #         / OPERATIONAL_LIFETIME
-#         #         / 365.25
-#         #     )
-#         # if v['fuel_type'] == 'Plug-in Hybrid':
-#         #     # Again, a 60/40 split
-#         #     petrol_portion_embodied = (
-#         #         VEHICLE_EMBODIED_EMISSIONS['Petrol'] / OPERATIONAL_LIFETIME / 365.25
-#         #     ) * 0.6
-#         #     electric_portion_embodied = (
-#         #         VEHICLE_EMBODIED_EMISSIONS['Electric'] / OPERATIONAL_LIFETIME / 365.25
-#         #     ) * 0.4
-#         #     embodied_emissions = petrol_portion_embodied + electric_portion_embodied
-#         # if v['fuel_type'] == 'Hybrid':
-#         #     # Again, 70/30 split (even though it's probably more like 90/10)
-#         #     petrol_portion_embodied = (
-#         #         VEHICLE_EMBODIED_EMISSIONS['Petrol'] / OPERATIONAL_LIFETIME / 365.25
-#         #     ) * 0.7
-#         #     electric_portion_embodied = (
-#         #         VEHICLE_EMBODIED_EMISSIONS['Electric'] / OPERATIONAL_LIFETIME / 365.25
-#         #     ) * 0.3
-#         #     embodied_emissions = petrol_portion_embodied + electric_portion_embodied
-
-#         # total_vehicle_emissions = running_emissions + embodied_emissions
-#         total_vehicle_emissions = running_emissions
-
-#         total_emissions += total_vehicle_emissions
-#         ev_emissions = (
-#             VEHICLE_SWITCH_TO_EMISSIONS_RUNNING
-#             * pct_of_avg
-#             # + VEHICLE_SWITCH_TO_EMISSIONS_EMBODIED
-#         )
-#         savings = total_vehicle_emissions - ev_emissions
-#         if (
-#             v["fuel_type"] in VEHICLE_ELECTRIC_TYPES
-#             and not SWITCH_TO["vehicle"]["switch_if_electric"]
-#         ):
-#             # Don't switch if they're already on electric
-#             savings = 0
-#         total_savings += savings
-#     return total_emissions, total_savings
+        # Add to total
+        total_emissions += emissions_period
+    return total_emissions
 
 
 def _convert_to_period(emissions_daily: float, period: PeriodEnum) -> float:
