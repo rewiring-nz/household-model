@@ -1,21 +1,22 @@
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.household import Household
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
+from openapi_client.models.vehicle import Vehicle
+from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 
 
 def electrify_household(current_household: Household) -> Household:
     electrified_household = Household(
         **{
+            **current_household,
             "space_heating": electrify_space_heating(current_household.space_heating),
             "water_heating": electrify_water_heating(current_household.water_heating),
-            "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,
+            "cooktop": electrify_cooktop(current_household.cooktop),
             # "vehicles": [
             #     mock_vehicle_petrol,
             #     mock_vehicle_diesel,
             # ],
-            # "solar": mock_solar,
-            # "battery": mock_battery,
         }
     )
     return electrified_household
@@ -67,3 +68,17 @@ def electrify_cooktop(current: CooktopEnum) -> CooktopEnum:
     if current in [CooktopEnum.ELECTRIC_RESISTANCE, CooktopEnum.ELECTRIC_INDUCTION]:
         return current
     return CooktopEnum.ELECTRIC_INDUCTION
+
+
+def electrify_vehicle(current: Vehicle) -> Vehicle:
+    """Converts current vehicle to EV depending on user preference
+
+    Args:
+        current (Vehicle): current vehicle
+
+    Returns:
+        Vehicle: electrified vehicle
+    """
+    if current.switch_to_ev:
+        return current.copy(update={"fuel_type": VehicleFuelTypeEnum.ELECTRIC})
+    return current
