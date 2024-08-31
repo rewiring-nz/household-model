@@ -1,19 +1,21 @@
 from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
-from constants.machines.appliance import ApplianceEnum, ApplianceInfo
+from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
 from openapi_client.models.cooktop_enum import CooktopEnum
+from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
     _convert_to_period,
     get_emissions_per_day,
     get_other_appliance_emissions,
+    get_vehicle_emissions,
 )
 from unittest.mock import patch
 from unittest import TestCase
-from tests.mocks import mock_household
+from tests.mocks import mock_household, mock_vehicle_petrol
 from openapi_client.models import SpaceHeatingEnum
 from constants.machines.space_heating import SPACE_HEATING_INFO
 
@@ -23,7 +25,7 @@ mock_emissions_weekly = 12.3 * 7
 
 
 class TestGetEmissionsPerDay(TestCase):
-    mock_appliance_info: ApplianceInfo = {
+    mock_appliance_info: MachineInfoMap = {
         CooktopEnum.GAS: {"kwh_per_day": 10.0, "fuel_type": FuelTypeEnum.NATURAL_GAS},
         SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {
             "kwh_per_day": 5.0,
@@ -145,6 +147,13 @@ class TestGetOtherApplianceEmissions:
     def test_it_returns_emissions_per_period(self, _):
         result = get_other_appliance_emissions()
         assert result == mock_emissions_weekly
+
+
+class TestGetVehicleEmissionsPerDay(TestCase):
+    def test_it_calculates_daily_emissions_for_one_petrol_car(self):
+        result = get_vehicle_emissions([mock_vehicle_petrol])
+        expected = 32 * 0.242 * (250 * 52 / 11000)
+        assert result == expected
 
 
 class TestConvertToPeriod:

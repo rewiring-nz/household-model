@@ -1,11 +1,11 @@
 from openapi_client.models import WaterHeatingEnum
 from constants.fuel_stats import FuelTypeEnum
-from constants.machines.appliance import ApplianceInfo
+from constants.machines.machine_info import MachineInfoMap
 
 # kwh_per_day are from values in Machines!D141:J141
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
 
-WATER_HEATING_INFO: ApplianceInfo = {
+WATER_HEATING_INFO: MachineInfoMap = {
     WaterHeatingEnum.GAS: {
         "kwh_per_day": 6.6,
         "fuel_type": FuelTypeEnum.NATURAL_GAS,

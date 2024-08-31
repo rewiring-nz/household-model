@@ -1,11 +1,11 @@
 from openapi_client.models import SpaceHeatingEnum
 from constants.fuel_stats import FuelTypeEnum
-from constants.machines.appliance import ApplianceInfo
+from constants.machines.machine_info import MachineInfoMap
 
 # kwh_per_day are from values in Machines!D75:J75, which are average for the whole house
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
 
-SPACE_HEATING_INFO: ApplianceInfo = {
+SPACE_HEATING_INFO: MachineInfoMap = {
     SpaceHeatingEnum.WOOD: {
         "kwh_per_day": 14.44,
         "fuel_type": FuelTypeEnum.WOOD,
