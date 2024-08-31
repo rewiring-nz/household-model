@@ -1,19 +1,19 @@
-from savings.emissions.get_machine_emissions import (
-    get_appliance_emissions,
-    get_other_appliance_emissions,
-)
 from openapi_client.models import (
     Household,
     Emissions,
     EmissionsValues,
 )
+
 from constants.utils import PeriodEnum
-from constants.machines.space_heating import (
-    SPACE_HEATING_INFO,
-)
+from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.machines.cooktop import COOKTOP_INFO
 from params import OPERATIONAL_LIFETIME
+from savings.emissions.get_machine_emissions import (
+    get_appliance_emissions,
+    get_other_appliance_emissions,
+    get_vehicle_emissions,
+)
 
 
 def calculate_emissions(
@@ -39,7 +39,12 @@ def calculate_emissions(
     cooktop_emissions_weekly_after = get_appliance_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY
     )
-    # TODO: vehicle emissions
+    vehicle_emissions_weekly_before = get_vehicle_emissions(
+        current_household.vehicles, PeriodEnum.WEEKLY
+    )
+    vehicle_emissions_weekly_after = get_vehicle_emissions(
+        electrified_household.vehicles, PeriodEnum.WEEKLY
+    )
     other_emissions_weekly_before = get_other_appliance_emissions(PeriodEnum.WEEKLY)
     other_emissions_weekly_after = get_other_appliance_emissions(PeriodEnum.WEEKLY)
 
@@ -63,6 +68,12 @@ def calculate_emissions(
     )
     cooktop_emissions_yearly_after = get_appliance_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.YEARLY
+    )
+    vehicle_emissions_yearly_before = get_vehicle_emissions(
+        current_household.vehicles, PeriodEnum.YEARLY
+    )
+    vehicle_emissions_yearly_after = get_vehicle_emissions(
+        electrified_household.vehicles, PeriodEnum.YEARLY
     )
     other_emissions_yearly_before = get_other_appliance_emissions(PeriodEnum.YEARLY)
     other_emissions_yearly_after = get_other_appliance_emissions(PeriodEnum.YEARLY)
@@ -94,6 +105,12 @@ def calculate_emissions(
     cooktop_emissions_lifetime_after = get_appliance_emissions(
         electrified_household.cooktop, COOKTOP_INFO, PeriodEnum.OPERATIONAL_LIFETIME
     )
+    vehicle_emissions_lifetime_before = get_vehicle_emissions(
+        current_household.vehicles, PeriodEnum.OPERATIONAL_LIFETIME
+    )
+    vehicle_emissions_lifetime_after = get_vehicle_emissions(
+        electrified_household.vehicles, PeriodEnum.OPERATIONAL_LIFETIME
+    )
     other_emissions_lifetime_before = get_other_appliance_emissions(
         PeriodEnum.OPERATIONAL_LIFETIME
     )
@@ -106,18 +123,21 @@ def calculate_emissions(
         space_heating_emissions_weekly_before
         + water_heating_emissions_weekly_before
         + cooktop_emissions_weekly_before
+        + vehicle_emissions_weekly_before
         + other_emissions_weekly_before
     )
     yearly_before = (
         space_heating_emissions_yearly_before
         + water_heating_emissions_yearly_before
         + cooktop_emissions_yearly_before
+        + vehicle_emissions_yearly_before
         + other_emissions_yearly_before
     )
     lifetime_before = (
         space_heating_emissions_lifetime_before
         + water_heating_emissions_lifetime_before
         + cooktop_emissions_lifetime_before
+        + vehicle_emissions_lifetime_before
         + other_emissions_lifetime_before
     )
 
@@ -126,18 +146,21 @@ def calculate_emissions(
         space_heating_emissions_weekly_after
         + water_heating_emissions_weekly_after
         + cooktop_emissions_weekly_after
+        + vehicle_emissions_weekly_after
         + other_emissions_weekly_after
     )
     yearly_after = (
         space_heating_emissions_yearly_after
         + water_heating_emissions_yearly_after
         + cooktop_emissions_yearly_after
+        + vehicle_emissions_yearly_after
         + other_emissions_yearly_after
     )
     lifetime_after = (
         space_heating_emissions_lifetime_after
         + water_heating_emissions_lifetime_after
         + cooktop_emissions_lifetime_after
+        + vehicle_emissions_lifetime_after
         + other_emissions_lifetime_after
     )
 

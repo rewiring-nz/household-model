@@ -28,6 +28,21 @@ mock_vehicle_diesel = Vehicle(
     kms_per_week=50,
     switch_to_ev=False,
 )
+mock_vehicle_ev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.ELECTRIC,
+    kms_per_week=250,
+    switch_to_ev=None,
+)
+mock_vehicle_hev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.HYBRID,
+    kms_per_week=150,
+    switch_to_ev=True,
+)
+mock_vehicle_phev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+    kms_per_week=175,
+    switch_to_ev=False,
+)
 
 mock_solar = Solar(has_solar=False, size=7, install_solar=True)
 mock_battery = Battery(has_battery=False, capacity=13, install_battery=False)
@@ -56,11 +71,7 @@ mock_household_electrified = Household(
         "water_heating": WaterHeatingEnum.ELECTRIC_HEAT_PUMP,
         "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,  # don't swap if already electric
         "vehicles": [
-            Vehicle(
-                fuel_type=VehicleFuelTypeEnum.ELECTRIC,
-                kms_per_week=250,
-                switch_to_ev=None,
-            ),
+            mock_vehicle_ev,
             mock_vehicle_diesel,  # did not want to switch this one
         ],
         "solar": Solar(has_solar=True, size=7, install_solar=None),

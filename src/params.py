@@ -1,12 +1,5 @@
-from constants.fuel_stats import EMISSIONS_FACTORS
-from constants.machines.vehicles import (
-    VEHICLE_KWH_PER_DAY,
-    VEHICLE_OPEX_15_YRS,
-    VEHICLE_EMBODIED_EMISSIONS,
-    VEHICLE_OPEX_PER_DAY,
-)
-
 OPERATIONAL_LIFETIME = 15
+
 
 # ============ OLD ============
 
@@ -36,20 +29,3 @@ SWITCH_TO = {
         "switch_if_electric": False,
     },
 }
-
-# Vehicle
-
-VEHICLE_SWITCH_TO_EMISSIONS_RUNNING = (
-    VEHICLE_KWH_PER_DAY[SWITCH_TO["vehicle"]["switch_to_type"]]
-    * EMISSIONS_FACTORS["electricity"]
-)
-VEHICLE_SWITCH_TO_EMISSIONS_EMBODIED = (
-    VEHICLE_EMBODIED_EMISSIONS[SWITCH_TO["vehicle"]["switch_to_type"]]
-    / OPERATIONAL_LIFETIME
-    / 365.25
-)
-VEHICLE_SWITCH_TO_OPEX_FUEL = VEHICLE_OPEX_PER_DAY[
-    SWITCH_TO["vehicle"]["switch_to_type"]
-]
-
-VEHICLE_SWITCH_TO_OPEX = VEHICLE_OPEX_15_YRS[SWITCH_TO["vehicle"]["switch_to_type"]]

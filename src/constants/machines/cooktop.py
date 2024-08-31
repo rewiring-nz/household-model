@@ -1,11 +1,11 @@
 from openapi_client.models import CooktopEnum
 from constants.fuel_stats import FuelTypeEnum
-from constants.machines.appliance import ApplianceInfo
+from constants.machines.machine_info import MachineInfoMap
 
 # kwh_per_day are from values in Machines!D196:G196
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
 
-COOKTOP_INFO: ApplianceInfo = {
+COOKTOP_INFO: MachineInfoMap = {
     CooktopEnum.GAS: {
         "kwh_per_day": 1.94,
         "fuel_type": FuelTypeEnum.NATURAL_GAS,
