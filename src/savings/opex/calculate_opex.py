@@ -16,18 +16,18 @@ from constants.utils import PeriodEnum
 from params import (
     OPERATIONAL_LIFETIME,
 )
-from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
+from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, FuelTypeEnum
 
 from openapi_client.models import (
     Household,
     Opex,
     OpexValues,
 )
-from savings.opex.get_solar_savings import get_solar_savings
 from savings.opex.get_machine_opex import (
     get_appliance_opex,
     get_fixed_costs,
     get_other_appliance_opex,
+    get_solar_savings,
     get_vehicle_opex,
 )
 
@@ -89,32 +89,6 @@ def _get_total_appliance_opex(household: Household, period: PeriodEnum):
     )
 
 
-# ============ OLD ============
-
-
-# TODO: unit tests
-
-
-def _get_machines_of_fuel_type(fuel_type: str, mapping: dict) -> List[str]:
-    return [k for k, v in mapping.items() if v == fuel_type]
-
-
-# Water heating needs to be treated separately
-# TODO: make consistent data schema so we don't have these kinds of inconsistencies
-NGAS_MACHINES = _get_machines_of_fuel_type(
-    "natural_gas", COOKTOP_TYPE_TO_FUEL_TYPE
-) + _get_machines_of_fuel_type("natural_gas", SPACE_HEATING_TYPE_TO_FUEL_TYPE)
-LPG_MACHINES = _get_machines_of_fuel_type(
-    "lpg", COOKTOP_TYPE_TO_FUEL_TYPE
-) + _get_machines_of_fuel_type("lpg", SPACE_HEATING_TYPE_TO_FUEL_TYPE)
-
-FIXED_COSTS_PER_YEAR = {
-    "electricity": 689,  # on every home
-    "natural_gas": 587,  # Machines!D292
-    "lpg": 139,  # Machines!D293
-}
-
-
 # Solar savings
 
 # TODO: Ideally we would calculate the exact house needs based on the appliances listed in survey responses
@@ -157,37 +131,3 @@ AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_LIFETIME = (
 AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH = 1035 * OPERATIONAL_LIFETIME
 # with 2 vehicles, 7 kWh solar panel, no battery, 12c feed-in
 AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH = 1685 * OPERATIONAL_LIFETIME
-
-
-def get_fixed_costs_per_year(household: pd.Series) -> Tuple[float, float]:
-    """Calculates the fixed costs you pay per year, for gas and LPG connections.
-    Always includes electricity fixed costs, since all households pay this anyway
-    for all the other devices we have (we assume the house stays on the grid).
-
-    Args:
-        household (pd.Series): info about one household
-
-    Returns:
-        float: $NZD cost per year
-        float: $NZD savings per year from switching to electricity only
-    """
-    costs = FIXED_COSTS_PER_YEAR["electricity"]
-    ngas_detected = False
-    if (
-        sum(household[NGAS_MACHINES].dropna()) > 0
-        or household["Water heating"] == "Gas water heating"
-    ):
-        costs += FIXED_COSTS_PER_YEAR["natural_gas"]
-        ngas_detected = True
-    # If any mention of natural gas, use that over LPG even if they have both
-    # (most homes won't actually have both, they'll just be referring to an LPG BBQ or something)
-    if not ngas_detected:
-        if (
-            sum(household[LPG_MACHINES].dropna()) > 0
-            or household["Water heating"] == "LPG water heating"
-        ):
-            costs += FIXED_COSTS_PER_YEAR["lpg"]
-
-    # After electrification, fixed costs will just be electricity, so the savings is everything that's not electricity
-    savings = costs - FIXED_COSTS_PER_YEAR["electricity"]
-    return costs, savings
