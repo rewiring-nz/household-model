@@ -1,10 +1,9 @@
 from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
-from constants.machines.machine_info import MachineEnum, MachineInfoMap
+from constants.machines.machine_info import MachineInfoMap
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.utils import PeriodEnum
 from openapi_client.models.cooktop_enum import CooktopEnum
-from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
@@ -20,6 +19,8 @@ from tests.mocks import (
     mock_vehicle_petrol,
     mock_vehicle_diesel,
     mock_vehicle_ev,
+    mock_vehicle_hev,
+    mock_vehicle_phev,
 )
 from openapi_client.models import SpaceHeatingEnum
 from constants.machines.space_heating import SPACE_HEATING_INFO
@@ -155,10 +156,12 @@ class TestGetOtherApplianceEmissions:
 
 
 class TestGetVehicleEmissionsPerDay(TestCase):
+    petrol = 32 * 0.242
+    ev = 8.027 * 0.098
+
     def test_it_calculates_daily_emissions_for_one_petrol_car(self):
         result = get_vehicle_emissions([mock_vehicle_petrol])
-        expected = 32 * 0.242 * (250 * 52 / 11000)
-        assert result == expected
+        assert result == self.petrol * (250 * 52 / 11000)
 
     def test_it_calculates_daily_emissions_for_one_diesel_car(self):
         result = get_vehicle_emissions([mock_vehicle_diesel])
@@ -167,17 +170,34 @@ class TestGetVehicleEmissionsPerDay(TestCase):
 
     def test_it_calculates_daily_emissions_for_one_ev(self):
         result = get_vehicle_emissions([mock_vehicle_ev])
-        expected = 8.027 * 0.098 * (250 * 52 / 11000)
+        assert result == self.ev * (250 * 52 / 11000)
+
+    def test_it_calculates_daily_emissions_for_one_hybrid(self):
+        result = get_vehicle_emissions([mock_vehicle_hev])
+        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+        assert result == expected
+
+    def test_it_calculates_daily_emissions_for_one_plugin_hybrid(self):
+        result = get_vehicle_emissions([mock_vehicle_phev])
+        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
         assert result == expected
 
     def test_it_combines_vehicles_correctly(self):
         result = get_vehicle_emissions(
-            [mock_vehicle_petrol, mock_vehicle_diesel, mock_vehicle_ev]
+            [
+                mock_vehicle_petrol,
+                mock_vehicle_diesel,
+                mock_vehicle_ev,
+                mock_vehicle_hev,
+                mock_vehicle_phev,
+            ]
         )
         expected = (
             (32 * 0.242 * (250 * 52 / 11000))
             + (28.4 * 0.253 * (50 * 52 / 11000))
             + (8.027 * 0.098 * (250 * 52 / 11000))
+            + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+            + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
         )
         assert result == expected
 

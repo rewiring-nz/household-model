@@ -24,7 +24,6 @@ from constants.machines.water_heating import (
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
     extract_vehicle_stats,
-    VEHICLE_OPEX_PER_DAY,
     VEHICLE_ELECTRIC_TYPES,
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
     RUCS,
@@ -32,7 +31,6 @@ from constants.machines.vehicles import (
 from params import (
     SWITCH_TO,
     HOUSEHOLD_ENERGY_USE,
-    VEHICLE_SWITCH_TO_OPEX_FUEL,
     OPERATIONAL_LIFETIME,
 )
 from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
@@ -450,18 +448,19 @@ def get_vehicle_opex_savings(
     total_savings = 0
     for v in vehicle_stats:
 
-        if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
-            avg_opex_fuel = VEHICLE_OPEX_PER_DAY[v["fuel_type"]]
-        if v["fuel_type"] == "Plug-in Hybrid":
-            # Assume 60/40 split between petrol and electric
-            petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.6
-            electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.4
-            avg_opex_fuel = petrol_portion_opex + electric_portion_opex
-        if v["fuel_type"] == "Hybrid":
-            # Assume 70/30 split between petrol and electric
-            petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.7
-            electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.3
-            avg_opex_fuel = petrol_portion_opex + electric_portion_opex
+        avg_opex_fuel = 0  # dummy filler
+        # if v["fuel_type"] not in ["Plug-in Hybrid", "Hybrid"]:
+        #     avg_opex_fuel = VEHICLE_OPEX_PER_DAY[v["fuel_type"]]
+        # if v["fuel_type"] == "Plug-in Hybrid":
+        #     # Assume 60/40 split between petrol and electric
+        #     petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.6
+        #     electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.4
+        #     avg_opex_fuel = petrol_portion_opex + electric_portion_opex
+        # if v["fuel_type"] == "Hybrid":
+        #     # Assume 70/30 split between petrol and electric
+        #     petrol_portion_opex = VEHICLE_OPEX_PER_DAY["Petrol"] * 0.7
+        #     electric_portion_opex = VEHICLE_OPEX_PER_DAY["Electric"] * 0.3
+        #     avg_opex_fuel = petrol_portion_opex + electric_portion_opex
 
         # Get % of average vehicle use based on distance
         pct_of_avg = v["distance_per_yr"] / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
@@ -474,9 +473,10 @@ def get_vehicle_opex_savings(
         total_opex += total_vehicle_opex
 
         # What you'd switch to
-        ev_opex_fuel = (
-            VEHICLE_SWITCH_TO_OPEX_FUEL * pct_of_avg * 365.25 * OPERATIONAL_LIFETIME
-        )
+        ev_opex_fuel = 0  # dummy filler
+        # ev_opex_fuel = (
+        #     VEHICLE_SWITCH_TO_OPEX_FUEL * pct_of_avg * 365.25 * OPERATIONAL_LIFETIME
+        # )
         ev_opex_rucs = (
             RUCS[SWITCH_TO["vehicle"]["switch_to_type"]] * v["distance_per_yr"] / 1000
         )

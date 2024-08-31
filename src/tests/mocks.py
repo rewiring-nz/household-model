@@ -33,6 +33,16 @@ mock_vehicle_ev = Vehicle(
     kms_per_week=250,
     switch_to_ev=None,
 )
+mock_vehicle_hev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.HYBRID,
+    kms_per_week=150,
+    switch_to_ev=True,
+)
+mock_vehicle_phev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+    kms_per_week=175,
+    switch_to_ev=False,
+)
 
 mock_solar = Solar(has_solar=False, size=7, install_solar=True)
 mock_battery = Battery(has_battery=False, capacity=13, install_battery=False)
