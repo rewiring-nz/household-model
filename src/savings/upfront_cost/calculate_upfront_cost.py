@@ -12,17 +12,17 @@ from openapi_client.models import (
 )
 
 
-def calculate_upfront_cost(
-    current_household: Household, electrified_household: Household
-) -> UpfrontCost:
+def calculate_upfront_cost(current: Household, electrified: Household) -> UpfrontCost:
     return UpfrontCost(
-        solar=get_solar_upfront_cost(current_household, electrified_household),
-        battery=get_battery_upfront_cost(current_household, electrified_household),
-        cooktop=get_cooktop_upfront_cost(current_household, electrified_household),
+        solar=get_solar_upfront_cost(current.solar),
+        battery=get_battery_upfront_cost(current.battery),
+        cooktop=get_cooktop_upfront_cost(current.cooktop, electrified.cooktop),
         waterHeating=get_water_heating_upfront_cost(
-            current_household, electrified_household
+            current.water_heating, electrified.water_heating
         ),
         spaceHeating=get_space_heating_upfront_cost(
-            current_household, electrified_household
+            current.space_heating,
+            electrified.space_heating,
+            electrified.location,  # Location won't change so just pick either
         ),
     )

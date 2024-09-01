@@ -1,4 +1,3 @@
-from random import randint
 from typing import Optional
 from constants.machines.cooktop import COOKTOP_UPFRONT_COST
 from constants.machines.space_heating import (
