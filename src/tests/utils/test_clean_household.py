@@ -1,11 +1,12 @@
+from unittest import TestCase
+from unittest.mock import patch, call
+
 from openapi_client.models.household import Household
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
+
 from utils.clean_household import clean_household, clean_vehicle
 from tests.mocks import mock_vehicle_petrol
-
-from unittest import TestCase
-from unittest.mock import patch, call
 
 
 class TestCleanHousehold(TestCase):

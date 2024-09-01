@@ -11,7 +11,7 @@ from constants.utils import PeriodEnum
 from params import (
     OPERATIONAL_LIFETIME,
 )
-from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, FuelTypeEnum
+from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
 
 from openapi_client.models import (
     Household,

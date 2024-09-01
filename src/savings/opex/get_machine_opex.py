@@ -1,6 +1,5 @@
 from typing import List
 
-from models.electrify_household import install_solar
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.household import Household
 from openapi_client.models.solar import Solar
@@ -10,7 +9,6 @@ from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_TODAY,
-    EMISSIONS_FACTORS,
     FuelTypeEnum,
 )
 from constants.machines.machine_info import MachineEnum, MachineInfoMap

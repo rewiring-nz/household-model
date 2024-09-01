@@ -11,6 +11,8 @@ class FuelTypeEnum(str, Enum):
     SOLAR = "solar"  # this is direct solar, e.g. roof solar water heaters
 
 
+# TODO: key the following dicts on FuelTypeEnum as the key, rather than its value
+
 # From 'Misc'!B154
 # Unit: kgCO2e/kWh
 EMISSIONS_FACTORS = {

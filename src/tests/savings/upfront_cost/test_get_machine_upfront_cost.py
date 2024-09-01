@@ -5,7 +5,6 @@ from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
-from tests.mocks import mock_household, mock_household_electrified
 from savings.upfront_cost.get_machine_upfront_cost import (
     get_battery_upfront_cost,
     get_cooktop_upfront_cost,

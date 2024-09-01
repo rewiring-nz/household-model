@@ -1,6 +1,5 @@
 from openapi_client.models import (
     Household,
-    Savings,
     Emissions,
     EmissionsValues,
     Opex,
