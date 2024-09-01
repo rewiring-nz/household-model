@@ -1,6 +1,7 @@
 from openapi_client.models import SpaceHeatingEnum
 from constants.fuel_stats import FuelTypeEnum
 from constants.machines.machine_info import MachineInfoMap
+from openapi_client.models.location_enum import LocationEnum
 
 # kwh_per_day are from values in Machines!D75:J75, which are average for the whole house
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
@@ -31,6 +32,60 @@ SPACE_HEATING_INFO: MachineInfoMap = {
         "fuel_type": None,
     },
 }
+
+# From 'Product prices'!E8
+SPACE_HEATING_UPFRONT_COST = {
+    SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {
+        "item_price": 2728,
+        "install_cost": 1050,
+    },
+    # Everything else below here is kind of irrelevant, since we'll only ever be recommending heat pumps
+    SpaceHeatingEnum.GAS: {
+        "item_price": (3825 + 3927.17) / 2,  # D78, D82
+        "install_cost": 1250,
+    },
+    SpaceHeatingEnum.LPG: {
+        "item_price": (3825 + 3927.17) / 2,  # D90,D93
+        "install_cost": 1250,
+    },
+    SpaceHeatingEnum.WOOD: {
+        "item_price": 4913,
+        "install_cost": 0,
+    },
+    SpaceHeatingEnum.ELECTRIC_RESISTANCE: {
+        "item_price": 300,  # TODO: Should check this again, although we'd never recommend it over heat pumps
+        "install_cost": 0,
+    },
+}
+
+N_HEAT_PUMPS_NEEDED_PER_LOCATION = {
+    LocationEnum.NORTHLAND: 1,
+    LocationEnum.AUCKLAND_NORTH: 1,
+    LocationEnum.AUCKLAND_CENTRAL: 1,
+    LocationEnum.AUCKLAND_EAST: 1,
+    LocationEnum.AUCKLAND_WEST: 1,
+    LocationEnum.AUCKLAND_SOUTH: 1,
+    LocationEnum.WAIKATO: 1,
+    LocationEnum.BAY_OF_PLENTY: 1,
+    LocationEnum.GISBORNE: 1,
+    LocationEnum.HAWKES_BAY: 1,
+    LocationEnum.TARANAKI: 2,
+    LocationEnum.MANAWATU_WANGANUI: 2,
+    LocationEnum.WELLINGTON: 3,
+    LocationEnum.TASMAN: 2,
+    LocationEnum.NELSON: 2,
+    LocationEnum.MARLBOROUGH: 2,
+    LocationEnum.WEST_COAST: 3,
+    LocationEnum.CANTERBURY: 2,
+    LocationEnum.OTAGO: 3,
+    LocationEnum.SOUTHLAND: 3,
+    LocationEnum.STEWART_ISLAND: 3,
+    LocationEnum.CHATHAM_ISLANDS: 3,
+    LocationEnum.GREAT_BARRIER_ISLAND: 2,
+    LocationEnum.OVERSEAS: 2,
+    LocationEnum.OTHER: 2,
+}
+
 
 # ======= OLD =========
 
@@ -181,78 +236,6 @@ SPACE_HEATING_OPEX_15_YRS = {
     # Other (free text)
     "pellet": 10000,  # Assuming slightly higher than wood burner TODO: get sources
 }
-
-# From 'Product prices'!E8
-SPACE_HEATING_UPFRONT_COST = {
-    # Boolean columns (1 or 0)
-    "Home heating_Heat pump split system (an individual unit in a room(s))": {
-        "item_price": 2728,
-        "fuel_type": "electricity",
-        "install_cost": 1050,
-    },
-    # "Home heating_Heat pump central system (one indoor unit for the entire home)": {
-    #     "item_price": None,  # TODO
-    #     "fuel_type": "electricity",
-    #     "install_cost": None,  # TODO
-    # },
-    # "Home heating_Gas small heater(s) (not LPG)": {
-    #     "item_price": (3025 + 3022.02) / 2,  # D77,D81
-    #     "fuel_type": "natural_gas",
-    #     "install_cost": 1250,
-    # },
-    # "Home heating_LPG small heater(s)": {
-    #     "item_price": (3025 + 3103.65) / 2,  # D89,D92
-    #     "fuel_type": "lpg",
-    #     "install_cost": 1250,
-    # },
-    # "Home heating_Gas fireplac(s) (not LPG)": {
-    #     "item_price": (3825 + 3927.17) / 2,  # D78, D82
-    #     "fuel_type": "natural_gas",
-    #     "install_cost": 1250,
-    # },
-    # "Home heating_LPG fireplace(s)": {
-    #     "item_price": (3825 + 3927.17) / 2,  # D90,D93
-    #     "fuel_type": "lpg",
-    #     "install_cost": 1250,
-    # },
-    # "Home heating_Wood fireplace(s)": {
-    #     "item_price": 4913,
-    #     "fuel_type": "wood",
-    #     "install_cost": 0,
-    # },
-    # "Home heating_Electric resistance heater (e.g. electric bar, fan, oil, ceramic panel)": {
-    #     "item_price": 300,
-    #     "fuel_type": "electricity",
-    #     "install_cost": 0,
-    # },
-    # Num columns (1 to 5 or None)
-    "Home heating number_Heat pump split system (an individual unit in a room(s))": {
-        "item_price": 2728,
-        "fuel_type": "electricity",
-        "install_cost": 1050,
-    },
-    #     "Home heating number_Gas or LPG small heater": {
-    #         "item_price": (3025 + 3022.02 + 3025 + 3103.65) / 4,
-    #         "fuel_type": "electricity",
-    #         "install_cost": 1250,
-    #     },
-    #     "Home heating number_Gas or LPG fireplace": {
-    #         "item_price": (3825 + 3927.17 + 3825 + 3927.17) / 4,
-    #         "fuel_type": "electricity",
-    #         "install_cost": 1250,
-    #     },
-    #     "Home heating number_Electric resistance heater (e.g. electric bar, fan, oil, ceramic panel)": {
-    #         "item_price": 300,
-    #         "fuel_type": "electricity",
-    #         "install_cost": 0,
-    #     },
-    #     "Home heating number_Wood fireplace": {
-    #         "item_price": 4913,
-    #         "fuel_type": "electricity",
-    #         "install_cost": 0,
-    #     },
-}
-
 
 # Assumes switching to individual heat pumps
 # medium heat pumps nededed per heating type

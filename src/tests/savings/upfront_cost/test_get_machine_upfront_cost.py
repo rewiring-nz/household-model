@@ -1,5 +1,6 @@
 from unittest import TestCase
 from openapi_client.models.cooktop_enum import CooktopEnum
+from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from tests.mocks import mock_household, mock_household_electrified
@@ -115,8 +116,74 @@ class TestGetWaterHeatingUpfrontCost(TestCase):
 
 
 class TestGetSpaceHeatingUpfrontCost(TestCase):
-    def test_it_gets_space_heating_upfront_cost(self):
-        result = get_space_heating_upfront_cost(
-            SpaceHeatingEnum.GAS, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+    def test_it_returns_space_heating_upfront_cost_of_electrified_option_if_not_already_installed(
+        self,
+    ):
+        for switch_from in [
+            SpaceHeatingEnum.GAS,
+            SpaceHeatingEnum.LPG,
+            SpaceHeatingEnum.WOOD,
+            SpaceHeatingEnum.ELECTRIC_RESISTANCE,
+        ]:
+            result = get_space_heating_upfront_cost(
+                switch_from, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+            )
+            assert (
+                result == (2728 + 1050) * 2
+            )  # upfront cost of heat pump * 2 for average home
+
+    def test_it_calibrates_number_of_space_heaters_according_to_location(
+        self,
+    ):
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.GAS,
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+                LocationEnum.AUCKLAND_CENTRAL,
+            )
+            == (2728 + 1050) * 1
         )
-        assert result == 1
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.GAS,
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+                LocationEnum.CANTERBURY,
+            )
+            == (2728 + 1050) * 2
+        )
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.GAS,
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+                LocationEnum.WELLINGTON,
+            )
+            == (2728 + 1050) * 3
+        )
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.GAS,
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP,
+                LocationEnum.OTAGO,
+            )
+            == (2728 + 1050) * 3
+        )
+
+    def test_it_returns_zero_if_electrified_option_already_installed(
+        self,
+    ):
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+            )
+            == 0
+        )
+
+    def test_it_returns_zero_if_dont_know(
+        self,
+    ):
+        assert (
+            get_space_heating_upfront_cost(
+                SpaceHeatingEnum.DONT_KNOW, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+            )
+            == 0
+        )
