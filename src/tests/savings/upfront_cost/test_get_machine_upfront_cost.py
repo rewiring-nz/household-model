@@ -1,4 +1,5 @@
 from unittest import TestCase
+from openapi_client.models.battery import Battery
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
@@ -17,7 +18,7 @@ from savings.upfront_cost.get_machine_upfront_cost import (
 class TestGetSolarUpfrontCost(TestCase):
     def test_it_gets_solar_upfront_cost(self):
         wants_solar = Solar(has_solar=False, size=5, install_solar=True)
-        assert get_solar_upfront_cost(wants_solar) == 20500 / 9 * 5
+        assert get_solar_upfront_cost(wants_solar) == round(20500 / 9 * 5, 2)
 
     def test_it_returns_zero_if_already_has_solar(self):
         already_has_solar = Solar(has_solar=True, size=5, install_solar=None)
@@ -30,8 +31,18 @@ class TestGetSolarUpfrontCost(TestCase):
 
 class TestGetBatteryUpfrontCost(TestCase):
     def test_it_gets_battery_upfront_cost(self):
-        result = get_battery_upfront_cost(mock_household, mock_household_electrified)
-        assert result == 1
+        wants_battery = Battery(has_battery=False, capacity=5, install_battery=True)
+        assert get_battery_upfront_cost(wants_battery) == 1000 * 5
+
+    def test_it_returns_zero_if_already_has_battery(self):
+        already_has_battery = Battery(
+            has_battery=True, capacity=5, install_battery=None
+        )
+        assert get_battery_upfront_cost(already_has_battery) == 0
+
+    def test_it_returns_zero_if_does_not_have_battery_and_does_not_want_it(self):
+        no_battery = Battery(has_battery=False, capacity=5, install_battery=False)
+        assert get_battery_upfront_cost(no_battery) == 0
 
 
 class TestGetCooktopUpfrontCost(TestCase):
