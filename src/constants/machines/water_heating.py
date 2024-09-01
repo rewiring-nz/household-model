@@ -23,13 +23,42 @@ WATER_HEATING_INFO: MachineInfoMap = {
         "fuel_type": FuelTypeEnum.ELECTRICITY,
     },
     WaterHeatingEnum.SOLAR: {
-        # This is not solar panels but pure solar, rooftop direct heating of water with sun heat
+        # This is not solar panels but pure solar, rooftop direct heating of water with sun heat e.g. Solahart
         "kwh_per_day": 1.71,  # Need to check this, but assume same as heat pump for now
         "fuel_type": FuelTypeEnum.SOLAR,
     },
     WaterHeatingEnum.DONT_KNOW: {
         "kwh_per_day": None,
         "fuel_type": None,
+    },
+}
+
+# From 'Product prices'!D17:D21
+WATER_HEATING_UPFRONT_COST = {
+    WaterHeatingEnum.ELECTRIC_RESISTANCE: {
+        "item_price": 1975,  # C18 (assuming large size since average of heat pump list is around 300L)
+        "install_cost": 1995,  # D18
+    },
+    WaterHeatingEnum.GAS: {
+        "item_price": 1418,  # C20
+        "install_cost": 2175,  # D20
+    },
+    WaterHeatingEnum.LPG: {
+        "item_price": 1419,  # C21
+        "install_cost": 2175,  # D21
+    },
+    WaterHeatingEnum.ELECTRIC_HEAT_PUMP: {
+        "item_price": 4678,  # C17
+        "install_cost": 2321,  # D17
+    },
+    WaterHeatingEnum.SOLAR: {
+        # TODO: Figure out price, although low priority because we're unlikely to ever recommending switching TO rooftop solar water heating (like Solahart, not panels)
+        "item_price": None,
+        "install_cost": None,
+    },
+    WaterHeatingEnum.DONT_KNOW: {
+        "item_price": 0,
+        "install_cost": 0,
     },
 }
 
@@ -73,24 +102,4 @@ WATER_HEATING_OPEX_15_YRS = {
     "Heat pump electric": 3269,
     "Solar water heating": 3269,  # a specific type of heating on the roof that isn't very popular anymore. Don't use R141, which is a house with solar panels + heat pump, a different thing. Assume same as heat pump electric.
     "Diesel water heating": 10234,
-}
-
-# From 'Product prices'!D17:D21
-WATER_HEATING_UPFRONT_COST = {
-    "Electric (tank/cylinder, also known as ‘resistive’)": {
-        "item_price": 1975,  # C18 (assuming large size since average of heat pump list is around 300L)
-        "install_cost": 1995,  # D18
-    },
-    "Gas water heating": {
-        "item_price": 1418,  # C20
-        "install_cost": 2175,  # D20
-    },
-    "LPG water heating": {
-        "item_price": 1419,  # C21
-        "install_cost": 2175,  # D21
-    },
-    "Heat pump electric": {
-        "item_price": 4678,  # C17
-        "install_cost": 2321,  # D17
-    },
 }
