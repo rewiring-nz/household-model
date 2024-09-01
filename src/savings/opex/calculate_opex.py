@@ -1,13 +1,8 @@
-import pandas as pd
-from typing import Tuple, List
-
 from constants.machines.space_heating import (
     SPACE_HEATING_INFO,
-    SPACE_HEATING_TYPE_TO_FUEL_TYPE,
 )
 from constants.machines.cooktop import (
     COOKTOP_INFO,
-    COOKTOP_TYPE_TO_FUEL_TYPE,
 )
 from constants.machines.water_heating import (
     WATER_HEATING_INFO,
