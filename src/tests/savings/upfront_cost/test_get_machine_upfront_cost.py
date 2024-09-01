@@ -1,4 +1,5 @@
 from unittest import TestCase
+from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from tests.mocks import mock_household, mock_household_electrified
@@ -24,9 +25,48 @@ class TestGetBatteryUpfrontCost(TestCase):
 
 
 class TestGetCooktopUpfrontCost(TestCase):
-    def test_it_gets_cooktop_upfront_cost(self):
-        result = get_cooktop_upfront_cost(mock_household, mock_household_electrified)
-        assert result == 1
+    def test_it_returns_cooktop_upfront_cost_of_electrified_option_if_not_already_installed(
+        self,
+    ):
+        switch_from_options = [CooktopEnum.GAS, CooktopEnum.LPG]
+        for switch_from in switch_from_options:
+            result = get_cooktop_upfront_cost(
+                switch_from, CooktopEnum.ELECTRIC_INDUCTION
+            )
+            assert result == 1430 + 1265
+
+        for switch_from in switch_from_options:
+            result = get_cooktop_upfront_cost(
+                switch_from, CooktopEnum.ELECTRIC_RESISTANCE
+            )
+            assert result == 879 + 288
+
+    def test_it_returns_zero_if_electrified_option_already_installed(
+        self,
+    ):
+        assert (
+            get_cooktop_upfront_cost(
+                CooktopEnum.ELECTRIC_INDUCTION, CooktopEnum.ELECTRIC_INDUCTION
+            )
+            == 0
+        )
+        assert (
+            get_cooktop_upfront_cost(
+                CooktopEnum.ELECTRIC_RESISTANCE,
+                CooktopEnum.ELECTRIC_RESISTANCE,
+            )
+            == 0
+        )
+
+    def test_it_returns_zero_if_dont_know(
+        self,
+    ):
+        assert (
+            get_cooktop_upfront_cost(
+                CooktopEnum.DONT_KNOW, CooktopEnum.ELECTRIC_INDUCTION
+            )
+            == 0
+        )
 
 
 class TestGetWaterHeatingUpfrontCost(TestCase):

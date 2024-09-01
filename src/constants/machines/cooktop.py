@@ -32,6 +32,35 @@ COOKTOP_INFO: MachineInfoMap = {
     },
 }
 
+# From 'Product prices'!D25:D27
+COOKTOP_UPFRONT_COST = {
+    CooktopEnum.GAS: {
+        "item_price": 1022,
+        "install_cost": 630,
+    },
+    CooktopEnum.LPG: {
+        "item_price": 1022,
+        "install_cost": 630,
+    },
+    CooktopEnum.ELECTRIC_RESISTANCE: {
+        "item_price": 879,
+        "install_cost": 288,
+    },
+    CooktopEnum.ELECTRIC_INDUCTION: {
+        "item_price": 1430,
+        "install_cost": 1265,
+    },
+    # CooktopEnum.WOOD: {
+    #     "item_price": 0,
+    #     "install_cost": 0,
+    # },
+    CooktopEnum.DONT_KNOW: {
+        "item_price": 0,
+        "install_cost": 0,
+    },
+}
+
+
 # ======= OLD =========
 
 # Cooktops kWh/day
@@ -70,24 +99,4 @@ COOKTOP_OPEX_15_YRS = {
     "Cooktop_LPG cooktop": 3166.6,
     "Cooktop_Electric resistance cooktop": 1402.7,
     "Cooktop_Electric induction cooktop": 1270,
-}
-
-# From 'Product prices'!D25:D27
-COOKTOP_UPFRONT_COST = {
-    "Cooktop_Gas cooktop": {
-        "item_price": 1022,
-        "install_cost": 630,
-    },
-    "Cooktop_LPG cooktop": {
-        "item_price": 1022,
-        "install_cost": 630,
-    },
-    "Cooktop_Electric resistance cooktop": {
-        "item_price": 879,
-        "install_cost": 288,
-    },
-    "Cooktop_Electric induction cooktop": {
-        "item_price": 1430,
-        "install_cost": 1265,
-    },
 }
