@@ -1,4 +1,3 @@
-from params import SOLAR_SIZE
 from savings.upfront_cost.get_machine_upfront_cost import (
     get_solar_upfront_cost,
     get_battery_upfront_cost,
@@ -11,10 +10,6 @@ from openapi_client.models import (
     Household,
     UpfrontCost,
 )
-
-
-SOLAR_COST_PER_KW = 20500 / 9  # Doesn't take into account inverter
-SOLAR_UPFRONT_COST = SOLAR_SIZE * SOLAR_COST_PER_KW
 
 
 def calculate_upfront_cost(

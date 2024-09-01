@@ -1,6 +1,7 @@
 from unittest import TestCase
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.location_enum import LocationEnum
+from openapi_client.models.solar import Solar
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from tests.mocks import mock_household, mock_household_electrified
@@ -15,8 +16,16 @@ from savings.upfront_cost.get_machine_upfront_cost import (
 
 class TestGetSolarUpfrontCost(TestCase):
     def test_it_gets_solar_upfront_cost(self):
-        result = get_solar_upfront_cost(mock_household, mock_household_electrified)
-        assert result == 1
+        wants_solar = Solar(has_solar=False, size=5, install_solar=True)
+        assert get_solar_upfront_cost(wants_solar) == 20500 / 9 * 5
+
+    def test_it_returns_zero_if_already_has_solar(self):
+        already_has_solar = Solar(has_solar=True, size=5, install_solar=None)
+        assert get_solar_upfront_cost(already_has_solar) == 0
+
+    def test_it_returns_zero_if_does_not_have_solar_and_does_not_want_it(self):
+        no_solar = Solar(has_solar=False, size=5, install_solar=False)
+        assert get_solar_upfront_cost(no_solar) == 0
 
 
 class TestGetBatteryUpfrontCost(TestCase):

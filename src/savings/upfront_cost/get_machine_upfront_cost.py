@@ -14,10 +14,15 @@ from openapi_client.models.solar import Solar
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 
+# Doesn't take into account the inverter
+# TODO: update
+SOLAR_COST_PER_KW = 20500 / 9
 
-def get_solar_upfront_cost(current: Solar, electrified: Solar) -> float:
-    cost = randint(0, 10000) + randint(0, 100) / 100
-    return round(cost, 2)
+
+def get_solar_upfront_cost(current: Solar) -> float:
+    if not current.has_solar and current.install_solar:
+        return 20500 / 9 * current.size
+    return 0
 
 
 def get_battery_upfront_cost(current: Battery, electrified: Battery) -> float:
