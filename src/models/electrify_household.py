@@ -41,7 +41,6 @@ def should_electrify(current: MachineEnum, electrify_func) -> bool:
     return electrified != current
 
 
-# TODO: unit test
 def should_install(current: Solar | Battery) -> bool:
     """Determines if the item should be installed
 

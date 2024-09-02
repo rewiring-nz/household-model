@@ -10,6 +10,7 @@ from models.electrify_household import (
     electrify_vehicle,
     electrify_water_heating,
     should_electrify,
+    should_install,
 )
 from openapi_client.models import (
     Battery,
@@ -43,6 +44,32 @@ class TestShouldElectrify:
     def test_it_returns_true_if_current_and_func_output_are_same(self):
         assert not should_electrify(
             SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_electrify_func
+        )
+
+
+class TestShouldInstall:
+    def test_it_returns_true_if_no_solar_and_wants_solar(self):
+        assert should_install(Solar(has_solar=False, size=7, install_solar=True))
+
+    def test_it_returns_false_if_no_solar_and_does_not_want_solar(self):
+        assert not should_install(Solar(has_solar=False, size=7, install_solar=False))
+
+    def test_it_returns_false_if_has_solar(self):
+        assert not should_install(Solar(has_solar=True, size=7))
+        assert not should_install(Solar(has_solar=True, size=7, install_solar=None))
+
+    def test_it_returns_true_if_no_battery_and_wants_battery(self):
+        assert should_install(Battery(has_battery=False, size=7, install_battery=True))
+
+    def test_it_returns_false_if_no_battery_and_does_not_want_battery(self):
+        assert not should_install(
+            Battery(has_battery=False, size=7, install_battery=False)
+        )
+
+    def test_it_returns_false_if_has_battery(self):
+        assert not should_install(Battery(has_battery=True, size=7))
+        assert not should_install(
+            Battery(has_battery=True, size=7, install_battery=None)
         )
 
 
