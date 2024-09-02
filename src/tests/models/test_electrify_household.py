@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-from constants.machines.machine_info import MachineEnum
 from models.electrify_household import (
     electrify_cooktop,
     electrify_household,
@@ -179,35 +178,47 @@ class TestElectrifyVehicle:
         assert electrify_vehicle(self.ev) == self.ev
 
 
+@patch("models.electrify_household.should_install")
 class TestInstallSolar:
-    def test_it_installs_solar(self):
+    def test_it_installs_solar_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
         assert install_solar(
             Solar(has_solar=False, size=7, install_solar=True)
         ) == Solar(has_solar=True, size=7, install_solar=None)
 
-    def test_it_does_not_install_solar_if_false(self):
+    def test_it_does_nothing_if_should_not_install(self, mock_should_install):
+        mock_should_install.side_effect = [False, False, False]
         assert install_solar(
             Solar(has_solar=False, size=7, install_solar=False)
         ) == Solar(has_solar=False, size=7, install_solar=False)
 
-    def test_no_change_if_already_has_solar(self):
         assert install_solar(
             Solar(has_solar=True, size=7, install_solar=None)
         ) == Solar(has_solar=True, size=7, install_solar=None)
 
+        assert install_solar(Solar(has_solar=True, size=7)) == Solar(
+            has_solar=True, size=7
+        )
 
+
+@patch("models.electrify_household.should_install")
 class TestInstallBattery:
-    def test_it_installs_battery(self):
+    def test_it_installs_battery_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
         assert install_battery(
             Battery(has_battery=False, size=7, install_battery=True)
         ) == Battery(has_battery=True, size=7, install_battery=None)
 
-    def test_it_does_not_install_battery_if_false(self):
+    def test_it_does_nothing_if_should_not_install(self, mock_should_install):
+        mock_should_install.side_effect = [False, False, False]
         assert install_battery(
             Battery(has_battery=False, size=7, install_battery=False)
         ) == Battery(has_battery=False, size=7, install_battery=False)
 
-    def test_no_change_if_already_has_battery(self):
         assert install_battery(
             Battery(has_battery=True, size=7, install_battery=None)
         ) == Battery(has_battery=True, size=7, install_battery=None)
+
+        assert install_battery(Battery(has_battery=True, size=7)) == Battery(
+            has_battery=True, size=7
+        )

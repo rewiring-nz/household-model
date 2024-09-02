@@ -124,7 +124,6 @@ def electrify_vehicle(current: Vehicle) -> Vehicle:
     return current
 
 
-# TODO: patch should_install and unit test
 def install_solar(current: Solar) -> Solar:
     """Gets solar if user wants"""
     if should_install(current):
@@ -132,7 +131,6 @@ def install_solar(current: Solar) -> Solar:
     return current
 
 
-# TODO: patch should_install and unit test
 def install_battery(current: Battery) -> Battery:
     """Gets battery if user wants"""
     if should_install(current):
