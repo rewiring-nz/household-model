@@ -1,3 +1,4 @@
+from constants.machines.machine_info import MachineEnum
 from openapi_client.models import (
     Battery,
     CooktopEnum,
@@ -24,6 +25,38 @@ def electrify_household(current_household: Household) -> Household:
         }
     )
     return electrified_household
+
+
+def should_electrify(current: MachineEnum, electrify_func) -> bool:
+    """Determines if the machine should be electrified
+
+    Args:
+        current (MachineEnum): the current machine type
+        electrify_func (function): a function that returns an electrified version of the current machine
+
+    Returns:
+        bool: whether the machine should be electrified or not
+    """
+    electrified = electrify_func(current)
+    return electrified != current
+
+
+def should_install(current: Solar | Battery) -> bool:
+    """Determines if the item should be installed
+
+    Args:
+        current (Solar | Battery): the item info including the user's preference on whether to install
+
+    Returns:
+        bool: whether the item should be installed or not
+    """
+    if isinstance(current, Solar):
+        # Install solar if they don't have solar & want to install solar
+        return not current.has_solar and current.install_solar
+
+    if isinstance(current, Battery):
+        # Install battery if they don't have battery & want to install battery
+        return not current.has_battery and current.install_battery
 
 
 def electrify_space_heating(current: SpaceHeatingEnum) -> SpaceHeatingEnum:
@@ -93,13 +126,13 @@ def electrify_vehicle(current: Vehicle) -> Vehicle:
 
 def install_solar(current: Solar) -> Solar:
     """Gets solar if user wants"""
-    if current.install_solar:
+    if should_install(current):
         return current.copy(update={"has_solar": True, "install_solar": None})
     return current
 
 
 def install_battery(current: Battery) -> Battery:
     """Gets battery if user wants"""
-    if current.install_battery:
+    if should_install(current):
         return current.copy(update={"has_battery": True, "install_battery": None})
     return current
