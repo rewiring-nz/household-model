@@ -1,3 +1,6 @@
+from unittest.mock import MagicMock, patch
+
+from constants.machines.machine_info import MachineEnum
 from models.electrify_household import (
     electrify_cooktop,
     electrify_household,
@@ -6,6 +9,7 @@ from models.electrify_household import (
     electrify_space_heating,
     electrify_vehicle,
     electrify_water_heating,
+    should_electrify,
 )
 from openapi_client.models import (
     Battery,
@@ -23,6 +27,23 @@ class TestElectrifyHousehold:
     def test_it_electrifies_household_correctly(self):
         electrified = electrify_household(mock_household)
         assert electrified == mock_household_electrified
+
+
+class TestShouldElectrify:
+    mock_electrify_func = MagicMock()
+    mock_electrify_func.return_value = SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+
+    def test_it_calls_electrify_func_correctly(self):
+        should_electrify(SpaceHeatingEnum.GAS, self.mock_electrify_func)
+        self.mock_electrify_func.assert_called_once_with(SpaceHeatingEnum.GAS)
+
+    def test_it_returns_true_if_current_and_func_output_are_different(self):
+        assert should_electrify(SpaceHeatingEnum.GAS, self.mock_electrify_func)
+
+    def test_it_returns_true_if_current_and_func_output_are_same(self):
+        assert not should_electrify(
+            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_electrify_func
+        )
 
 
 class TestElectrifySpaceHeating:

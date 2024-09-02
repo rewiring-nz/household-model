@@ -27,7 +27,6 @@ def electrify_household(current_household: Household) -> Household:
     return electrified_household
 
 
-# TODO: unit test
 def should_electrify(current: MachineEnum, electrify_func) -> bool:
     """Determines if the machine should be electrified
 
