@@ -287,3 +287,4 @@ components:
         - VEHICLE
         - SOLAR
         - BATTERY
+        - FULLY_ELECTRIFIED
