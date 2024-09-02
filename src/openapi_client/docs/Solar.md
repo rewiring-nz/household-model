@@ -6,8 +6,8 @@ The household's solar panel system
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **has_solar** | **bool** | Whether the household has solar | 
-**size** | **float** | The size of the solar panel system in kW | [optional] 
-**install_solar** | **bool** | Whether the household wants to install solar | [optional] 
+**size** | **float** | The size of the solar panel system in kW. Should be null if hasSolar is False and installSolar is False. | [optional] 
+**install_solar** | **bool** | Whether the household wants to install solar. Should be null if hasSolar is True. | [optional] 
 
 ## Example
 
