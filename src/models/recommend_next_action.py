@@ -11,6 +11,7 @@ from openapi_client.models import Household, Recommendation, RecommendationActio
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
+
 NEXT_STEP_URLS = {
     RecommendationActionEnum.SPACE_HEATING: "https://www.rewiring.nz/electrification-guides/space-heating-and-cooling",
     RecommendationActionEnum.WATER_HEATING: "https://www.rewiring.nz/electrification-guides/water-heating",
@@ -80,7 +81,7 @@ def n_evs(vehicles: List[Vehicle]) -> int:
     """
     return sum([v.fuel_type == VehicleFuelTypeEnum.ELECTRIC for v in vehicles])
 
-
+  
 def n_vehicles_to_electrify(vehicles: List[Vehicle]) -> int:
     """Calculates the number of vehicles in the list to electrify
 
