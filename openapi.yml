@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Household savings
-  version: 0.0.4
+  version: 0.0.5
   description: |-
     This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
 tags:
@@ -156,10 +156,10 @@ components:
           type: boolean
         size:
           type: number
-          description: The size of the solar panel system in kW
+          description: The size of the solar panel system in kW. Should be null if hasSolar is False and installSolar is False.
           example: 7
         installSolar:
-          description: Whether the household wants to install solar
+          description: Whether the household wants to install solar. Should be null if hasSolar is True.
           type: boolean        
     Battery:
       type: object
@@ -172,18 +172,18 @@ components:
           type: boolean
         capacity:
           type: number
-          description: The capacity of the battery system in kWh
+          description: The capacity of the battery system in kWh. Should be null if hasBattery is False and installBattery is False.
           example: 13.5
         powerOutput:
           type: number
-          description: The continuous power output of the battery system in kW
+          description: The continuous power output of the battery system in kW. Should be null if hasBattery is False and installBattery is False.
           example: 5
         peakPowerOutput:
           type: number
-          description: The peak power output of the battery system in kW
+          description: The peak power output of the battery system in kW. Should be null if hasBattery is False and installBattery is False.
           example: 7
         installBattery:
-          description: Whether the household wants to install a battery
+          description: Whether the household wants to install a battery. Should be null is hasBattery is True.
           type: boolean 
     Vehicle:
       type: object
@@ -287,3 +287,4 @@ components:
         - VEHICLE
         - SOLAR
         - BATTERY
+        - FULLY_ELECTRIFIED

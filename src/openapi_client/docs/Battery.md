@@ -6,10 +6,10 @@ The household's home battery system
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **has_battery** | **bool** | Whether the household has battery | 
-**capacity** | **float** | The capacity of the battery system in kWh | [optional] 
-**power_output** | **float** | The continuous power output of the battery system in kW | [optional] 
-**peak_power_output** | **float** | The peak power output of the battery system in kW | [optional] 
-**install_battery** | **bool** | Whether the household wants to install a battery | [optional] 
+**capacity** | **float** | The capacity of the battery system in kWh. Should be null if hasBattery is False and installBattery is False. | [optional] 
+**power_output** | **float** | The continuous power output of the battery system in kW. Should be null if hasBattery is False and installBattery is False. | [optional] 
+**peak_power_output** | **float** | The peak power output of the battery system in kW. Should be null if hasBattery is False and installBattery is False. | [optional] 
+**install_battery** | **bool** | Whether the household wants to install a battery. Should be null is hasBattery is True. | [optional] 
 
 ## Example
 

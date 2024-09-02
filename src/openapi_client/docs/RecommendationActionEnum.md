@@ -16,6 +16,8 @@ The recommended action for this household to maximise their savings
 
 * `BATTERY` (value: `'BATTERY'`)
 
+* `FULLY_ELECTRIFIED` (value: `'FULLY_ELECTRIFIED'`)
+
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
 

@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **before** | **float** | The household&#39;s opex costs per week before electrification in NZD to 2 dp. | [optional] 
 **after** | **float** | The household&#39;s opex costs per week after electrification in NZD to 2 dp. | [optional] 
-**difference** | **float** | The savings value; the difference in opex costs before &amp; after electrification, in NZD to 2 dp. | [optional] 
+**difference** | **float** | The difference in opex costs before &amp; after electrification, in NZD to 2 dp. | [optional] 
 
 ## Example
 
