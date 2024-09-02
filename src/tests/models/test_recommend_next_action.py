@@ -12,8 +12,13 @@ from openapi_client.models import (
     Battery,
 )
 
-from models.recommend_next_action import n_vehicles_to_electrify, recommend_next_action
+from models.recommend_next_action import (
+    n_evs,
+    n_vehicles_to_electrify,
+    recommend_next_action,
+)
 from openapi_client.models.vehicle import Vehicle
+from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from tests.mocks import mock_vehicle_petrol, mock_vehicle_ev
 
 base_household = {
@@ -39,8 +44,8 @@ electrified_household = {
 
 
 class TestRecommendNextAction:
+    # These are e2e tests - they don't patch functions like should_install and should_electrify
     def test_no_solar_and_wants_solar(self):
-        # household without solar and wants solar
         household = Household(
             **{
                 **base_household,
@@ -76,6 +81,17 @@ class TestRecommendNextAction:
             }
         )
         expected = Recommendation(
+            action=RecommendationActionEnum.VEHICLE,
+            url="https://www.rewiring.nz/electrification-guides/electric-cars",
+        )
+        result = recommend_next_action(household)
+        assert result == expected
+
+    def test_has_solar_and_no_vehicles(self):
+        household = Household(
+            **{**base_household, "solar": Solar(hasSolar=True), "vehicles": []}
+        )
+        expected = Recommendation(
             action=RecommendationActionEnum.SPACE_HEATING,
             url="https://www.rewiring.nz/electrification-guides/space-heating-and-cooling",
         )
@@ -88,21 +104,6 @@ class TestRecommendNextAction:
                 **base_household,
                 "solar": Solar(hasSolar=True),
                 "vehicles": [mock_vehicle_ev],
-            }
-        )
-        expected = Recommendation(
-            action=RecommendationActionEnum.VEHICLE,
-            url="https://www.rewiring.nz/electrification-guides/electric-cars",
-        )
-        result = recommend_next_action(household)
-        assert result == expected
-
-        # Same even if they have another petrol vehicle
-        household = Household(
-            **{
-                **base_household,
-                "solar": Solar(hasSolar=True),
-                "vehicles": [mock_vehicle_ev, mock_vehicle_petrol],
             }
         )
         expected = Recommendation(
@@ -207,6 +208,44 @@ class TestRecommendNextAction:
         expected = Recommendation(action=RecommendationActionEnum.FULLY_ELECTRIFIED)
         result = recommend_next_action(household)
         assert result == expected
+
+
+class TestNEVs:
+
+    def test_all_evs(self):
+        vehicles = [mock_vehicle_ev] * 5
+        result = n_evs(vehicles)
+        assert result == 5
+
+    def test_no_evs(self):
+        vehicles = [mock_vehicle_petrol] * 4
+        result = n_evs(vehicles)
+        assert result == 0
+
+    def test_mixed_vehicles(self):
+        vehicles = [
+            mock_vehicle_ev,
+            mock_vehicle_petrol,
+            mock_vehicle_ev,
+            mock_vehicle_petrol,
+        ]
+        result = n_evs(vehicles)
+        assert result == 2
+
+    def test_empty_list(self):
+        vehicles = []
+        result = n_evs(vehicles)
+        assert result == 0
+
+    def test_single_ev(self):
+        vehicles = [mock_vehicle_ev]
+        result = n_evs(vehicles)
+        assert result == 1
+
+    def test_single_non_ev(self):
+        vehicles = [mock_vehicle_petrol]
+        result = n_evs(vehicles)
+        assert result == 0
 
 
 @patch("models.recommend_next_action.should_electrify")
