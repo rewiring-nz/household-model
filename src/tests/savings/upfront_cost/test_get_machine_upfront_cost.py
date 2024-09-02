@@ -1,4 +1,5 @@
 from unittest import TestCase
+from unittest.mock import patch
 from openapi_client.models.battery import Battery
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.location_enum import LocationEnum
@@ -14,34 +15,36 @@ from savings.upfront_cost.get_machine_upfront_cost import (
 )
 
 
+@patch("savings.upfront_cost.get_machine_upfront_cost.should_install")
 class TestGetSolarUpfrontCost(TestCase):
-    def test_it_gets_solar_upfront_cost(self):
-        wants_solar = Solar(has_solar=False, size=5, install_solar=True)
-        assert get_solar_upfront_cost(wants_solar) == round(20500 / 9 * 5, 2)
+    mock_solar_size = 5
+    mock_solar = Solar(has_solar=False, size=mock_solar_size)
 
-    def test_it_returns_zero_if_already_has_solar(self):
-        already_has_solar = Solar(has_solar=True, size=5, install_solar=None)
-        assert get_solar_upfront_cost(already_has_solar) == 0
-
-    def test_it_returns_zero_if_does_not_have_solar_and_does_not_want_it(self):
-        no_solar = Solar(has_solar=False, size=5, install_solar=False)
-        assert get_solar_upfront_cost(no_solar) == 0
-
-
-class TestGetBatteryUpfrontCost(TestCase):
-    def test_it_gets_battery_upfront_cost(self):
-        wants_battery = Battery(has_battery=False, capacity=5, install_battery=True)
-        assert get_battery_upfront_cost(wants_battery) == 1000 * 5
-
-    def test_it_returns_zero_if_already_has_battery(self):
-        already_has_battery = Battery(
-            has_battery=True, capacity=5, install_battery=None
+    def test_it_gets_solar_upfront_cost_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
+        assert get_solar_upfront_cost(self.mock_solar) == round(
+            20500 / 9 * self.mock_solar_size, 2
         )
-        assert get_battery_upfront_cost(already_has_battery) == 0
 
-    def test_it_returns_zero_if_does_not_have_battery_and_does_not_want_it(self):
-        no_battery = Battery(has_battery=False, capacity=5, install_battery=False)
-        assert get_battery_upfront_cost(no_battery) == 0
+    def test_it_returns_zero_if_should_not_install_solar(self, mock_should_install):
+        mock_should_install.side_effect = [False]
+        assert get_solar_upfront_cost(self.mock_solar) == 0
+
+
+@patch("savings.upfront_cost.get_machine_upfront_cost.should_install")
+class TestGetBatteryUpfrontCost(TestCase):
+    mock_battery_capacity = 5
+    mock_battery = Battery(has_battery=False, capacity=mock_battery_capacity)
+
+    def test_it_gets_battery_upfront_cost_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
+        assert get_battery_upfront_cost(self.mock_battery) == round(
+            1000 * self.mock_battery_capacity, 2
+        )
+
+    def test_it_returns_zero_if_should_not_install_battery(self, mock_should_install):
+        mock_should_install.side_effect = [False]
+        assert get_battery_upfront_cost(self.mock_battery) == 0
 
 
 class TestGetCooktopUpfrontCost(TestCase):

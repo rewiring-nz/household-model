@@ -20,14 +20,12 @@ SOLAR_COST_PER_KW = 20500 / 9
 BATTERY_COST_PER_KWH = 1000
 
 
-# TODO: patch should_install and unit test
 def get_solar_upfront_cost(current: Solar) -> float:
     if should_install(current):
         return round(SOLAR_COST_PER_KW * current.size, 2)
     return 0
 
 
-# TODO: patch should_install and unit test
 def get_battery_upfront_cost(current: Battery) -> float:
     if should_install(current):
         return round(BATTERY_COST_PER_KWH * current.capacity, 2)
