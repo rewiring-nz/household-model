@@ -18,13 +18,13 @@ from openapi_client.models import (
     Opex,
     OpexValues,
 )
-from savings.opex.get_fixed_costs import get_fixed_costs
 from savings.opex.get_machine_opex import (
     get_appliance_opex,
     get_other_appliances_opex,
-    get_solar_savings,
     get_vehicle_opex,
 )
+from savings.opex.get_fixed_costs import get_fixed_costs
+from savings.opex.get_solar_savings import get_solar_savings
 
 
 def calculate_opex(
@@ -72,7 +72,7 @@ def _get_total_opex(household: Household, period: PeriodEnum):
     vehicle_opex = get_vehicle_opex(household.vehicles, period)
     other_opex = get_other_appliances_opex(period)
     fixed_costs = get_fixed_costs(household, period)
-    solar_savings = get_solar_savings(household.solar)
+    solar_savings = get_solar_savings(household.solar, period)
     return appliance_opex + vehicle_opex + other_opex + fixed_costs - solar_savings
 
 
@@ -95,7 +95,9 @@ def _get_total_appliance_opex(household: Household, period: PeriodEnum):
 # TODO: The below is wrong, just use the direct results from the sheet
 # Use value from "Full home"!E25, when C8 Vehicle number is 0 and C12 Solar size is 5 kW
 TOTAL_ELECTRICITY_NEEDS = 13.5  # kWh per day
-POWER_BILL_NO_SOLAR = TOTAL_ELECTRICITY_NEEDS * COST_PER_FUEL_KWH_TODAY["electricity"]
+POWER_BILL_NO_SOLAR = (
+    TOTAL_ELECTRICITY_NEEDS * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
+)
 
 # How much of the avg total energy needs can solar provide (free)?
 SOLAR_SELF_CONSUMPTION_ON_APPLIANCES = 0.5  # C14
@@ -103,7 +105,9 @@ GENERATED_FROM_SOLAR = TOTAL_ELECTRICITY_NEEDS * SOLAR_SELF_CONSUMPTION_ON_APPLI
 
 # How much do you need from the grid, and how much does it cost?
 CONSUMED_FROM_GRID = TOTAL_ELECTRICITY_NEEDS - GENERATED_FROM_SOLAR  # kWh/day
-POWER_BILL_WITH_SOLAR = CONSUMED_FROM_GRID * COST_PER_FUEL_KWH_TODAY["electricity"]
+POWER_BILL_WITH_SOLAR = (
+    CONSUMED_FROM_GRID * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
+)
 
 # How much do you get from selling the rest to the grid?
 FEED_IN_TARIFF = 0.12  # $ per kWh

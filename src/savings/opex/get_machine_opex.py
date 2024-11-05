@@ -1,11 +1,11 @@
 from typing import List
 
-from openapi_client.models.solar import Solar
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_TODAY,
+    FuelTypeEnum,
 )
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
@@ -33,7 +33,10 @@ def get_opex_per_day(
     """
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    opex = energy * COST_PER_FUEL_KWH_TODAY[fuel_type]
+    fuel_price = COST_PER_FUEL_KWH_TODAY[fuel_type]
+    if fuel_type == FuelTypeEnum.ELECTRICITY:
+        fuel_price = fuel_price["volume_rate"]
+    opex = energy * fuel_price
     return opex
 
 
@@ -70,7 +73,8 @@ def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
         float: cost of operating other appliances over given period in NZD to 2dp
     """
     opex_daily = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * COST_PER_FUEL_KWH_TODAY["electricity"]
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+        * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
     )
     return round(scale_daily_to_period(opex_daily, period), 2)
 
@@ -116,17 +120,6 @@ def get_vehicle_opex(
         # Add to total
         total_opex += opex_period
     return total_opex
-
-
-def get_solar_savings(solar: Solar, period: PeriodEnum = PeriodEnum.DAILY) -> float:
-    # TODO
-    # if installing solar
-    # substract AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH or AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH but dynamic to solar size
-    # check if these apply even without battery, and what the impact of the battery is
-    savings_daily = 0
-    if solar.install_solar:
-        savings_daily = 1.5 * solar.size  # dummy value
-    return scale_daily_to_period(savings_daily, period)
 
 
 def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:

@@ -1,14 +1,11 @@
-from decimal import Decimal
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.household import Household
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 
 from constants.fuel_stats import FIXED_COSTS_PER_YEAR_2024, FuelTypeEnum
-from constants.utils import PeriodEnum
+from constants.utils import DAYS_PER_YEAR, PeriodEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from utils.scale_daily_to_period import scale_daily_to_period
-
-DAYS_PER_YEAR = 365.25
 
 
 def get_fixed_costs(

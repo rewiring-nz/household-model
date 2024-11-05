@@ -55,7 +55,9 @@ class TestGetOpexPerDay(TestCase):
         opex = get_opex_per_day(
             SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
         )
-        expected_opex = 5.0 * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]
+        expected_opex = (
+            5.0 * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
+        )
         assert opex == expected_opex
 
     def test_get_opex_per_day_handles_missing_fuel_type(self):
