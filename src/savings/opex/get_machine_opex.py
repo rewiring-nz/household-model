@@ -20,7 +20,7 @@ from constants.machines.vehicles import (
 )
 from constants.utils import PeriodEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
-from params import OPERATIONAL_LIFETIME
+from utils.scale_daily_to_period import scale_daily_to_period
 
 
 FIXED_COSTS_PER_YEAR = {
@@ -34,7 +34,7 @@ def get_opex_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
 ) -> float:
-    """Get opex per day based on machine's energy use per day and opex factor for fuel type
+    """Get opex per day for a given machine
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
@@ -67,10 +67,10 @@ def get_appliance_opex(
         appliance,
         appliance_info,
     )
-    return round(_convert_to_period(opex_daily, period), 2)
+    return round(scale_daily_to_period(opex_daily, period), 2)
 
 
-def get_other_appliance_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
+def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
     """Calculates the opex of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
     We assume that these are all electric.
@@ -84,7 +84,7 @@ def get_other_appliance_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
     opex_daily = (
         ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * COST_PER_FUEL_KWH_TODAY["electricity"]
     )
-    return round(_convert_to_period(opex_daily, period), 2)
+    return round(scale_daily_to_period(opex_daily, period), 2)
 
 
 def get_vehicle_opex(
@@ -123,7 +123,7 @@ def get_vehicle_opex(
         weighted_opex_daily += rucs_daily
 
         # Convert to given period
-        opex_period = _convert_to_period(weighted_opex_daily, period)
+        opex_period = scale_daily_to_period(weighted_opex_daily, period)
 
         # Add to total
         total_opex += opex_period
@@ -169,7 +169,7 @@ def get_fixed_costs(
         lpg_connection = 0
 
     fixed_costs_daily = grid_connection + ngas_connection + lpg_connection
-    return _convert_to_period(fixed_costs_daily, period)
+    return scale_daily_to_period(fixed_costs_daily, period)
 
 
 def get_solar_savings(solar: Solar, period: PeriodEnum = PeriodEnum.DAILY) -> float:
@@ -180,7 +180,7 @@ def get_solar_savings(solar: Solar, period: PeriodEnum = PeriodEnum.DAILY) -> fl
     savings_daily = 0
     if solar.install_solar:
         savings_daily = 1.5 * solar.size  # dummy value
-    return _convert_to_period(savings_daily, period)
+    return scale_daily_to_period(savings_daily, period)
 
 
 def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
@@ -198,15 +198,3 @@ def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
     if vehicle_type == VehicleFuelTypeEnum.HYBRID:
         # HEV: Assume 70/30 split between petrol and electric
         return petrol * 0.7 + ev * 0.3
-
-
-def _convert_to_period(opex_daily: float, period: PeriodEnum) -> float:
-    # This might become more complex in future, taking into account macroeconomic effects
-    if period == PeriodEnum.DAILY:
-        return opex_daily
-    if period == PeriodEnum.WEEKLY:
-        return opex_daily * 7
-    if period == PeriodEnum.YEARLY:
-        return opex_daily * 365.25
-    if period == PeriodEnum.OPERATIONAL_LIFETIME:
-        return opex_daily * 365.25 * OPERATIONAL_LIFETIME

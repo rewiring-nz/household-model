@@ -65,7 +65,7 @@ class TestCalculateEmissions(unittest.TestCase):
             "cooktop_resistance": 0.83 * 0.074,
             "petrol_car": 31.4 * 0.258 * (250 * 52 / 11000),
             "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),
-            "other": (0.34 + 4.48 + 3.06) * 0.074,
+            "other": (0.34 + 4.05 + 2.85) * 0.074,
         }
         after = {
             "space_heating_heat_pump": 2.3 * 0.074,
@@ -73,7 +73,7 @@ class TestCalculateEmissions(unittest.TestCase):
             "cooktop_resistance": 0.83 * 0.074,  # didn't swap
             "ev_car": 7.324 * 0.074 * (250 * 52 / 11000),
             "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),  # didn't want to switch
-            "other": (0.34 + 4.48 + 3.06) * 0.074,
+            "other": (0.34 + 4.05 + 2.85) * 0.074,
         }
         before_daily = sum(before.values())
         after_daily = sum(after.values())

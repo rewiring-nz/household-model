@@ -139,7 +139,7 @@ class TestGetApplianceEmissions:
     return_value=mock_emissions_weekly,
 )
 class TestGetOtherApplianceEmissions:
-    emissions_daily = (0.34 + 4.48 + 3.06) * 0.074
+    emissions_daily = (0.34 + 4.05 + 2.85) * 0.074
 
     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
         get_other_appliance_emissions(PeriodEnum.WEEKLY)
