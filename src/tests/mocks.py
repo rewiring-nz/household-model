@@ -1,3 +1,4 @@
+from constants.utils import WEEKS_PER_YEAR
 from openapi_client.models import (
     Household,
     Emissions,
@@ -82,22 +83,30 @@ mock_household_electrified = Household(
 
 mock_emissions = Emissions(
     perWeek=EmissionsValues(before=500.5, after=100.1, difference=400.4),
-    perYear=EmissionsValues(before=500.5 * 52, after=100.1 * 52, difference=400.4 * 52),
+    perYear=EmissionsValues(
+        before=500.5 * WEEKS_PER_YEAR,
+        after=100.1 * WEEKS_PER_YEAR,
+        difference=400.4 * WEEKS_PER_YEAR,
+    ),
     overLifetime=EmissionsValues(
-        before=500.5 * 52 * 15 * 1.1,  # some random factor
-        after=100.1 * 52 * 15 * 1.1,
-        difference=400.4 * 52 * 15 * 1.1,
+        before=500.5 * WEEKS_PER_YEAR * 15 * 1.1,  # some random factor
+        after=100.1 * WEEKS_PER_YEAR * 15 * 1.1,
+        difference=400.4 * WEEKS_PER_YEAR * 15 * 1.1,
     ),
     operationalLifetime=15,
 )
 
 mock_opex = Opex(
     perWeek=OpexValues(before=300.52, after=140.11, difference=160.41),
-    perYear=OpexValues(before=300.52 * 52, after=140.11 * 52, difference=160.41 * 52),
+    perYear=OpexValues(
+        before=300.52 * WEEKS_PER_YEAR,
+        after=140.11 * WEEKS_PER_YEAR,
+        difference=160.41 * WEEKS_PER_YEAR,
+    ),
     overLifetime=OpexValues(
-        before=300.52 * 52 * 15 * 1.1,  # some random factor
-        after=140.11 * 52 * 15 * 1.1,
-        difference=160.41 * 52 * 15 * 1.1,
+        before=300.52 * WEEKS_PER_YEAR * 15 * 1.1,  # some random factor
+        after=140.11 * WEEKS_PER_YEAR * 15 * 1.1,
+        difference=160.41 * WEEKS_PER_YEAR * 15 * 1.1,
     ),
     operationalLifetime=15,
 )
