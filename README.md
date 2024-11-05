@@ -31,7 +31,7 @@ You can check out the auto-generated API docs at http://127.0.0.1:8000/docs.
 pipenv run python -m pytest
 
 # Lint (skip string normalisation)
-pipenv run black -S .
+pipenv run black -S . --exclude src/openapi_client
 ```
 
 ## Generating the API client from `openapi.yml`

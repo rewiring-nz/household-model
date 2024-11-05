@@ -23,26 +23,27 @@ EMISSIONS_FACTORS = {
     "solar": 0,
 }
 
-# From 'Energy prices' C7:C18
+# 2024 prices from 'Energy prices' C7:C18
 # Unit: $/kWh
-# https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=901618629#gid=901618629
 COST_PER_FUEL_KWH_TODAY = {
-    "electricity": 0.262,
+    "electricity": 0.26175,
     "natural_gas": 0.118,
-    "lpg": 0.255,
-    "wood": 0.113,
-    "petrol": 0.289,
-    "diesel": 0.197,
+    "lpg": 0.25452,
+    "wood": 0.11250,
+    "petrol": 0.28884,
+    "diesel": 0.19679,
     "solar": 0,
 }
+
+# Average over next 15 years (real)
 # TODO: Use this price when doing lifetime opex calculations
-# TODO: Update this with average or nominal price for next 15 years from https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=901618629#gid=901618629
+# Unit: $/kWh
 COST_PER_FUEL_KWH_AVG_15_YEARS = {
-    "electricity": 0.282,
-    "natural_gas": 0.123,
-    "lpg": 0.273,
-    "wood": 0.112,
-    "petrol": 0.273,
-    "diesel": 0.206,
+    "electricity": 0.29515,
+    "natural_gas": 0.14161,
+    "lpg": 0.30544,
+    "wood": 0.12837,
+    "petrol": 0.36584,
+    "diesel": 0.24925,
     "solar": 0,
 }
