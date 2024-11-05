@@ -3,7 +3,7 @@ from typing import List
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
-from constants.fuel_stats import EMISSIONS_FACTORS
+from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
@@ -66,7 +66,8 @@ def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> floa
         float: kgCO2e emitted from other appliances over given period
     """
     emissions_daily = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+        * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
     )
     return scale_daily_to_period(emissions_daily, period)
 
