@@ -8,7 +8,7 @@ from constants.utils import PeriodEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from utils.scale_daily_to_period import scale_daily_to_period
 
-DAYS_PER_YEAR = Decimal("365.25")
+DAYS_PER_YEAR = 365.25
 
 
 def get_fixed_costs(
