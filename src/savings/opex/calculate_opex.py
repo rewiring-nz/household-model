@@ -11,7 +11,7 @@ from constants.utils import PeriodEnum
 from params import (
     OPERATIONAL_LIFETIME,
 )
-from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY
+from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, FuelTypeEnum
 
 from openapi_client.models import (
     Household,
@@ -96,7 +96,8 @@ def _get_total_appliance_opex(household: Household, period: PeriodEnum):
 # Use value from "Full home"!E25, when C8 Vehicle number is 0 and C12 Solar size is 5 kW
 TOTAL_ELECTRICITY_NEEDS = 13.5  # kWh per day
 POWER_BILL_NO_SOLAR = (
-    TOTAL_ELECTRICITY_NEEDS * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
+    TOTAL_ELECTRICITY_NEEDS
+    * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
 )
 
 # How much of the avg total energy needs can solar provide (free)?
@@ -106,7 +107,8 @@ GENERATED_FROM_SOLAR = TOTAL_ELECTRICITY_NEEDS * SOLAR_SELF_CONSUMPTION_ON_APPLI
 # How much do you need from the grid, and how much does it cost?
 CONSUMED_FROM_GRID = TOTAL_ELECTRICITY_NEEDS - GENERATED_FROM_SOLAR  # kWh/day
 POWER_BILL_WITH_SOLAR = (
-    CONSUMED_FROM_GRID * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
+    CONSUMED_FROM_GRID
+    * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
 )
 
 # How much do you get from selling the rest to the grid?

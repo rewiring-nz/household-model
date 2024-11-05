@@ -9,6 +9,7 @@ from constants.battery import (
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_AVG_15_YEARS,
     FIXED_COSTS_PER_YEAR_AVG_15_YEARS,
+    FuelTypeEnum,
 )
 from constants.solar import (
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
@@ -62,9 +63,14 @@ def get_solar_savings(
 def get_total_bills(
     has_battery: bool, e_consumed_from_grid: float, e_from_battery: float
 ) -> float:
-    power_bill = get_electricity_opex(has_battery, e_consumed_from_grid, e_from_battery)
+    grid_volume_costs = get_electricity_opex(
+        has_battery, e_consumed_from_grid, e_from_battery
+    )
+    # grid_fixed_costs = TODO
+    # revenue_from_solar_export = get_solar_feedin_tariff(e_exported)
     rucs = get_rucs()
-    return power_bill + rucs
+    return grid_volume_costs + rucs
+    # return grid_volume_costs + grid_fixed_costs + rucs - revenue_from_solar_export
 
 
 def get_rucs():
@@ -96,19 +102,21 @@ def get_effective_grid_price(
     Returns:
         float: the effective grid price
     """
-    grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS["electricity"]["volume_rate"]
+    grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["volume_rate"]
     if has_battery:
         if e_from_battery >= e_consumed_from_grid:
             # All energy is from the battery, which could be charged at off peak price
-            grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS["electricity"]["off_peak"]
+            grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY][
+                "off_peak"
+            ]
         if e_from_battery < e_consumed_from_grid:
             # A proportion of the energy consumed from the grid was bought at off peak price
             percent_of_consumed_from_battery = e_from_battery / e_consumed_from_grid
             grid_price = (
-                COST_PER_FUEL_KWH_AVG_15_YEARS["electricity"]["off_peak"]
+                COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["off_peak"]
                 * percent_of_consumed_from_battery
             ) + (
-                COST_PER_FUEL_KWH_AVG_15_YEARS["electricity"]["volume_rate"]
+                COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["volume_rate"]
                 * (1 - percent_of_consumed_from_battery)
             )
     return grid_price

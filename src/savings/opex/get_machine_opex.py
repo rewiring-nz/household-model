@@ -74,7 +74,7 @@ def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
     """
     opex_daily = (
         ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-        * COST_PER_FUEL_KWH_TODAY["electricity"]["volume_rate"]
+        * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
     )
     return round(scale_daily_to_period(opex_daily, period), 2)
 
