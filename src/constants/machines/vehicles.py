@@ -4,15 +4,13 @@ from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
 
 # Vehicles kWh/day per vehicle
-# From 'Machines'!D273
-# TODO: Update with latest numbers https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?disco=AAABVW3cP-k
 VEHICLE_INFO: MachineInfoMap = {
     VehicleFuelTypeEnum.PETROL: {
-        "kwh_per_day": 32,
+        "kwh_per_day": 31.4,
         "fuel_type": FuelTypeEnum.PETROL,
     },
     VehicleFuelTypeEnum.DIESEL: {
-        "kwh_per_day": 28.4,
+        "kwh_per_day": 22.8,
         "fuel_type": FuelTypeEnum.DIESEL,
     },
     # For PHEV and HEV, we're going to assume the emissions are a % of a petrol car, and the rest is electric
@@ -25,7 +23,7 @@ VEHICLE_INFO: MachineInfoMap = {
         "fuel_type": None,
     },
     VehicleFuelTypeEnum.ELECTRIC: {
-        "kwh_per_day": 8.027,
+        "kwh_per_day": 7.324,
         "fuel_type": FuelTypeEnum.ELECTRICITY,
     },
 }
