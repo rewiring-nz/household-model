@@ -174,24 +174,27 @@ class TestGetVehicleOpexPerDay(TestCase):
         expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000) + daily_rucs
         assert result == expected
 
-    # def test_it_combines_vehicles_correctly(self):
-    #     result = get_vehicle_opex(
-    #         [
-    #             mock_vehicle_petrol,
-    #             mock_vehicle_diesel,
-    #             mock_vehicle_ev,
-    #             mock_vehicle_hev,
-    #             mock_vehicle_phev,
-    #         ]
-    #     )
-    #     expected = (
-    #         (31.4 * 0.28884 * (250 * 52 / 11000))
-    #         + (22.8 * 0.253 * (50 * 52 / 11000))
-    #         + (7.324 * 0.26175 * (250 * 52 / 11000))
-    #         + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
-    #         + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
-    #     )
-    #     assert result == expected
+    def test_it_combines_vehicles_correctly(self):
+        result = get_vehicle_opex(
+            [
+                mock_vehicle_petrol,
+                mock_vehicle_diesel,
+                mock_vehicle_ev,
+                mock_vehicle_hev,
+                mock_vehicle_phev,
+            ]
+        )
+        expected = (
+            (31.4 * 0.28884 * (250 * 52 / 11000))
+            + (22.8 * 0.19679 * (50 * 52 / 11000))
+            + (76 * 50 * 52 / 1000) / 365.25
+            + (7.324 * 0.26175 * (250 * 52 / 11000))
+            + (76 * 250 * 52 / 1000) / 365.25
+            + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+            + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
+            + (38 * 175 * 52 / 1000) / 365.25
+        )
+        assert result == expected
 
     # @patch(
     #     "savings.opex.get_machine_opex.scale_daily_to_period",
