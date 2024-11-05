@@ -1,4 +1,4 @@
-from constants.utils import PeriodEnum
+from constants.utils import DAYS_PER_YEAR, PeriodEnum
 from params import OPERATIONAL_LIFETIME
 
 
@@ -18,6 +18,6 @@ def scale_daily_to_period(daily_val: float, period: PeriodEnum) -> float:
     if period == PeriodEnum.WEEKLY:
         return daily_val * 7
     if period == PeriodEnum.YEARLY:
-        return daily_val * 365.25
+        return daily_val * DAYS_PER_YEAR
     if period == PeriodEnum.OPERATIONAL_LIFETIME:
-        return daily_val * 365.25 * OPERATIONAL_LIFETIME
+        return daily_val * DAYS_PER_YEAR * OPERATIONAL_LIFETIME

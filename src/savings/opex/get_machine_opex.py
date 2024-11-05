@@ -14,7 +14,7 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
 )
-from constants.utils import PeriodEnum
+from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
@@ -106,12 +106,20 @@ def get_vehicle_opex(
 
         # Weight the opex based on how much they use the vehicle compared to average
         weighting_factor = (
-            vehicle.kms_per_week * 52 / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
+            vehicle.kms_per_week
+            * WEEKS_PER_YEAR
+            / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
         )
         weighted_opex_daily = avg_opex_daily * weighting_factor
 
         # Add Road User Charges (RUCs), weighted on kms per year
-        rucs_daily = RUCS[vehicle.fuel_type] * vehicle.kms_per_week * 52 / 1000 / 365.25
+        rucs_daily = (
+            RUCS[vehicle.fuel_type]  # $/yr/1000km
+            * vehicle.kms_per_week  # km/wk
+            * WEEKS_PER_YEAR  # wk/yr
+            / 1000
+            / DAYS_PER_YEAR  # days/yr
+        )
         weighted_opex_daily += rucs_daily
 
         # Convert to given period
