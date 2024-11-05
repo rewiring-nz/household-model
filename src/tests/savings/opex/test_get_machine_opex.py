@@ -118,30 +118,30 @@ class TestGetApplianceOpex:
         assert result == 86.42
 
 
-# @patch(
-#     "savings.opex.get_machine_opex.scale_daily_to_period",
-#     return_value=mock_opex_weekly,
-# )
-# class TestGetOtherApplianceOpex:
-#     opex_daily = (0.34 + 4.48 + 3.06) * 0.098
+@patch(
+    "savings.opex.get_machine_opex.scale_daily_to_period",
+    return_value=mock_opex_weekly,
+)
+class TestGetOtherApplianceOpex:
+    opex_daily = (0.34 + 4.05 + 2.85) * 0.074
 
-#     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-#         get_other_appliance_opex(PeriodEnum.WEEKLY)
-#         mock_scale_daily_to_period.assert_called_once_with(
-#             self.opex_daily, PeriodEnum.WEEKLY
-#         )
+    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
+        get_other_appliance_opex(PeriodEnum.WEEKLY)
+        mock_scale_daily_to_period.assert_called_once_with(
+            self.opex_daily, PeriodEnum.WEEKLY
+        )
 
-#     def test_it_calls_scale_daily_to_period_correctly_with_default(
-#         self, mock_scale_daily_to_period
-#     ):
-#         get_other_appliance_opex()
-#         mock_scale_daily_to_period.assert_called_once_with(
-#             self.opex_daily, PeriodEnum.DAILY
-#         )
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, mock_scale_daily_to_period
+    ):
+        get_other_appliance_opex()
+        mock_scale_daily_to_period.assert_called_once_with(
+            self.opex_daily, PeriodEnum.DAILY
+        )
 
-#     def test_it_returns_opex_per_period(self, _):
-#         result = get_other_appliance_opex()
-#         assert result == mock_opex_weekly
+    def test_it_returns_opex_per_period(self, _):
+        result = get_other_appliance_opex()
+        assert result == mock_opex_weekly
 
 
 # class TestGetVehicleOpexPerDay(TestCase):
