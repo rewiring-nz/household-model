@@ -1,12 +1,14 @@
+from decimal import Decimal
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.household import Household
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 
-from constants.fuel_stats import FuelTypeEnum
+from constants.fuel_stats import FIXED_COSTS_PER_YEAR_2024, FuelTypeEnum
 from constants.utils import PeriodEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
-from savings.opex.get_machine_opex import FIXED_COSTS_PER_YEAR
 from utils.scale_daily_to_period import scale_daily_to_period
+
+DAYS_PER_YEAR = Decimal("365.25")
 
 
 def get_fixed_costs(
@@ -14,38 +16,49 @@ def get_fixed_costs(
     period: PeriodEnum = PeriodEnum.DAILY,
     ignore_lpg_if_ngas_present: bool = False,
 ) -> float:
-    """Calculates the fixed costs you pay per year, for gas and LPG connections.
-    Always includes electricity fixed costs, since all households pay this anyway
-    for all the other devices we have (we assume the house stays on the grid).
+    """Calculate fixed utility connection costs for a household.
+
+    Computes the fixed costs paid for utility connections (electricity, natural gas, and LPG)
+    based on the household's energy usage profile. Electricity costs are always included
+    since we assume the house remains connected to the grid for other devices.
 
     Args:
-        household (Household): TODO
-        period (PeriodEnum, optional): _description_. Defaults to PeriodEnum.DAILY.
+        household (Household): object containing machine & energy type information
+        period (PeriodEnum, optional): time period for cost calculation. (default: PeriodEnum.DAILY)
+        ignore_lpg_if_ngas_present: If True, ignore LPG costs when natural gas is present,
+            assuming LPG usage is minimal (e.g., outdoor BBQ) (default: False)
 
     Returns:
-        float: _description_
+        float: fixed costs for the specified period
     """
-    # TODO: unit test, use tests for get_fixed_costs_per_year()
-    # These values are all in daily
-    grid_connection = FIXED_COSTS_PER_YEAR.get(FuelTypeEnum.ELECTRICITY) / 365.25
-    ngas_connection = 0
-    lpg_connection = 0
-    if (
-        household.space_heating == SpaceHeatingEnum.GAS
-        or household.water_heating == WaterHeatingEnum.GAS
-        or household.cooktop == CooktopEnum.GAS
-    ):
-        ngas_connection = FIXED_COSTS_PER_YEAR.get(FuelTypeEnum.NATURAL_GAS) / 365.25
-    if (
-        household.space_heating == SpaceHeatingEnum.LPG
-        or household.water_heating == WaterHeatingEnum.LPG
-        or household.cooktop == CooktopEnum.LPG
-    ):
-        lpg_connection = FIXED_COSTS_PER_YEAR.get(FuelTypeEnum.LPG) / 365.25
+    daily_costs = _get_daily_cost(FuelTypeEnum.ELECTRICITY)
 
-    if ignore_lpg_if_ngas_present and ngas_connection > 0:
-        # Ignore LPG if they've also said they have ngas, because most homes are unlikely to have both an LPG and ngas connection. They are most likely referring to an outdoor BBQ as their "LPG cooktop" or something similar that's uncommonly used and not their usual mode of energy use.
-        lpg_connection = 0
+    uses_natural_gas = any(
+        [
+            household.space_heating == SpaceHeatingEnum.GAS,
+            household.water_heating == WaterHeatingEnum.GAS,
+            household.cooktop == CooktopEnum.GAS,
+        ]
+    )
+    if uses_natural_gas:
+        daily_costs += _get_daily_cost(FuelTypeEnum.NATURAL_GAS)
 
-    fixed_costs_daily = grid_connection + ngas_connection + lpg_connection
-    return scale_daily_to_period(fixed_costs_daily, period)
+    uses_lpg = any(
+        [
+            household.space_heating == SpaceHeatingEnum.LPG,
+            household.water_heating == WaterHeatingEnum.LPG,
+            household.cooktop == CooktopEnum.LPG,
+        ]
+    )
+    if uses_lpg and not (ignore_lpg_if_ngas_present and uses_natural_gas):
+        daily_costs += _get_daily_cost(FuelTypeEnum.LPG)
+
+    return scale_daily_to_period(daily_costs, period)
+
+
+def _get_daily_cost(fuel_type: FuelTypeEnum) -> float:
+    """Helper to get daily cost for a fuel type."""
+    try:
+        return FIXED_COSTS_PER_YEAR_2024.get(fuel_type) / DAYS_PER_YEAR
+    except KeyError:
+        raise KeyError(f"Missing fixed cost data for fuel type: {fuel_type}")
