@@ -144,91 +144,94 @@ class TestGetOtherAppliancesOpex:
         assert result == 86.42
 
 
-# class TestGetVehicleOpexPerDay(TestCase):
-#     petrol = 31.4 * 0.242
-#     ev = 7.324 * 0.098
+class TestGetVehicleOpexPerDay(TestCase):
+    petrol = 31.4 * 0.28884
+    ev = 7.324 * 0.26175
 
-#     def test_it_calculates_daily_opex_for_one_petrol_car(self):
-#         result = get_vehicle_opex([mock_vehicle_petrol])
-#         assert result == self.petrol * (250 * 52 / 11000)
+    def test_it_calculates_daily_opex_for_one_petrol_car(self):
+        result = get_vehicle_opex([mock_vehicle_petrol])
+        assert result == self.petrol * (250 * 52 / 11000)
 
-#     def test_it_calculates_daily_opex_for_one_diesel_car(self):
-#         result = get_vehicle_opex([mock_vehicle_diesel])
-#         expected = 22.8 * 0.253 * (50 * 52 / 11000)
-#         assert result == expected
+    def test_it_calculates_daily_opex_for_one_diesel_car(self):
+        result = get_vehicle_opex([mock_vehicle_diesel])
+        daily_rucs = (76 * 50 * 52 / 1000) / 365.25
+        expected = 22.8 * 0.19679 * 50 * 52 / 11000 + daily_rucs
+        assert result == expected
 
-#     def test_it_calculates_daily_opex_for_one_ev(self):
-#         result = get_vehicle_opex([mock_vehicle_ev])
-#         assert result == self.ev * (250 * 52 / 11000)
+    def test_it_calculates_daily_opex_for_one_ev(self):
+        result = get_vehicle_opex([mock_vehicle_ev])
+        daily_rucs = (76 * 250 * 52 / 1000) / 365.25
+        assert result == self.ev * (250 * 52 / 11000) + daily_rucs
 
-#     def test_it_calculates_daily_opex_for_one_hybrid(self):
-#         result = get_vehicle_opex([mock_vehicle_hev])
-#         expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
-#         assert result == expected
+    def test_it_calculates_daily_opex_for_one_hybrid(self):
+        result = get_vehicle_opex([mock_vehicle_hev])
+        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+        assert result == expected
 
-#     def test_it_calculates_daily_opex_for_one_plugin_hybrid(self):
-#         result = get_vehicle_opex([mock_vehicle_phev])
-#         expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
-#         assert result == expected
+    def test_it_calculates_daily_opex_for_one_plugin_hybrid(self):
+        result = get_vehicle_opex([mock_vehicle_phev])
+        daily_rucs = (38 * 175 * 52 / 1000) / 365.25
+        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000) + daily_rucs
+        assert result == expected
 
-#     def test_it_combines_vehicles_correctly(self):
-#         result = get_vehicle_opex(
-#             [
-#                 mock_vehicle_petrol,
-#                 mock_vehicle_diesel,
-#                 mock_vehicle_ev,
-#                 mock_vehicle_hev,
-#                 mock_vehicle_phev,
-#             ]
-#         )
-#         expected = (
-#             (31.4 * 0.242 * (250 * 52 / 11000))
-#             + (22.8 * 0.253 * (50 * 52 / 11000))
-#             + (7.324 * 0.098 * (250 * 52 / 11000))
-#             + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
-#             + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
-#         )
-#         assert result == expected
+    # def test_it_combines_vehicles_correctly(self):
+    #     result = get_vehicle_opex(
+    #         [
+    #             mock_vehicle_petrol,
+    #             mock_vehicle_diesel,
+    #             mock_vehicle_ev,
+    #             mock_vehicle_hev,
+    #             mock_vehicle_phev,
+    #         ]
+    #     )
+    #     expected = (
+    #         (31.4 * 0.28884 * (250 * 52 / 11000))
+    #         + (22.8 * 0.253 * (50 * 52 / 11000))
+    #         + (7.324 * 0.26175 * (250 * 52 / 11000))
+    #         + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+    #         + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
+    #     )
+    #     assert result == expected
 
-#     @patch(
-#         "savings.opex.get_machine_opex.scale_daily_to_period",
-#     )
-#     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-#         get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
-#         assert len(mock_scale_daily_to_period.call_args_list) == 2
-#         mock_scale_daily_to_period.assert_any_call(
-#             self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
-#         )
-#         mock_scale_daily_to_period.assert_any_call(
-#             self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
-#         )
+    # @patch(
+    #     "savings.opex.get_machine_opex.scale_daily_to_period",
+    # )
+    # def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
+    #     get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
+    #     assert len(mock_scale_daily_to_period.call_args_list) == 2
+    #     mock_scale_daily_to_period.assert_any_call(
+    #         self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
+    #     )
+    #     mock_scale_daily_to_period.assert_any_call(
+    #         self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
+    #     )
 
-#     @patch(
-#         "savings.opex.get_machine_opex.scale_daily_to_period",
-#     )
-#     def test_it_calls_scale_daily_to_period_correctly_with_default(
-#         self, mock_scale_daily_to_period
-#     ):
-#         get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
-#         assert len(mock_scale_daily_to_period.call_args_list) == 2
-#         mock_scale_daily_to_period.assert_any_call(
-#             self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
-#         )
-#         mock_scale_daily_to_period.assert_any_call(
-#             self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
-#         )
+    # @patch(
+    #     "savings.opex.get_machine_opex.scale_daily_to_period",
+    # )
+    # def test_it_calls_scale_daily_to_period_correctly_with_default(
+    #     self, mock_scale_daily_to_period
+    # ):
+    #     get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
+    #     assert len(mock_scale_daily_to_period.call_args_list) == 2
+    #     mock_scale_daily_to_period.assert_any_call(
+    #         self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
+    #     )
+    #     mock_scale_daily_to_period.assert_any_call(
+    #         self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
+    #     )
 
-#     def test_it_returns_opex_with_default_period(self):
-#         result = get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
-#         assert result == (self.petrol * (250 * 52 / 11000)) + (
-#             self.ev * (250 * 52 / 11000)
-#         )
+    # def test_it_returns_opex_with_default_period(self):
+    #     result = get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
+    #     assert result == (self.petrol * (250 * 52 / 11000)) + (
+    #         self.ev * (250 * 52 / 11000)
+    #     )
 
-#     def test_it_returns_opex_with_specified_period(self):
-#         result = get_vehicle_opex(
-#             [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
-#         )
-#         assert (
-#             result
-#             == ((self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))) * 7
-#         )
+    # def test_it_returns_opex_with_specified_period(self):
+    #     result = get_vehicle_opex(
+    #         [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
+    #     )
+    #     assert (
+    #         result
+    #         == ((self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))) * 7
+    #     )
