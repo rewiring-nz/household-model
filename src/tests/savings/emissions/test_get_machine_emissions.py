@@ -137,7 +137,7 @@ class TestGetApplianceEmissions:
     return_value=mock_emissions_weekly,
 )
 class TestGetOtherApplianceEmissions:
-    emissions_daily = (0.34 + 4.48 + 3.06) * 0.098
+    emissions_daily = (0.34 + 4.48 + 3.06) * 0.074
 
     def test_it_calls_convert_to_period_correctly(self, mock_convert_to_period):
         get_other_appliance_emissions(PeriodEnum.WEEKLY)
@@ -159,8 +159,8 @@ class TestGetOtherApplianceEmissions:
 
 
 class TestGetVehicleEmissionsPerDay(TestCase):
-    petrol = 32 * 0.242
-    ev = 8.027 * 0.098
+    petrol = 31.4 * 0.258
+    ev = 7.324 * 0.074
 
     def test_it_calculates_daily_emissions_for_one_petrol_car(self):
         result = get_vehicle_emissions([mock_vehicle_petrol])
@@ -168,7 +168,7 @@ class TestGetVehicleEmissionsPerDay(TestCase):
 
     def test_it_calculates_daily_emissions_for_one_diesel_car(self):
         result = get_vehicle_emissions([mock_vehicle_diesel])
-        expected = 28.4 * 0.253 * (50 * 52 / 11000)
+        expected = 22.8 * 0.253 * (50 * 52 / 11000)
         assert result == expected
 
     def test_it_calculates_daily_emissions_for_one_ev(self):
@@ -196,9 +196,9 @@ class TestGetVehicleEmissionsPerDay(TestCase):
             ]
         )
         expected = (
-            (32 * 0.242 * (250 * 52 / 11000))
-            + (28.4 * 0.253 * (50 * 52 / 11000))
-            + (8.027 * 0.098 * (250 * 52 / 11000))
+            (31.4 * 0.258 * (250 * 52 / 11000))
+            + (22.8 * 0.253 * (50 * 52 / 11000))
+            + (7.324 * 0.074 * (250 * 52 / 11000))
             + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
             + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
         )
@@ -234,18 +234,17 @@ class TestGetVehicleEmissionsPerDay(TestCase):
 
     def test_it_returns_emissions_with_default_period(self):
         result = get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
-        assert result == (self.petrol * (250 * 52 / 11000)) + (
-            self.ev * (250 * 52 / 11000)
-        )
+        expected = (self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))
+        assert result == expected
 
     def test_it_returns_emissions_with_specified_period(self):
         result = get_vehicle_emissions(
             [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
         )
-        assert (
-            result
-            == ((self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))) * 7
-        )
+        expected = (
+            (self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))
+        ) * 7
+        assert result == expected
 
 
 class TestConvertToPeriod:
