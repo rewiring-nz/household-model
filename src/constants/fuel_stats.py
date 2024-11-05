@@ -11,7 +11,6 @@ class FuelTypeEnum(str, Enum):
     SOLAR = "solar"  # this is direct solar, e.g. roof solar water heaters
 
 
-
 # TODO: key the following dicts on FuelTypeEnum as the key, rather than its value
 # From 'Misc'!B154
 # Original source: https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf
@@ -49,4 +48,16 @@ COST_PER_FUEL_KWH_AVG_15_YEARS = {
     "petrol": 0.36584,
     "diesel": 0.24925,
     "solar": 0,
+}
+
+FIXED_COSTS_PER_YEAR_2024 = {
+    FuelTypeEnum.ELECTRICITY: 767.7555,
+    FuelTypeEnum.NATURAL_GAS: 689.22675,
+    FuelTypeEnum.LPG: 69,
+}
+
+FIXED_COSTS_PER_YEAR_AVG_15_YEARS = {
+    FuelTypeEnum.ELECTRICITY: 865.70526,
+    FuelTypeEnum.NATURAL_GAS: 827.10354,
+    FuelTypeEnum.LPG: 82.80315,
 }

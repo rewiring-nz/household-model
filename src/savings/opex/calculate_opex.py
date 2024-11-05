@@ -18,9 +18,9 @@ from openapi_client.models import (
     Opex,
     OpexValues,
 )
+from savings.opex.get_fixed_costs import get_fixed_costs
 from savings.opex.get_machine_opex import (
     get_appliance_opex,
-    get_fixed_costs,
     get_other_appliances_opex,
     get_solar_savings,
     get_vehicle_opex,
