@@ -17,7 +17,7 @@ Table 1: Energy prices ($/kWh)
 | Electricity (Fixed Supply Charge - yearly) | 1.69%                    | $767.7555  | $865.70526                                |
 | Electricity (controlled)                   | 1.69%                    | $0.242    | $0.27287                                  |
 | Electricity (night-rate)                   | 1.69%                    | $0.173    | $0.19507                                  |
-| Electricity (solar eed-back tariff)        | 1.69%                    | $0.135    | $0.15222                                  |
+| Electricity (solar feed-back tariff)        | 1.69%                    | $0.135    | $0.15222                                  |
 | Petrol                                     | 3.29%                    | $0.28884    | $0.36584                                  |
 | Diesel                                     | 3.29%                    | $0.19679    | $0.24925                                  |
 
@@ -33,3 +33,13 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 | Wood          | 0.016                         |
 | Petrol        | 0.258                         |
 | Diesel        | 0.253                         |
+
+## Solar
+
+- Assumes 0.5% degradation per year, which averages out to 6.92% degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years.
+
+## Battery
+
+- Assumes 1% degradation per year, which averages out to 85.22% performance of nameplate capacity over 15 years.
+- Assumes 5% losses in battery to the electronics & wiring within the battery itself
+- Assumes that having a battery results in a 20% discount on the price of grid electricity, as it allows you to buy power at off-peak prices and 
