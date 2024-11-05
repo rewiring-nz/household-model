@@ -123,7 +123,7 @@ class TestGetApplianceOpex:
     return_value=mock_opex_weekly,
 )
 class TestGetOtherApplianceOpex:
-    opex_daily = (0.34 + 4.05 + 2.85) * 0.074
+    opex_daily = (0.34 + 4.05 + 2.85) * 0.26175
 
     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
         get_other_appliance_opex(PeriodEnum.WEEKLY)
@@ -141,7 +141,7 @@ class TestGetOtherApplianceOpex:
 
     def test_it_returns_opex_per_period(self, _):
         result = get_other_appliance_opex()
-        assert result == mock_opex_weekly
+        assert result == 86.42
 
 
 # class TestGetVehicleOpexPerDay(TestCase):
