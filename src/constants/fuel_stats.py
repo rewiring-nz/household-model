@@ -27,8 +27,12 @@ EMISSIONS_FACTORS = {
 
 # 2024 prices from 'Energy prices' C7:C18
 # Unit: $/kWh
+# TODO: key these with FuelTypeEnum
 COST_PER_FUEL_KWH_TODAY = {
-    "electricity": 0.26175,
+    "electricity": {
+        "volume_rate": 0.26175,
+        "off_peak": 0.173,
+    },
     "natural_gas": 0.118,
     "lpg": 0.25452,
     "wood": 0.11250,
@@ -41,7 +45,10 @@ COST_PER_FUEL_KWH_TODAY = {
 # TODO: Use this price when doing lifetime opex calculations
 # Unit: $/kWh
 COST_PER_FUEL_KWH_AVG_15_YEARS = {
-    "electricity": 0.29515,
+    "electricity": {
+        "volume_rate": 0.29515,
+        "off_peak": 0.19507,
+    },
     "natural_gas": 0.14161,
     "lpg": 0.30544,
     "wood": 0.12837,
