@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **before** | **float** | The household&#39;s emissions per week before electrification in kg CO2e to 2 dp. | [optional] 
 **after** | **float** | The household&#39;s emissions per week after electrification in kg CO2e to 2 dp. | [optional] 
-**difference** | **float** | The emissions savings per week; the difference in emissions before &amp; after electrification, in kg CO2e to 2 dp. | [optional] 
+**difference** | **float** | The difference in emissions before &amp; after electrification, in kg CO2e to 2 dp. | [optional] 
 
 ## Example
 

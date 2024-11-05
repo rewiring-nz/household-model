@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from models.electrify_household import (
     electrify_cooktop,
     electrify_household,
@@ -6,6 +8,8 @@ from models.electrify_household import (
     electrify_space_heating,
     electrify_vehicle,
     electrify_water_heating,
+    should_electrify,
+    should_install,
 )
 from openapi_client.models import (
     Battery,
@@ -23,6 +27,49 @@ class TestElectrifyHousehold:
     def test_it_electrifies_household_correctly(self):
         electrified = electrify_household(mock_household)
         assert electrified == mock_household_electrified
+
+
+class TestShouldElectrify:
+    mock_electrify_func = MagicMock()
+    mock_electrify_func.return_value = SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
+
+    def test_it_calls_electrify_func_correctly(self):
+        should_electrify(SpaceHeatingEnum.GAS, self.mock_electrify_func)
+        self.mock_electrify_func.assert_called_once_with(SpaceHeatingEnum.GAS)
+
+    def test_it_returns_true_if_current_and_func_output_are_different(self):
+        assert should_electrify(SpaceHeatingEnum.GAS, self.mock_electrify_func)
+
+    def test_it_returns_true_if_current_and_func_output_are_same(self):
+        assert not should_electrify(
+            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_electrify_func
+        )
+
+
+class TestShouldInstall:
+    def test_it_returns_true_if_no_solar_and_wants_solar(self):
+        assert should_install(Solar(has_solar=False, size=7, install_solar=True))
+
+    def test_it_returns_false_if_no_solar_and_does_not_want_solar(self):
+        assert not should_install(Solar(has_solar=False, size=7, install_solar=False))
+
+    def test_it_returns_false_if_has_solar(self):
+        assert not should_install(Solar(has_solar=True, size=7))
+        assert not should_install(Solar(has_solar=True, size=7, install_solar=None))
+
+    def test_it_returns_true_if_no_battery_and_wants_battery(self):
+        assert should_install(Battery(has_battery=False, size=7, install_battery=True))
+
+    def test_it_returns_false_if_no_battery_and_does_not_want_battery(self):
+        assert not should_install(
+            Battery(has_battery=False, size=7, install_battery=False)
+        )
+
+    def test_it_returns_false_if_has_battery(self):
+        assert not should_install(Battery(has_battery=True, size=7))
+        assert not should_install(
+            Battery(has_battery=True, size=7, install_battery=None)
+        )
 
 
 class TestElectrifySpaceHeating:
@@ -131,35 +178,47 @@ class TestElectrifyVehicle:
         assert electrify_vehicle(self.ev) == self.ev
 
 
+@patch("models.electrify_household.should_install")
 class TestInstallSolar:
-    def test_it_installs_solar(self):
+    def test_it_installs_solar_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
         assert install_solar(
             Solar(has_solar=False, size=7, install_solar=True)
         ) == Solar(has_solar=True, size=7, install_solar=None)
 
-    def test_it_does_not_install_solar_if_false(self):
+    def test_it_does_nothing_if_should_not_install(self, mock_should_install):
+        mock_should_install.side_effect = [False, False, False]
         assert install_solar(
             Solar(has_solar=False, size=7, install_solar=False)
         ) == Solar(has_solar=False, size=7, install_solar=False)
 
-    def test_no_change_if_already_has_solar(self):
         assert install_solar(
             Solar(has_solar=True, size=7, install_solar=None)
         ) == Solar(has_solar=True, size=7, install_solar=None)
 
+        assert install_solar(Solar(has_solar=True, size=7)) == Solar(
+            has_solar=True, size=7
+        )
 
+
+@patch("models.electrify_household.should_install")
 class TestInstallBattery:
-    def test_it_installs_battery(self):
+    def test_it_installs_battery_if_should_install(self, mock_should_install):
+        mock_should_install.side_effect = [True]
         assert install_battery(
             Battery(has_battery=False, size=7, install_battery=True)
         ) == Battery(has_battery=True, size=7, install_battery=None)
 
-    def test_it_does_not_install_battery_if_false(self):
+    def test_it_does_nothing_if_should_not_install(self, mock_should_install):
+        mock_should_install.side_effect = [False, False, False]
         assert install_battery(
             Battery(has_battery=False, size=7, install_battery=False)
         ) == Battery(has_battery=False, size=7, install_battery=False)
 
-    def test_no_change_if_already_has_battery(self):
         assert install_battery(
             Battery(has_battery=True, size=7, install_battery=None)
         ) == Battery(has_battery=True, size=7, install_battery=None)
+
+        assert install_battery(Battery(has_battery=True, size=7)) == Battery(
+            has_battery=True, size=7
+        )

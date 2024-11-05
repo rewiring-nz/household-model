@@ -1,217 +1,98 @@
-import pandas as pd
-import pytest
-from savings.emissions.calculate_emissions import (
-    get_vehicle_emissions_savings,
-)
+import unittest
+from unittest.mock import patch
+from savings.emissions.calculate_emissions import calculate_emissions
+from constants.utils import PeriodEnum
+from params import OPERATIONAL_LIFETIME
+from tests.mocks import mock_household, mock_household_electrified
 
 
-# ============ OLD ============
+class TestCalculateEmissions(unittest.TestCase):
 
-# Assumes electricity emission factor of 0.098 (not 100% renewable grid)
+    get_appliance_emissions_side_effect = lambda self, household, info, period: {
+        PeriodEnum.WEEKLY: 1.0,
+        PeriodEnum.YEARLY: 52.0,
+        PeriodEnum.OPERATIONAL_LIFETIME: 500.0,
+    }.get(period, 0.0)
 
+    get_vehicle_emissions_side_effect = lambda self, vehicles, period: {
+        PeriodEnum.WEEKLY: 2.0,
+        PeriodEnum.YEARLY: 104.0,
+        PeriodEnum.OPERATIONAL_LIFETIME: 7000.0,
+    }.get(period, 0.0)
 
-# TODO: mock out extract_vehicle_stats
-class TestVehicles:
-    base = {
-        "Vehicles": 0,
-        "Vehicles fuel/energy type_Vehicle 1": None,
-        "Vehicles fuel/energy type_Vehicle 2": None,
-        "Vehicles fuel/energy type_Vehicle 3": None,
-        "Vehicles fuel/energy type_Vehicle 4": None,
-        "Vehicles fuel/energy type_Vehicle 5": None,
-        "Vehicles distance_Vehicle 1": None,
-        "Vehicles distance_Vehicle 2": None,
-        "Vehicles distance_Vehicle 3": None,
-        "Vehicles distance_Vehicle 4": None,
-        "Vehicles distance_Vehicle 5": None,
-    }
-    petrol_running = 32 * 0.242
-    # petrol_embodied = 6700 / 15 / 365.25
-    petrol_embodied = 0
+    get_other_emissions_side_effect = lambda self, period: {
+        PeriodEnum.WEEKLY: 0.5,
+        PeriodEnum.YEARLY: 26.5,
+        PeriodEnum.OPERATIONAL_LIFETIME: 2000.0,
+    }.get(period, 0.0)
 
-    diesel_running = 28.4 * 0.253
-    # diesel_embodied = 7000 / 15 / 365.25
-    diesel_embodied = 0
+    @patch("savings.emissions.calculate_emissions.get_appliance_emissions")
+    @patch("savings.emissions.calculate_emissions.get_vehicle_emissions")
+    @patch("savings.emissions.calculate_emissions.get_other_appliance_emissions")
+    def test_calculate_emissions_sums_correctly(
+        self, mock_get_other, mock_get_vehicle, mock_get_appliance
+    ):
+        mock_get_appliance.side_effect = self.get_appliance_emissions_side_effect
+        mock_get_vehicle.side_effect = self.get_vehicle_emissions_side_effect
+        mock_get_other.side_effect = self.get_other_emissions_side_effect
 
-    ev_running = 8.027 * 0.098
-    # ev_embodied = 11100 / 15 / 365.25
-    ev_embodied = 0
+        result = calculate_emissions(mock_household, mock_household_electrified)
 
-    plugin_running = petrol_running * 0.6 + ev_running * 0.4
-    plugin_embodied = petrol_embodied * 0.6 + ev_embodied * 0.4
+        self.assertEqual(result.per_week.before, 1.0 + 1.0 + 1.0 + 2.0 + 0.5)
+        self.assertEqual(result.per_week.after, 1.0 + 1.0 + 1.0 + 2.0 + 0.5)
+        self.assertEqual(result.per_week.difference, 0.0)
 
-    hybrid_running = petrol_running * 0.7 + ev_running * 0.3
-    hybrid_embodied = petrol_embodied * 0.7 + ev_embodied * 0.3
+        self.assertEqual(result.per_year.before, 52.0 + 52.0 + 52.0 + 104.0 + 26.5)
+        self.assertEqual(result.per_year.after, 52.0 + 52.0 + 52.0 + 104.0 + 26.5)
+        self.assertEqual(result.per_year.difference, 0.0)
 
-    def test_it_returns_zeros_if_no_vehicle(self):
-        assert get_vehicle_emissions_savings(pd.Series(self.base)) == (0, 0)
-
-    def test_it_returns_zeros_if_not_sure(self):
-        assert get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 1,
-                    "Vehicles fuel/energy type_Vehicle 1": "I’m not sure",
-                }
-            )
-        ) == (0, 0)
-
-    def test_it_returns_emissions_savings_for_one_petrol_vehicle(self):
-        household = pd.Series(
-            {
-                **self.base,
-                "Vehicles": 1,
-                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
-                "Vehicles distance_Vehicle 1": "100-199km",
-            }
+        self.assertEqual(
+            result.over_lifetime.before, 500.0 + 500.0 + 500.0 + 7000.0 + 2000.0
         )
-        # petrol car
-        distance_per_week = 150  # taking the middle of the 100-199km range
-        distance_per_year = distance_per_week * 52
-        pct_of_avg = distance_per_year / 11000
-        emissions_before = self.petrol_running * pct_of_avg + self.petrol_embodied
-        emissions_after = self.ev_running * pct_of_avg + self.ev_embodied
-        assert get_vehicle_emissions_savings(household) == (
-            emissions_before,
-            emissions_before - emissions_after,
+        self.assertEqual(
+            result.over_lifetime.after, 500.0 + 500.0 + 500.0 + 7000.0 + 2000.0
         )
+        self.assertEqual(result.over_lifetime.difference, 0.0)
 
-    def test_it_uses_average_distance_if_not_sure(self):
-        household = pd.Series(
-            {
-                **self.base,
-                "Vehicles": 1,
-                "Vehicles fuel/energy type_Vehicle 1": "Petrol",
-                "Vehicles distance_Vehicle 1": "I’m not sure",
-            }
-        )
-        # petrol car
-        emissions_before = self.petrol_running + self.petrol_embodied
-        emissions_after = self.ev_running + self.ev_embodied
-        assert get_vehicle_emissions_savings(household) == (
-            emissions_before,
-            emissions_before - emissions_after,
-        )
+        self.assertEqual(result.operational_lifetime, OPERATIONAL_LIFETIME)
 
-    def test_it_returns_emissions_savings_for_multiple_ff_vehicles(self):
-        total_emissions, total_savings = get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 3,
-                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
-                    "Vehicles fuel/energy type_Vehicle 2": "Petrol",
-                    "Vehicles fuel/energy type_Vehicle 3": "Diesel",
-                    "Vehicles distance_Vehicle 1": "0-50km",
-                    "Vehicles distance_Vehicle 2": "100-199km",
-                    "Vehicles distance_Vehicle 3": "200+ km",
-                }
-            )
-        )
-        expected_total_emissions = (
-            (self.petrol_running * 25 * 52 / 11000 + self.petrol_embodied)
-            + (self.petrol_running * 150 * 52 / 11000 + self.petrol_embodied)
-            + (self.diesel_running * 250 * 52 / 11000 + self.diesel_embodied)
-        )
-        assert total_emissions == expected_total_emissions
-        expected_total_savings = expected_total_emissions - (
-            (self.ev_running * 25 * 52 / 11000 + self.ev_embodied)
-            + (self.ev_running * 150 * 52 / 11000 + self.ev_embodied)
-            + (self.ev_running * 250 * 52 / 11000 + self.ev_embodied)
-        )
-        assert total_savings == pytest.approx(expected_total_savings)
+    def test_calculate_emissions_real_values(self):
+        result = calculate_emissions(mock_household, mock_household_electrified)
 
-    def test_it_calculates_correctly_for_PHEV(self):
-        emissions, savings = get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 1,
-                    "Vehicles fuel/energy type_Vehicle 1": "Plug-in Hybrid",
-                    "Vehicles distance_Vehicle 1": "0-50km",
-                }
-            )
+        before = {
+            "space_heating_wood": 14.44 * 0.025,
+            "water_heating_gas": 6.6 * 0.217,
+            "cooktop_resistance": 0.83 * 0.098,
+            "petrol_car": 32 * 0.242 * (250 * 52 / 11000),
+            "diesel_car": 28.4 * 0.253 * (50 * 52 / 11000),
+            "other": (0.34 + 4.48 + 3.06) * 0.098,
+        }
+        after = {
+            "space_heating_heat_pump": 2.3 * 0.098,
+            "water_heating_heat_pump": 1.71 * 0.098,
+            "cooktop_resistance": 0.83 * 0.098,  # didn't swap
+            "ev_car": 8.027 * 0.098 * (250 * 52 / 11000),
+            "diesel_car": 28.4 * 0.253 * (50 * 52 / 11000),  # didn't want to switch
+            "other": (0.34 + 4.48 + 3.06) * 0.098,
+        }
+        before_daily = sum(before.values())
+        after_daily = sum(after.values())
+        difference_daily = after_daily - before_daily
+
+        self.assertAlmostEqual(result.per_week.before, before_daily * 7, 2)
+        self.assertAlmostEqual(result.per_week.after, after_daily * 7, 2)
+        self.assertAlmostEqual(result.per_week.difference, difference_daily * 7, 2)
+
+        self.assertAlmostEqual(result.per_year.before, before_daily * 365.25, 2)
+        self.assertAlmostEqual(result.per_year.after, after_daily * 365.25, 2)
+        self.assertAlmostEqual(result.per_year.difference, difference_daily * 365.25, 2)
+
+        self.assertAlmostEqual(
+            result.over_lifetime.before, before_daily * 365.25 * 15, 2
         )
-        expected_emissions = (
-            self.plugin_running * 25 / 11000 * 52 + self.plugin_embodied
-        )
-        assert emissions == expected_emissions
-        assert savings == expected_emissions - (
-            self.ev_running * 25 / 11000 * 52 + self.ev_embodied
+        self.assertAlmostEqual(result.over_lifetime.after, after_daily * 365.25 * 15, 2)
+        self.assertAlmostEqual(
+            result.over_lifetime.difference, difference_daily * 365.25 * 15, 2
         )
 
-    def test_it_calculates_correctly_for_HEV(self):
-        emissions, savings = get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 1,
-                    "Vehicles fuel/energy type_Vehicle 1": "Hybrid",
-                    "Vehicles distance_Vehicle 1": "0-50km",
-                }
-            )
-        )
-        expected_emissions = (
-            self.hybrid_running * 25 / 11000 * 52 + self.hybrid_embodied
-        )
-        assert emissions == pytest.approx(expected_emissions)
-        assert savings == pytest.approx(
-            expected_emissions - (self.ev_running * 25 / 11000 * 52 + self.ev_embodied)
-        )
-
-    def test_it_does_not_switch_for_electric_vehicles(self):
-        total_emissions, total_savings = get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 3,
-                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
-                    "Vehicles fuel/energy type_Vehicle 2": "Electric",
-                    "Vehicles fuel/energy type_Vehicle 3": "Plug-in Hybrid",  # PHEVs are still switched
-                    "Vehicles distance_Vehicle 1": "0-50km",
-                    "Vehicles distance_Vehicle 2": "100-199km",
-                    "Vehicles distance_Vehicle 3": "200+ km",
-                }
-            )
-        )
-        expected_total_emissions = (
-            (self.petrol_running * 25 * 52 / 11000 + self.petrol_embodied)
-            + (self.ev_running * 150 * 52 / 11000 + self.ev_embodied)
-            + (self.plugin_running * 250 * 52 / 11000 + self.plugin_embodied)
-        )
-        assert total_emissions == expected_total_emissions
-        expected_total_savings = expected_total_emissions - (
-            (self.ev_running * 25 * 52 / 11000 + self.ev_embodied)
-            + (self.ev_running * 150 * 52 / 11000 + self.ev_embodied)
-            + (self.ev_running * 250 * 52 / 11000 + self.ev_embodied)
-        )
-        assert total_savings == pytest.approx(expected_total_savings)
-
-    def test_complex_example(self):
-        total_emissions, total_savings = get_vehicle_emissions_savings(
-            pd.Series(
-                {
-                    **self.base,
-                    "Vehicles": 4,
-                    "Vehicles fuel/energy type_Vehicle 1": "Petrol",
-                    "Vehicles fuel/energy type_Vehicle 2": "Petrol",
-                    "Vehicles fuel/energy type_Vehicle 3": "Diesel",
-                    "Vehicles fuel/energy type_Vehicle 4": "Hybrid",
-                    "Vehicles distance_Vehicle 1": "0-50km",
-                    "Vehicles distance_Vehicle 2": "0-50km",
-                    "Vehicles distance_Vehicle 3": "0-50km",
-                    "Vehicles distance_Vehicle 4": "0-50km",
-                }
-            )
-        )
-        expected_total_emissions = (
-            (self.petrol_running * 25 * 52 / 11000 + self.petrol_embodied) * 2
-            + (self.diesel_running * 25 * 52 / 11000 + self.diesel_embodied)
-            + (self.hybrid_running * 25 * 52 / 11000 + self.hybrid_embodied)
-        )
-        assert total_emissions == expected_total_emissions
-        expected_total_savings = expected_total_emissions - (
-            (self.ev_running * 25 * 52 / 11000 + self.ev_embodied) * 4
-        )
-        assert total_savings == pytest.approx(expected_total_savings)
+        self.assertEqual(result.operational_lifetime, OPERATIONAL_LIFETIME)

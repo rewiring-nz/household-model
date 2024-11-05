@@ -2,16 +2,19 @@ from aenum import Enum
 
 
 class FuelTypeEnum(str, Enum):
-    ELECTRICITY = "ELECTRICITY"
-    NATURAL_GAS = "NATURAL_GAS"
-    LPG = "LPG"
-    WOOD = "WOOD"
-    PETROL = "PETROL"
-    DIESEL = "DIESEL"
-    SOLAR = "SOLAR"  # this is direct solar, e.g. roof solar water heaters
+    ELECTRICITY = "electricity"
+    NATURAL_GAS = "natural_gas"
+    LPG = "lpg"
+    WOOD = "wood"
+    PETROL = "petrol"
+    DIESEL = "diesel"
+    SOLAR = "solar"  # this is direct solar, e.g. roof solar water heaters
 
 
-# https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf
+
+# TODO: key the following dicts on FuelTypeEnum as the key, rather than its value
+# From 'Misc'!B154
+# Original source: https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf
 # Unit: kgCO2e/kWh
 EMISSIONS_FACTORS = {
     "electricity": 0.074,

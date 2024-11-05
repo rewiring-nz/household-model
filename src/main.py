@@ -9,6 +9,7 @@ from savings.emissions.calculate_emissions import calculate_emissions
 from savings.opex.calculate_opex import calculate_opex
 from savings.upfront_cost.calculate_upfront_cost import calculate_upfront_cost
 from models.recommend_next_action import recommend_next_action
+from utils.clean_household import clean_household
 
 app = FastAPI()
 
@@ -39,6 +40,7 @@ def health_check():
 @app.post("/savings")
 def calculate_household_savings(current_household: Household) -> Savings:
 
+    current_household = clean_household(current_household)
     electrified_household = electrify_household(current_household)
 
     emissions = calculate_emissions(current_household, electrified_household)

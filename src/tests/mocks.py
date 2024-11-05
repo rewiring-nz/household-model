@@ -1,6 +1,5 @@
 from openapi_client.models import (
     Household,
-    Savings,
     Emissions,
     EmissionsValues,
     Opex,
@@ -26,6 +25,21 @@ mock_vehicle_petrol = Vehicle(
 mock_vehicle_diesel = Vehicle(
     fuel_type=VehicleFuelTypeEnum.DIESEL,
     kms_per_week=50,
+    switch_to_ev=False,
+)
+mock_vehicle_ev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.ELECTRIC,
+    kms_per_week=250,
+    switch_to_ev=None,
+)
+mock_vehicle_hev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.HYBRID,
+    kms_per_week=150,
+    switch_to_ev=True,
+)
+mock_vehicle_phev = Vehicle(
+    fuel_type=VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+    kms_per_week=175,
     switch_to_ev=False,
 )
 
@@ -56,11 +70,7 @@ mock_household_electrified = Household(
         "water_heating": WaterHeatingEnum.ELECTRIC_HEAT_PUMP,
         "cooktop": CooktopEnum.ELECTRIC_RESISTANCE,  # don't swap if already electric
         "vehicles": [
-            Vehicle(
-                fuel_type=VehicleFuelTypeEnum.ELECTRIC,
-                kms_per_week=250,
-                switch_to_ev=None,
-            ),
+            mock_vehicle_ev,
             mock_vehicle_diesel,  # did not want to switch this one
         ],
         "solar": Solar(has_solar=True, size=7, install_solar=None),
