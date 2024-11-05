@@ -60,20 +60,20 @@ class TestCalculateEmissions(unittest.TestCase):
         result = calculate_emissions(mock_household, mock_household_electrified)
 
         before = {
-            "space_heating_wood": 14.44 * 0.025,
-            "water_heating_gas": 6.6 * 0.217,
-            "cooktop_resistance": 0.83 * 0.098,
-            "petrol_car": 32 * 0.242 * (250 * 52 / 11000),
-            "diesel_car": 28.4 * 0.253 * (50 * 52 / 11000),
-            "other": (0.34 + 4.48 + 3.06) * 0.098,
+            "space_heating_wood": 14.44 * 0.016,
+            "water_heating_gas": 6.6 * 0.201,
+            "cooktop_resistance": 0.83 * 0.074,
+            "petrol_car": 31.4 * 0.258 * (250 * 52 / 11000),
+            "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),
+            "other": (0.34 + 4.48 + 3.06) * 0.074,
         }
         after = {
-            "space_heating_heat_pump": 2.3 * 0.098,
-            "water_heating_heat_pump": 1.71 * 0.098,
-            "cooktop_resistance": 0.83 * 0.098,  # didn't swap
-            "ev_car": 8.027 * 0.098 * (250 * 52 / 11000),
-            "diesel_car": 28.4 * 0.253 * (50 * 52 / 11000),  # didn't want to switch
-            "other": (0.34 + 4.48 + 3.06) * 0.098,
+            "space_heating_heat_pump": 2.3 * 0.074,
+            "water_heating_heat_pump": 1.71 * 0.074,
+            "cooktop_resistance": 0.83 * 0.074,  # didn't swap
+            "ev_car": 7.324 * 0.074 * (250 * 52 / 11000),
+            "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),  # didn't want to switch
+            "other": (0.34 + 4.48 + 3.06) * 0.074,
         }
         before_daily = sum(before.values())
         after_daily = sum(after.values())

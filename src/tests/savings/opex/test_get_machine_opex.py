@@ -157,8 +157,8 @@ mock_opex_weekly = 12.3 * 7
 
 
 # class TestGetVehicleOpexPerDay(TestCase):
-#     petrol = 32 * 0.242
-#     ev = 8.027 * 0.098
+#     petrol = 31.4 * 0.242
+#     ev = 7.324 * 0.098
 
 #     def test_it_calculates_daily_opex_for_one_petrol_car(self):
 #         result = get_vehicle_opex([mock_vehicle_petrol])
@@ -166,7 +166,7 @@ mock_opex_weekly = 12.3 * 7
 
 #     def test_it_calculates_daily_opex_for_one_diesel_car(self):
 #         result = get_vehicle_opex([mock_vehicle_diesel])
-#         expected = 28.4 * 0.253 * (50 * 52 / 11000)
+#         expected = 22.8 * 0.253 * (50 * 52 / 11000)
 #         assert result == expected
 
 #     def test_it_calculates_daily_opex_for_one_ev(self):
@@ -194,9 +194,9 @@ mock_opex_weekly = 12.3 * 7
 #             ]
 #         )
 #         expected = (
-#             (32 * 0.242 * (250 * 52 / 11000))
-#             + (28.4 * 0.253 * (50 * 52 / 11000))
-#             + (8.027 * 0.098 * (250 * 52 / 11000))
+#             (31.4 * 0.242 * (250 * 52 / 11000))
+#             + (22.8 * 0.253 * (50 * 52 / 11000))
+#             + (7.324 * 0.098 * (250 * 52 / 11000))
 #             + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
 #             + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
 #         )
