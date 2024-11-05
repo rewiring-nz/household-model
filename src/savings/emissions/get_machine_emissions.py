@@ -11,7 +11,7 @@ from constants.machines.vehicles import (
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
 )
 from constants.utils import PeriodEnum
-from params import OPERATIONAL_LIFETIME
+from utils.scale_daily_to_period import scale_daily_to_period
 
 
 def get_emissions_per_day(
@@ -51,7 +51,7 @@ def get_appliance_emissions(
         appliance,
         appliance_info,
     )
-    return _convert_to_period(emissions_daily, period)
+    return scale_daily_to_period(emissions_daily, period)
 
 
 def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> float:
@@ -68,7 +68,7 @@ def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> floa
     emissions_daily = (
         ENERGY_NEEDS_OTHER_MACHINES_PER_DAY * EMISSIONS_FACTORS["electricity"]
     )
-    return _convert_to_period(emissions_daily, period)
+    return scale_daily_to_period(emissions_daily, period)
 
 
 def get_vehicle_emissions(
@@ -103,7 +103,7 @@ def get_vehicle_emissions(
         weighted_emissions_daily = avg_emissions_daily * weighting_factor
 
         # Convert to given period
-        emissions_period = _convert_to_period(weighted_emissions_daily, period)
+        emissions_period = scale_daily_to_period(weighted_emissions_daily, period)
 
         # Add to total
         total_emissions += emissions_period
@@ -125,15 +125,3 @@ def _get_hybrid_emissions_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
     if vehicle_type == VehicleFuelTypeEnum.HYBRID:
         # HEV: Assume 70/30 split between petrol and electric
         return petrol * 0.7 + ev * 0.3
-
-
-def _convert_to_period(emissions_daily: float, period: PeriodEnum) -> float:
-    # This might become more complex in future, taking into account macroeconomic effects
-    if period == PeriodEnum.DAILY:
-        return emissions_daily
-    if period == PeriodEnum.WEEKLY:
-        return emissions_daily * 7
-    if period == PeriodEnum.YEARLY:
-        return emissions_daily * 365.25
-    if period == PeriodEnum.OPERATIONAL_LIFETIME:
-        return emissions_daily * 365.25 * OPERATIONAL_LIFETIME
