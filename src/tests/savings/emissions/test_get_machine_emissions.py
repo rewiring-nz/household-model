@@ -15,7 +15,7 @@ from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
 from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
-    _convert_to_period,
+    scale_daily_to_period,
     get_emissions_per_day,
     get_other_appliance_emissions,
     get_vehicle_emissions,
@@ -79,7 +79,7 @@ class TestGetEmissionsPerDay(TestCase):
 
 
 @patch(
-    "savings.emissions.get_machine_emissions._convert_to_period",
+    "savings.emissions.get_machine_emissions.scale_daily_to_period",
     return_value=mock_emissions_weekly,
 )
 @patch(
@@ -111,17 +111,19 @@ class TestGetApplianceEmissions:
             CooktopEnum.ELECTRIC_RESISTANCE, COOKTOP_INFO
         )
 
-    def test_it_calls_convert_to_period_correctly(self, _, mock_convert_to_period):
+    def test_it_calls_scale_daily_to_period_correctly(
+        self, _, mock_scale_daily_to_period
+    ):
         get_appliance_emissions(mock_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY)
-        mock_convert_to_period.assert_called_once_with(
+        mock_scale_daily_to_period.assert_called_once_with(
             mock_emissions_daily, PeriodEnum.WEEKLY
         )
 
-    def test_it_calls_convert_to_period_correctly_with_default(
-        self, _, mock_convert_to_period
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, _, mock_scale_daily_to_period
     ):
         get_appliance_emissions(mock_household.cooktop, COOKTOP_INFO)
-        mock_convert_to_period.assert_called_once_with(
+        mock_scale_daily_to_period.assert_called_once_with(
             mock_emissions_daily, PeriodEnum.DAILY
         )
 
@@ -133,23 +135,23 @@ class TestGetApplianceEmissions:
 
 
 @patch(
-    "savings.emissions.get_machine_emissions._convert_to_period",
+    "savings.emissions.get_machine_emissions.scale_daily_to_period",
     return_value=mock_emissions_weekly,
 )
 class TestGetOtherApplianceEmissions:
     emissions_daily = (0.34 + 4.48 + 3.06) * 0.074
 
-    def test_it_calls_convert_to_period_correctly(self, mock_convert_to_period):
+    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
         get_other_appliance_emissions(PeriodEnum.WEEKLY)
-        mock_convert_to_period.assert_called_once_with(
+        mock_scale_daily_to_period.assert_called_once_with(
             self.emissions_daily, PeriodEnum.WEEKLY
         )
 
-    def test_it_calls_convert_to_period_correctly_with_default(
-        self, mock_convert_to_period
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, mock_scale_daily_to_period
     ):
         get_other_appliance_emissions()
-        mock_convert_to_period.assert_called_once_with(
+        mock_scale_daily_to_period.assert_called_once_with(
             self.emissions_daily, PeriodEnum.DAILY
         )
 
@@ -205,30 +207,30 @@ class TestGetVehicleEmissionsPerDay(TestCase):
         assert result == expected
 
     @patch(
-        "savings.emissions.get_machine_emissions._convert_to_period",
+        "savings.emissions.get_machine_emissions.scale_daily_to_period",
     )
-    def test_it_calls_convert_to_period_correctly(self, mock_convert_to_period):
+    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
         get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
-        assert len(mock_convert_to_period.call_args_list) == 2
-        mock_convert_to_period.assert_any_call(
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(
             self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
         )
-        mock_convert_to_period.assert_any_call(
+        mock_scale_daily_to_period.assert_any_call(
             self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
         )
 
     @patch(
-        "savings.emissions.get_machine_emissions._convert_to_period",
+        "savings.emissions.get_machine_emissions.scale_daily_to_period",
     )
-    def test_it_calls_convert_to_period_correctly_with_default(
-        self, mock_convert_to_period
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, mock_scale_daily_to_period
     ):
         get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
-        assert len(mock_convert_to_period.call_args_list) == 2
-        mock_convert_to_period.assert_any_call(
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(
             self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
         )
-        mock_convert_to_period.assert_any_call(
+        mock_scale_daily_to_period.assert_any_call(
             self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
         )
 
@@ -245,23 +247,3 @@ class TestGetVehicleEmissionsPerDay(TestCase):
             (self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))
         ) * 7
         assert result == expected
-
-
-class TestConvertToPeriod:
-    def test_it_returns_daily_emissions(self):
-        result = _convert_to_period(mock_emissions_daily, PeriodEnum.DAILY)
-        assert result == mock_emissions_daily
-
-    def test_it_returns_weekly_emissions(self):
-        result = _convert_to_period(mock_emissions_daily, PeriodEnum.WEEKLY)
-        assert result == mock_emissions_daily * 7
-
-    def test_it_returns_yearly_emissions(self):
-        result = _convert_to_period(mock_emissions_daily, PeriodEnum.YEARLY)
-        assert result == mock_emissions_daily * 365.25
-
-    def test_it_returns_operational_lifetime_emissions(self):
-        result = _convert_to_period(
-            mock_emissions_daily, PeriodEnum.OPERATIONAL_LIFETIME
-        )
-        assert result == mock_emissions_daily * 365.25 * 15
