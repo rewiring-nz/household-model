@@ -185,29 +185,43 @@ class TestGetVehicleOpexPerDay(TestCase):
             ]
         )
         expected = (
+            # petrol
             (31.4 * 0.28884 * (250 * 52 / 11000))
+            # diesel + RUC
             + (22.8 * 0.19679 * (50 * 52 / 11000))
             + (76 * 50 * 52 / 1000) / 365.25
+            # EV + RUC
             + (7.324 * 0.26175 * (250 * 52 / 11000))
             + (76 * 250 * 52 / 1000) / 365.25
+            # HEV
             + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+            # PHEV + RUC
             + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
             + (38 * 175 * 52 / 1000) / 365.25
         )
         assert result == expected
 
-    # @patch(
-    #     "savings.opex.get_machine_opex.scale_daily_to_period",
-    # )
-    # def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-    #     get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
-    #     assert len(mock_scale_daily_to_period.call_args_list) == 2
-    #     mock_scale_daily_to_period.assert_any_call(
-    #         self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
-    #     )
-    #     mock_scale_daily_to_period.assert_any_call(
-    #         self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
-    #     )
+    @patch(
+        "savings.opex.get_machine_opex.scale_daily_to_period",
+    )
+    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
+
+        get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
+
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        # petrol
+        expected_weighted_opex_daily_petrol = self.petrol * (250 * 52 / 11000)
+        mock_scale_daily_to_period.assert_any_call(
+            expected_weighted_opex_daily_petrol,
+            PeriodEnum.WEEKLY,
+        )
+        # ev
+        expected_weighted_opex_daily_ev = (
+            self.ev * (250 * 52 / 11000) + (76 * 250 * 52 / 1000) / 365.25
+        )
+        mock_scale_daily_to_period.assert_any_call(
+            expected_weighted_opex_daily_ev, PeriodEnum.WEEKLY
+        )
 
     # @patch(
     #     "savings.opex.get_machine_opex.scale_daily_to_period",
