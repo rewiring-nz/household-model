@@ -184,6 +184,19 @@ def get_solar_savings(solar: Solar, period: PeriodEnum = PeriodEnum.DAILY) -> fl
 
 
 def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
+    if not isinstance(vehicle_type, VehicleFuelTypeEnum):
+        raise TypeError(
+            f"vehicle_type must be VehicleFuelTypeEnum, got {type(vehicle_type)}"
+        )
+
+    if vehicle_type not in (
+        VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+        VehicleFuelTypeEnum.HYBRID,
+    ):
+        raise ValueError(
+            f"vehicle_type must be PLUG_IN_HYBRID or HYBRID, got {vehicle_type.value}"
+        )
+
     petrol = get_opex_per_day(
         VehicleFuelTypeEnum.PETROL,
         VEHICLE_INFO,
@@ -195,6 +208,5 @@ def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
     if vehicle_type == VehicleFuelTypeEnum.PLUG_IN_HYBRID:
         # PHEV: Assume 60/40 split between petrol and electric
         return petrol * 0.6 + ev * 0.4
-    if vehicle_type == VehicleFuelTypeEnum.HYBRID:
-        # HEV: Assume 70/30 split between petrol and electric
-        return petrol * 0.7 + ev * 0.3
+    # HEV: Assume 70/30 split between petrol and electric
+    return petrol * 0.7 + ev * 0.3

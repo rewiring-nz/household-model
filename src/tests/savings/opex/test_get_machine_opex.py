@@ -1,28 +1,28 @@
+import pytest
+
 from unittest import TestCase
 from unittest.mock import patch
 
 from openapi_client.models import (
     SpaceHeatingEnum,
     CooktopEnum,
-    WaterHeatingEnum,
 )
 
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_TODAY,
-    EMISSIONS_FACTORS,
     FuelTypeEnum,
 )
 from constants.machines.machine_info import MachineInfoMap
 from constants.machines.cooktop import COOKTOP_INFO
-from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
+from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from savings.opex.get_machine_opex import (
     get_appliance_opex,
-    scale_daily_to_period,
     get_opex_per_day,
     get_other_appliances_opex,
     get_vehicle_opex,
+    _get_hybrid_opex_per_day,
 )
 from tests.mocks import (
     mock_household,
@@ -259,3 +259,55 @@ class TestGetVehicleOpexPerDay(TestCase):
             )
             * 7
         )
+
+
+def get_mock_opex_values(fuel_type, vehicle_info):
+    # Return fixed values for testing
+    if fuel_type == VehicleFuelTypeEnum.PETROL:
+        return 100.0  # $100 per day for petrol
+    if fuel_type == VehicleFuelTypeEnum.ELECTRIC:
+        return 50.0  # $50 per day for electric
+    return 0.0
+
+
+@patch(
+    "savings.opex.get_machine_opex.get_opex_per_day", side_effect=get_mock_opex_values
+)
+class TestGetHybridOpexPerDay:
+    def test_plug_in_hybrid(self, _):
+        result = _get_hybrid_opex_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID)
+        # PHEV: 60% of petrol ($100) + 40% of electric ($50)
+        # 60.0 + 20.0 = 80.0
+        assert result == 80.0
+
+    def test_hybrid(self, _):
+        result = _get_hybrid_opex_per_day(VehicleFuelTypeEnum.HYBRID)
+        # HEV: 70% of petrol ($100) + 30% of electric ($50)
+        # 70.0 + 15.0 = 85.0
+        assert result == 85.0
+
+    def test_different_opex_values(self, mock_opex_values):
+        # Override the mock for this specific test
+        mock_opex_values.side_effect = lambda fuel_type, vehicle_info: {
+            VehicleFuelTypeEnum.PETROL: 200.0,
+            VehicleFuelTypeEnum.ELECTRIC: 100.0,
+        }.get(fuel_type, 0.0)
+
+        phev_result = _get_hybrid_opex_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID)
+        hev_result = _get_hybrid_opex_per_day(VehicleFuelTypeEnum.HYBRID)
+
+        # PHEV: 60% of 200 + 40% of 100 = 120 + 40 = 160
+        assert phev_result == 160.0
+
+        # HEV: 70% of 200 + 30% of 100 = 140 + 30 = 170
+        assert hev_result == 170.0
+
+    def test_wrong_type_raises_type_error(self, mock_get_opex):
+        with pytest.raises(TypeError, match="vehicle_type must be VehicleFuelTypeEnum"):
+            _get_hybrid_opex_per_day("HYBRID")
+
+    def test_non_hybrid_vehicle_type_raises_value_error(self, mock_get_opex):
+        with pytest.raises(
+            ValueError, match="vehicle_type must be PLUG_IN_HYBRID or HYBRID"
+        ):
+            _get_hybrid_opex_per_day(VehicleFuelTypeEnum.PETROL)
