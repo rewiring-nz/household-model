@@ -1,15 +1,11 @@
 from typing import List
 
-from openapi_client.models.cooktop_enum import CooktopEnum
-from openapi_client.models.household import Household
 from openapi_client.models.solar import Solar
-from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_TODAY,
-    FuelTypeEnum,
 )
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
@@ -19,15 +15,7 @@ from constants.machines.vehicles import (
     VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
 )
 from constants.utils import PeriodEnum
-from openapi_client.models.water_heating_enum import WaterHeatingEnum
 from utils.scale_daily_to_period import scale_daily_to_period
-
-
-FIXED_COSTS_PER_YEAR = {
-    FuelTypeEnum.ELECTRICITY: 689,  # on every home
-    FuelTypeEnum.NATURAL_GAS: 587,  # Machines!D292
-    FuelTypeEnum.LPG: 139,  # Machines!D293
-}
 
 
 def get_opex_per_day(
