@@ -20,3 +20,16 @@ Table 1: Energy prices ($/kWh)
 | Electricity (solar eed-back tariff)        | 1.69%                    | $0.135    | $0.15222                                  |
 | Petrol                                     | 3.29%                    | $0.28884    | $0.36584                                  |
 | Diesel                                     | 3.29%                    | $0.19679    | $0.24925                                  |
+
+## Emissions factors
+
+These figures are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
+
+| Energy Type   | Emissions Factor (kgCO₂e/kWh) |
+|---------------|-------------------------------|
+| Electricity   | 0.074                         |
+| Natural Gas   | 0.201                         |
+| LPG           | 0.219                         |
+| Wood          | 0.016                         |
+| Petrol        | 0.258                         |
+| Diesel        | 0.253                         |
