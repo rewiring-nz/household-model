@@ -148,6 +148,11 @@ class TestGetVehicleOpexPerDay(TestCase):
     petrol = 31.4 * 0.28884
     ev = 7.324 * 0.26175
 
+    expected_weighted_opex_daily_petrol = petrol * (250 * 52 / 11000)
+    expected_weighted_opex_daily_ev = (
+        ev * (250 * 52 / 11000) + (76 * 250 * 52 / 1000) / 365.25
+    )
+
     def test_it_calculates_daily_opex_for_one_petrol_car(self):
         result = get_vehicle_opex([mock_vehicle_petrol])
         assert result == self.petrol * (250 * 52 / 11000)
@@ -209,46 +214,48 @@ class TestGetVehicleOpexPerDay(TestCase):
         get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
 
         assert len(mock_scale_daily_to_period.call_args_list) == 2
-        # petrol
-        expected_weighted_opex_daily_petrol = self.petrol * (250 * 52 / 11000)
         mock_scale_daily_to_period.assert_any_call(
-            expected_weighted_opex_daily_petrol,
+            self.expected_weighted_opex_daily_petrol,
             PeriodEnum.WEEKLY,
         )
-        # ev
-        expected_weighted_opex_daily_ev = (
-            self.ev * (250 * 52 / 11000) + (76 * 250 * 52 / 1000) / 365.25
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_opex_daily_ev, PeriodEnum.WEEKLY
+        )
+
+    @patch(
+        "savings.opex.get_machine_opex.scale_daily_to_period",
+    )
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, mock_scale_daily_to_period
+    ):
+        get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_opex_daily_petrol,
+            PeriodEnum.DAILY,
         )
         mock_scale_daily_to_period.assert_any_call(
-            expected_weighted_opex_daily_ev, PeriodEnum.WEEKLY
+            self.expected_weighted_opex_daily_ev, PeriodEnum.DAILY
         )
 
-    # @patch(
-    #     "savings.opex.get_machine_opex.scale_daily_to_period",
-    # )
-    # def test_it_calls_scale_daily_to_period_correctly_with_default(
-    #     self, mock_scale_daily_to_period
-    # ):
-    #     get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
-    #     assert len(mock_scale_daily_to_period.call_args_list) == 2
-    #     mock_scale_daily_to_period.assert_any_call(
-    #         self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
-    #     )
-    #     mock_scale_daily_to_period.assert_any_call(
-    #         self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
-    #     )
+    def test_it_returns_opex_with_default_period(self):
+        result = get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
 
-    # def test_it_returns_opex_with_default_period(self):
-    #     result = get_vehicle_opex([mock_vehicle_ev, mock_vehicle_petrol])
-    #     assert result == (self.petrol * (250 * 52 / 11000)) + (
-    #         self.ev * (250 * 52 / 11000)
-    #     )
+        assert (
+            result
+            == self.expected_weighted_opex_daily_petrol
+            + self.expected_weighted_opex_daily_ev
+        )
 
-    # def test_it_returns_opex_with_specified_period(self):
-    #     result = get_vehicle_opex(
-    #         [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
-    #     )
-    #     assert (
-    #         result
-    #         == ((self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))) * 7
-    #     )
+    def test_it_returns_opex_with_specified_period(self):
+        result = get_vehicle_opex(
+            [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
+        )
+        assert (
+            result
+            == (
+                self.expected_weighted_opex_daily_petrol
+                + self.expected_weighted_opex_daily_ev
+            )
+            * 7
+        )
