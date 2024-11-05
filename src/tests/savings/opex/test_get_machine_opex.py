@@ -21,7 +21,7 @@ from savings.opex.get_machine_opex import (
     get_appliance_opex,
     scale_daily_to_period,
     get_opex_per_day,
-    get_other_appliance_opex,
+    get_other_appliances_opex,
     get_vehicle_opex,
 )
 from tests.mocks import (
@@ -122,11 +122,11 @@ class TestGetApplianceOpex:
     "savings.opex.get_machine_opex.scale_daily_to_period",
     return_value=mock_opex_weekly,
 )
-class TestGetOtherApplianceOpex:
+class TestGetOtherAppliancesOpex:
     opex_daily = (0.34 + 4.05 + 2.85) * 0.26175
 
     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-        get_other_appliance_opex(PeriodEnum.WEEKLY)
+        get_other_appliances_opex(PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
             self.opex_daily, PeriodEnum.WEEKLY
         )
@@ -134,13 +134,13 @@ class TestGetOtherApplianceOpex:
     def test_it_calls_scale_daily_to_period_correctly_with_default(
         self, mock_scale_daily_to_period
     ):
-        get_other_appliance_opex()
+        get_other_appliances_opex()
         mock_scale_daily_to_period.assert_called_once_with(
             self.opex_daily, PeriodEnum.DAILY
         )
 
     def test_it_returns_opex_per_period(self, _):
-        result = get_other_appliance_opex()
+        result = get_other_appliances_opex()
         assert result == 86.42
 
 

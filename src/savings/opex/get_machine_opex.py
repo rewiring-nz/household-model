@@ -70,7 +70,7 @@ def get_appliance_opex(
     return round(scale_daily_to_period(opex_daily, period), 2)
 
 
-def get_other_appliance_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
+def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
     """Calculates the opex of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
     We assume that these are all electric.
