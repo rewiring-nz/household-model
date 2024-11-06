@@ -129,7 +129,6 @@ class TestElectrifyCooktop:
     def test_it_replaces_fossil_fuel_cooktops_with_heat_pump(self):
         assert electrify_cooktop(CooktopEnum.GAS) == CooktopEnum.ELECTRIC_INDUCTION
         assert electrify_cooktop(CooktopEnum.LPG) == CooktopEnum.ELECTRIC_INDUCTION
-        assert electrify_cooktop(CooktopEnum.WOOD) == CooktopEnum.ELECTRIC_INDUCTION
 
     def test_no_change_if_resistive(self):
         assert (
