@@ -7,10 +7,10 @@ from constants.fuel_stats import EMISSIONS_FACTORS, FuelTypeEnum
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
+    VEHICLE_AVG_KMS_PER_WEEK,
     VEHICLE_INFO,
-    VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA,
 )
-from constants.utils import WEEKS_PER_YEAR, PeriodEnum
+from constants.utils import PeriodEnum
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
@@ -98,11 +98,7 @@ def get_vehicle_emissions(
             )
 
         # Weight the emissions based on how much they use the vehicle compared to average
-        weighting_factor = (
-            vehicle.kms_per_week
-            * WEEKS_PER_YEAR
-            / VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA
-        )
+        weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
         weighted_emissions_daily = avg_emissions_daily * weighting_factor
 
         # Convert to given period
