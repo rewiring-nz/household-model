@@ -28,8 +28,7 @@ VEHICLE_INFO: MachineInfoMap = {
     },
 }
 
-# TODO: Get the value per vehicle, not per capita (because 1 vehicle could be shared by multiple people)
-VEHICLE_AVG_DISTANCE_PER_YEAR_PER_CAPITA = 11000
+VEHICLE_AVG_KMS_PER_WEEK = 210
 
 # Road User Charges (RUCs) in $/yr/1000km https://www.whattheruc.com/
 RUCS = {

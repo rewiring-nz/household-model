@@ -53,7 +53,8 @@ SPACE_HEATING_UPFRONT_COST = {
         "install_cost": 0,
     },
     SpaceHeatingEnum.ELECTRIC_RESISTANCE: {
-        "item_price": 300,  # TODO: Should check this again, although we'd never recommend it over heat pumps
+        # Need to update, but low priority because we'd never recommend it over heat pumps
+        "item_price": 300,
         "install_cost": 0,
     },
 }

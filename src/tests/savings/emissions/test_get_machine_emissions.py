@@ -166,25 +166,25 @@ class TestGetVehicleEmissionsPerDay(TestCase):
 
     def test_it_calculates_daily_emissions_for_one_petrol_car(self):
         result = get_vehicle_emissions([mock_vehicle_petrol])
-        assert result == self.petrol * (250 * 52 / 11000)
+        assert result == self.petrol * (250 / 210)
 
     def test_it_calculates_daily_emissions_for_one_diesel_car(self):
         result = get_vehicle_emissions([mock_vehicle_diesel])
-        expected = 22.8 * 0.253 * (50 * 52 / 11000)
+        expected = 22.8 * 0.253 * (50 / 210)
         assert result == expected
 
     def test_it_calculates_daily_emissions_for_one_ev(self):
         result = get_vehicle_emissions([mock_vehicle_ev])
-        assert result == self.ev * (250 * 52 / 11000)
+        assert result == self.ev * (250 / 210)
 
     def test_it_calculates_daily_emissions_for_one_hybrid(self):
         result = get_vehicle_emissions([mock_vehicle_hev])
-        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
         assert result == expected
 
     def test_it_calculates_daily_emissions_for_one_plugin_hybrid(self):
         result = get_vehicle_emissions([mock_vehicle_phev])
-        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
+        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
         assert result == expected
 
     def test_it_combines_vehicles_correctly(self):
@@ -198,11 +198,11 @@ class TestGetVehicleEmissionsPerDay(TestCase):
             ]
         )
         expected = (
-            (31.4 * 0.258 * (250 * 52 / 11000))
-            + (22.8 * 0.253 * (50 * 52 / 11000))
-            + (7.324 * 0.074 * (250 * 52 / 11000))
-            + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
-            + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
+            (31.4 * 0.258 * (250 / 210))
+            + (22.8 * 0.253 * (50 / 210))
+            + (7.324 * 0.074 * (250 / 210))
+            + (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
+            + (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
         )
         assert result == expected
 
@@ -213,10 +213,10 @@ class TestGetVehicleEmissionsPerDay(TestCase):
         get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
         assert len(mock_scale_daily_to_period.call_args_list) == 2
         mock_scale_daily_to_period.assert_any_call(
-            self.petrol * (250 * 52 / 11000), PeriodEnum.WEEKLY
+            self.petrol * (250 / 210), PeriodEnum.WEEKLY
         )
         mock_scale_daily_to_period.assert_any_call(
-            self.ev * (250 * 52 / 11000), PeriodEnum.WEEKLY
+            self.ev * (250 / 210), PeriodEnum.WEEKLY
         )
 
     @patch(
@@ -228,22 +228,20 @@ class TestGetVehicleEmissionsPerDay(TestCase):
         get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
         assert len(mock_scale_daily_to_period.call_args_list) == 2
         mock_scale_daily_to_period.assert_any_call(
-            self.petrol * (250 * 52 / 11000), PeriodEnum.DAILY
+            self.petrol * (250 / 210), PeriodEnum.DAILY
         )
         mock_scale_daily_to_period.assert_any_call(
-            self.ev * (250 * 52 / 11000), PeriodEnum.DAILY
+            self.ev * (250 / 210), PeriodEnum.DAILY
         )
 
     def test_it_returns_emissions_with_default_period(self):
         result = get_vehicle_emissions([mock_vehicle_ev, mock_vehicle_petrol])
-        expected = (self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))
+        expected = (self.petrol * (250 / 210)) + (self.ev * (250 / 210))
         assert result == expected
 
     def test_it_returns_emissions_with_specified_period(self):
         result = get_vehicle_emissions(
             [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
         )
-        expected = (
-            (self.petrol * (250 * 52 / 11000)) + (self.ev * (250 * 52 / 11000))
-        ) * 7
+        expected = ((self.petrol * (250 / 210)) + (self.ev * (250 / 210))) * 7
         assert result == expected

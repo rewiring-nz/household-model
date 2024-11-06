@@ -150,35 +150,33 @@ class TestGetVehicleOpexPerDay(TestCase):
     petrol = 31.4 * 0.28884
     ev = 7.324 * 0.26175
 
-    expected_weighted_opex_daily_petrol = petrol * (250 * 52 / 11000)
-    expected_weighted_opex_daily_ev = (
-        ev * (250 * 52 / 11000) + (76 * 250 * 52 / 1000) / 365.25
-    )
+    expected_weighted_opex_daily_petrol = petrol * (250 / 210)
+    expected_weighted_opex_daily_ev = ev * (250 / 210) + (76 * 250 * 52 / 1000) / 365.25
 
     def test_it_calculates_daily_opex_for_one_petrol_car(self):
         result = get_vehicle_opex([mock_vehicle_petrol])
-        assert result == self.petrol * (250 * 52 / 11000)
+        assert result == self.petrol * (250 / 210)
 
     def test_it_calculates_daily_opex_for_one_diesel_car(self):
         result = get_vehicle_opex([mock_vehicle_diesel])
         daily_rucs = (76 * 50 * 52 / 1000) / 365.25
-        expected = 22.8 * 0.19679 * 50 * 52 / 11000 + daily_rucs
+        expected = 22.8 * 0.19679 * 50 / 210 + daily_rucs
         assert result == expected
 
     def test_it_calculates_daily_opex_for_one_ev(self):
         result = get_vehicle_opex([mock_vehicle_ev])
         daily_rucs = (76 * 250 * 52 / 1000) / 365.25
-        assert result == self.ev * (250 * 52 / 11000) + daily_rucs
+        assert result == self.ev * (250 / 210) + daily_rucs
 
     def test_it_calculates_daily_opex_for_one_hybrid(self):
         result = get_vehicle_opex([mock_vehicle_hev])
-        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
         assert result == expected
 
     def test_it_calculates_daily_opex_for_one_plugin_hybrid(self):
         result = get_vehicle_opex([mock_vehicle_phev])
         daily_rucs = (38 * 175 * 52 / 1000) / 365.25
-        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000) + daily_rucs
+        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210) + daily_rucs
         assert result == expected
 
     def test_it_combines_vehicles_correctly(self):
@@ -193,17 +191,17 @@ class TestGetVehicleOpexPerDay(TestCase):
         )
         expected = (
             # petrol
-            (31.4 * 0.28884 * (250 * 52 / 11000))
+            (31.4 * 0.28884 * (250 / 210))
             # diesel + RUC
-            + (22.8 * 0.19679 * (50 * 52 / 11000))
+            + (22.8 * 0.19679 * (50 / 210))
             + (76 * 50 * 52 / 1000) / 365.25
             # EV + RUC
-            + (7.324 * 0.26175 * (250 * 52 / 11000))
+            + (7.324 * 0.26175 * (250 / 210))
             + (76 * 250 * 52 / 1000) / 365.25
             # HEV
-            + (self.petrol * 0.7 + self.ev * 0.3) * (150 * 52 / 11000)
+            + (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
             # PHEV + RUC
-            + (self.petrol * 0.6 + self.ev * 0.4) * (175 * 52 / 11000)
+            + (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
             + (38 * 175 * 52 / 1000) / 365.25
         )
         assert result == expected
@@ -253,14 +251,11 @@ class TestGetVehicleOpexPerDay(TestCase):
         result = get_vehicle_opex(
             [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
         )
-        assert (
-            result
-            == (
-                self.expected_weighted_opex_daily_petrol
-                + self.expected_weighted_opex_daily_ev
-            )
-            * 7
-        )
+        expected = (
+            self.expected_weighted_opex_daily_petrol
+            + self.expected_weighted_opex_daily_ev
+        ) * 7
+        assert pytest.approx(result) == expected
 
 
 def get_mock_opex_values(fuel_type, vehicle_info):

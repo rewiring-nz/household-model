@@ -43,3 +43,7 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 - Assumes 1% degradation per year, which averages out to 85.22% performance of nameplate capacity over 15 years.
 - Assumes 5% losses in battery to the electronics & wiring within the battery itself
 - Assumes that having a battery results in a 20% discount on the price of grid electricity, as it allows you to buy power at off-peak prices and 
+
+## Vehicles
+
+- Assumes average distance driven per vehicle per year is 10,950 km, rounded to 210 km per week. This is taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/) for the year 2019, to avoid the anomalies from COVID-19.
