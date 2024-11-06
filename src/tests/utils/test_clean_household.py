@@ -61,7 +61,7 @@ class TestCleanVehicle(TestCase):
             )
         ) == Vehicle(
             fuelType=VehicleFuelTypeEnum.PETROL,
-            kms_per_week=round(11000 / 52),
+            kms_per_week=210,
             switchToEV=False,
         )
 

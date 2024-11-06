@@ -105,7 +105,7 @@ def get_vehicle_opex(
             )
 
         # Weight the opex based on how much they use the vehicle compared to average
-        weighting_factor = vehicle.kms_per_week * VEHICLE_AVG_KMS_PER_WEEK
+        weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
         weighted_opex_daily = avg_opex_daily * weighting_factor
 
         # Add Road User Charges (RUCs), weighted on kms per year

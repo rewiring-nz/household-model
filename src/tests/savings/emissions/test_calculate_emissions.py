@@ -63,16 +63,16 @@ class TestCalculateEmissions(unittest.TestCase):
             "space_heating_wood": 14.44 * 0.016,
             "water_heating_gas": 6.6 * 0.201,
             "cooktop_resistance": 0.83 * 0.074,
-            "petrol_car": 31.4 * 0.258 * (250 * 52 / 11000),
-            "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),
+            "petrol_car": 31.4 * 0.258 * (250 / 210),
+            "diesel_car": 22.8 * 0.253 * (50 / 210),
             "other": (0.34 + 4.05 + 2.85) * 0.074,
         }
         after = {
             "space_heating_heat_pump": 2.3 * 0.074,
             "water_heating_heat_pump": 1.71 * 0.074,
             "cooktop_resistance": 0.83 * 0.074,  # didn't swap
-            "ev_car": 7.324 * 0.074 * (250 * 52 / 11000),
-            "diesel_car": 22.8 * 0.253 * (50 * 52 / 11000),  # didn't want to switch
+            "ev_car": 7.324 * 0.074 * (250 / 210),
+            "diesel_car": 22.8 * 0.253 * (50 / 210),  # didn't want to switch
             "other": (0.34 + 4.05 + 2.85) * 0.074,
         }
         before_daily = sum(before.values())

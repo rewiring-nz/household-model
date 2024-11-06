@@ -22,6 +22,7 @@ COOKTOP_INFO: MachineInfoMap = {
         "kwh_per_day": 0.75,
         "fuel_type": FuelTypeEnum.ELECTRICITY,
     },
+    # TODO
     # CooktopEnum.WOOD: {
     #     "kwh_per_day": 14.44, # Need a value for this
     #     "fuel_type": FuelTypeEnum.WOOD,
