@@ -66,5 +66,5 @@ To use the client in TypeScript (e.g. for a frontend like the [household-calcula
 ```bash
 # Replace the value after -o (for "output") with the location where you want the client to go.
 # E.g. the src/shared/api/ folder of your frontend project
-openapi-generator generate -i openapi.yml -g typescript-axios -o ~/code/household-calculator-app/src/shared/api/
+openapi-generator generate -i openapi.yml -g typescript-axios -o ~/code/household-calculator-app/src/shared/api/openapi-client/
 ```
