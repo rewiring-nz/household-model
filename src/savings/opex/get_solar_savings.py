@@ -44,7 +44,7 @@ def get_solar_savings(
     e_needed_by_vehicles = 50  # TODO
     e_needed_total = e_needed_by_appliances + e_needed_by_vehicles
 
-    e_generated_from_solar = get_generation_from_solar(solar.size)
+    e_generated_from_solar = get_e_generated_from_solar(solar.size)
     e_consumed_from_solar = get_e_consumed_from_solar(
         e_generated_from_solar, e_needed_by_appliances, e_needed_by_vehicles
     )
@@ -60,6 +60,24 @@ def get_solar_savings(
     e_exported = e_consumed_from_grid + e_generated_from_solar - e_needed_total
     # per year
     return e_exported
+
+
+def get_e_generated_from_solar(solar_size: float, location: LocationEnum) -> float:
+    """Calculate energy generated from solar
+
+    Args:
+        solar_size (float): The size of the solar panel system in kW, >= 0
+        location (LocationEnum): The location around NZ which determines the solar capacity
+
+    Returns:
+        float: energy generated per year in kWh
+    """
+    return (
+        solar_size
+        * SOLAR_CAPACITY_FACTOR.get(location)
+        * HOURS_PER_YEAR
+        * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
+    )
 
 
 def get_e_consumed_from_solar(

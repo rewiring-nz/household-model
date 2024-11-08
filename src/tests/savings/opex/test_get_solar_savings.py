@@ -1,5 +1,38 @@
 import pytest
-from savings.opex.get_solar_savings import get_energy_from_battery
+from openapi_client.models.location_enum import LocationEnum
+from savings.opex.get_solar_savings import (
+    get_e_generated_from_solar,
+    get_e_consumed_from_solar,
+    get_e_consumed_from_battery,
+)
+
+class TestGetEGeneratedFromSolar:
+    def test_calculates_generation_correctly_for_sydney(self):
+        solar_size = 6.6
+        expected_generation = solar_size * 0.155 * 8766 * 0.9308
+
+        result = get_e_generated_from_solar(solar_size, LocationEnum.AUCKLAND_CENTRAL)
+
+        assert result == expected_generation
+
+    def test_different_locations_give_different_results(self):
+        assert get_e_generated_from_solar(
+            5.0, LocationEnum.AUCKLAND_CENTRAL
+        ) > get_e_generated_from_solar(5.0, LocationEnum.SOUTHLAND)
+
+    def test_zero_solar_size_returns_zero(self):
+        assert get_e_generated_from_solar(0, LocationEnum.AUCKLAND_CENTRAL) == 0.0
+
+    def test_larger_system_generates_proportionally_more(self):
+        small_size = 5.0
+        large_size = 10.0
+        location = LocationEnum.OTAGO
+
+        small_generation = get_e_generated_from_solar(small_size, location)
+        large_generation = get_e_generated_from_solar(large_size, location)
+
+        assert large_generation == 2 * small_generation
+
 
 
 class TestGetEnergyFromBattery:
