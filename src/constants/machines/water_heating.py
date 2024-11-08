@@ -52,7 +52,7 @@ WATER_HEATING_UPFRONT_COST = {
         "install_cost": 2321,  # D17
     },
     WaterHeatingEnum.SOLAR: {
-        # TODO: Figure out price, although low priority because we're unlikely to ever recommending switching TO rooftop solar water heating (like Solahart, not panels)
+        # Not sure on price but also low priority because we don't recommend switching to rooftop direct-solar water heating (like Solahart)
         "item_price": None,
         "install_cost": None,
     },

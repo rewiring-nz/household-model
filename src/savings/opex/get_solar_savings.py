@@ -1,3 +1,4 @@
+from multiprocessing import Value
 from typing import Optional, Union
 
 from pydantic import StrictFloat, StrictInt
@@ -27,15 +28,15 @@ from utils.scale_daily_to_period import scale_daily_to_period
 
 
 def get_solar_savings(
-    solar_size: Optional[Union[StrictFloat, StrictInt]],
-    battery_size: Optional[Union[StrictFloat, StrictInt]],
+    solar: Solar,
+    battery: Battery,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     # TODO
     # if installing solar
     # substract AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH or AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH but dynamic to solar size
     # check if these apply even without battery, and what the impact of the battery is
-    if solar_size is None:
+    if not solar.has_solar or solar.size is None:
         return 0
 
     # kWh per year
@@ -43,21 +44,36 @@ def get_solar_savings(
     e_needed_by_vehicles = 50  # TODO
     e_needed_total = e_needed_by_appliances + e_needed_by_vehicles
 
-    e_generated_from_solar = get_generation_from_solar(solar_size)
-    e_consumed_from_solar = (
-        SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needed_by_appliances
-        + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needed_by_vehicles
+    e_generated_from_solar = get_generation_from_solar(solar.size)
+    e_consumed_from_solar = get_e_consumed_from_solar(
+        e_generated_from_solar, e_needed_by_appliances, e_needed_by_vehicles
     )
 
-    # electricity stored in battery, then consumed or exported
-    e_from_battery = get_energy_from_battery(
-        battery_size, e_generated_from_solar, e_consumed_from_solar
-    )
+    e_from_battery = 0
+    if battery.has_battery and battery.capacity is not None:
+        # electricity stored in battery, then consumed or exported
+        e_from_battery = get_energy_from_battery(
+            battery.capacity, e_generated_from_solar, e_consumed_from_solar
+        )
 
     e_consumed_from_grid = e_needed_total - e_consumed_from_solar - e_from_battery
     e_exported = e_consumed_from_grid + e_generated_from_solar - e_needed_total
     # per year
     return e_exported
+
+
+def get_e_consumed_from_solar(
+    e_generated_from_solar: float,
+    e_needed_by_appliances: float,
+    e_needed_by_vehicles: float,
+) -> float:
+    e_consumed_from_solar = (
+        SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needed_by_appliances
+        + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needed_by_vehicles
+    )
+    if e_consumed_from_solar > e_generated_from_solar:
+        return e_generated_from_solar
+    return e_consumed_from_solar
 
 
 def get_total_bills(
@@ -136,11 +152,28 @@ def get_generation_from_solar(solar_size: float, location: LocationEnum) -> floa
 
 
 def get_energy_from_battery(
-    battery_size: float, e_generated_from_solar: float, e_consumed_from_solar: float
+    battery_capacity: float, e_generated_from_solar: float, e_consumed_from_solar: float
 ) -> float:
+    """Calculate the energy stored and consumed from the battery
+
+    This essentially removes the need to buy this amount of energy from the grid at peak prices,
+    allowing the household to make the most of off-peak grid prices, assuming that they take
+    advantage of such spot prices.
+
+    Args:
+        battery_capacity (float): battery nameplate capacity in kWh/cycle
+        e_generated_from_solar (float): the electricity in kWh/year generated from solar
+        e_consumed_from_solar (float): the electricity in kWh/year consumed from the solar. Should be equal to or less than e_generated_from_solar.
+
+    Returns:
+        float: _description_
+    """
+    if e_consumed_from_solar > e_generated_from_solar:
+        raise ValueError("Energy consumed is higher than energy generated.")
+
     e_remaining_after_self_consumption = e_generated_from_solar - e_consumed_from_solar
     e_battery_storage_capacity = (
-        battery_size  # kWh/cycle
+        battery_capacity  # kWh/cycle
         * BATTERY_CYCLES_PER_DAY  # cycle/day
         * BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS
         * (1 - BATTERY_LOSSES)
