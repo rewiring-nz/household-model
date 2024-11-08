@@ -6,6 +6,7 @@ from savings.opex.get_solar_savings import (
     get_e_consumed_from_battery,
 )
 
+
 class TestGetEGeneratedFromSolar:
     def test_calculates_generation_correctly_for_sydney(self):
         solar_size = 6.6
@@ -34,17 +35,33 @@ class TestGetEGeneratedFromSolar:
         assert large_generation == 2 * small_generation
 
 
+class TestGetEConsumedFromSolar:
+    def test_calculates_consumption_when_below_generation(self):
+        assert get_e_consumed_from_solar(10000.0, 5000.0, 3000.0) == 2500 + 1500
+
+    def test_caps_consumption_at_generation(self):
+        assert get_e_consumed_from_solar(5000.0, 6000.0, 6000.0) == 5000
+
+    def test_with_zero_appliance_load(self):
+        assert get_e_consumed_from_solar(5000.0, 0.0, 2000.0) == 1000
+
+    def test_with_zero_vehicle_load(self):
+        assert get_e_consumed_from_solar(5000.0, 3000.0, 0.0) == 1500
+
+    def test_with_all_zeros(self):
+        assert get_e_consumed_from_solar(0.0, 0.0, 0.0) == 0
+
 
 class TestGetEnergyFromBattery:
     def test_when_remaining_energy_less_than_capacity_returns_remaining_energy(self):
-        result = get_energy_from_battery(
+        result = get_e_consumed_from_battery(
             battery_capacity=10, e_generated_from_solar=100, e_consumed_from_solar=95
         )
         assert result == 5.0  # 100 - 95 = 5 kWh remaining
 
     def test_when_remaining_energy_exceeds_capacity_returns_capacity(self):
         # 3000 kWh/yr remaining from solar generation after self-consumption
-        result = get_energy_from_battery(
+        result = get_e_consumed_from_battery(
             battery_capacity=10, e_generated_from_solar=3500, e_consumed_from_solar=500
         )
         # Battery capacity is 10 kWh/cycle, which is around 2957 kWh/yr
@@ -52,17 +69,17 @@ class TestGetEnergyFromBattery:
         assert result == battery_capacity_per_yr
 
     def test_with_zero_battery_capacity_returns_zero(self):
-        result = get_energy_from_battery(
+        result = get_e_consumed_from_battery(
             battery_capacity=0, e_generated_from_solar=100, e_consumed_from_solar=90
         )
         assert result == 0.0
 
     def test_with_equal_generation_and_consumption_returns_zero(self):
-        result = get_energy_from_battery(
+        result = get_e_consumed_from_battery(
             battery_capacity=10, e_generated_from_solar=100, e_consumed_from_solar=100
         )
         assert result == 0.0
 
     def test_it_raises_error_if_more_consumed_than_generated(self):
         with pytest.raises(ValueError):
-            get_energy_from_battery(10, 90, 100)
+            get_e_consumed_from_battery(10, 90, 100)

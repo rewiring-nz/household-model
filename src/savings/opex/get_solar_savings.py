@@ -52,7 +52,7 @@ def get_solar_savings(
     e_from_battery = 0
     if battery.has_battery and battery.capacity is not None:
         # electricity stored in battery, then consumed or exported
-        e_from_battery = get_energy_from_battery(
+        e_from_battery = get_e_consumed_from_battery(
             battery.capacity, e_generated_from_solar, e_consumed_from_solar
         )
 
@@ -85,6 +85,16 @@ def get_e_consumed_from_solar(
     e_needed_by_appliances: float,
     e_needed_by_vehicles: float,
 ) -> float:
+    """Calculate energy consumed from solar
+
+    Args:
+        e_generated_from_solar (float): kWh generated from solar in a year
+        e_needed_by_appliances (float): kWh required by appliances in a year
+        e_needed_by_vehicles (float): kWh required by vehicles in a year
+
+    Returns:
+        float: kWh consumed from the generated solar in one year
+    """
     e_consumed_from_solar = (
         SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needed_by_appliances
         + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needed_by_vehicles
@@ -160,16 +170,7 @@ def get_solar_feedin_tariff(e_exported: float) -> float:
     return e_exported * SOLAR_FEEDIN_TARIFF_2024
 
 
-def get_generation_from_solar(solar_size: float, location: LocationEnum) -> float:
-    return (
-        solar_size
-        * SOLAR_CAPACITY_FACTOR.get(location)
-        * HOURS_PER_YEAR
-        * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
-    )
-
-
-def get_energy_from_battery(
+def get_e_consumed_from_battery(
     battery_capacity: float, e_generated_from_solar: float, e_consumed_from_solar: float
 ) -> float:
     """Calculate the energy stored and consumed from the battery
