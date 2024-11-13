@@ -76,7 +76,9 @@ def _get_total_opex(household: Household, period: PeriodEnum) -> float:
     vehicle_opex = get_vehicle_opex(household.vehicles, period)
     other_opex = get_other_appliances_opex(period)
     fixed_costs = get_fixed_costs(household, period)
-    solar_savings = get_solar_savings(energy_needs, household.solar, period)
+    solar_savings = get_solar_savings(
+        energy_needs, household.solar, household.battery, household.location, period
+    )
 
     return appliance_opex + vehicle_opex + other_opex + fixed_costs - solar_savings
 

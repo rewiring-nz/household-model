@@ -32,6 +32,7 @@ def get_solar_savings(
     energy_needs: EnergyNeeds,
     solar: Solar,
     battery: Battery,
+    location: LocationEnum,
     # TODO take period into account, not just per year
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
@@ -41,7 +42,7 @@ def get_solar_savings(
     # kWh per year
     e_needed_total = energy_needs.appliances + energy_needs.vehicles
 
-    e_generated_from_solar = get_e_generated_from_solar(solar.size)
+    e_generated_from_solar = get_e_generated_from_solar(solar.size, location)
     e_consumed_from_solar = get_e_consumed_from_solar(
         e_generated_from_solar, energy_needs.appliances, energy_needs.vehicles
     )
