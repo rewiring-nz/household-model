@@ -18,9 +18,11 @@ from openapi_client.models import (
     Opex,
     OpexValues,
 )
-from savings.opex.get_machine_energy import get_total_energy_needs
-from savings.opex.get_machine_opex import (
+from savings.energy.get_machine_energy import (
     get_energy_per_period,
+    get_total_energy_needs,
+)
+from savings.opex.get_machine_opex import (
     get_other_appliances_opex_per_period,
     get_vehicle_opex,
 )

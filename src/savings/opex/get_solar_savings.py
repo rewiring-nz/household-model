@@ -24,7 +24,7 @@ from openapi_client.models.household import Household
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
-from savings.opex.get_machine_energy import EnergyNeeds
+from savings.energy.get_machine_energy import EnergyNeeds
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
