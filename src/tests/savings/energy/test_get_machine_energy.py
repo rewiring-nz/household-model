@@ -21,6 +21,7 @@ from savings.energy.get_machine_energy import (
     get_energy_per_period,
     get_other_appliances_energy_per_period,
     _get_hybrid_energy_per_day,
+    get_vehicle_energy,
 )
 from tests.mocks import (
     mock_household,
@@ -135,6 +136,120 @@ class TestGetOtherAppliancesEnergyPerPeriod:
         assert get_other_appliances_energy_per_period() == 17.5
 
 
+class TestGetVehicleEnergyPerDay(TestCase):
+    petrol = 31.4
+    ev = 7.324
+
+    expected_weighted_energy_daily_petrol = petrol * (250 / 210)
+    expected_weighted_energy_daily_ev = (
+        ev * (250 / 210) + (76 * 250 * 52 / 1000) / 365.25
+    )
+
+    def test_it_calculates_daily_energy_for_one_petrol_car(self):
+        result = get_vehicle_energy([mock_vehicle_petrol])
+        assert result == self.petrol * (250 / 210)
+
+    def test_it_calculates_daily_energy_for_one_diesel_car(self):
+        result = get_vehicle_energy([mock_vehicle_diesel])
+        daily_rucs = (76 * 50 * 52 / 1000) / 365.25
+        expected = 22.8 * 50 / 210 + daily_rucs
+        assert result == expected
+
+    def test_it_calculates_daily_energy_for_one_ev(self):
+        result = get_vehicle_energy([mock_vehicle_ev])
+        daily_rucs = (76 * 250 * 52 / 1000) / 365.25
+        assert result == self.ev * (250 / 210) + daily_rucs
+
+    def test_it_calculates_daily_energy_for_one_hybrid(self):
+        result = get_vehicle_energy([mock_vehicle_hev])
+        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
+        assert result == expected
+
+    def test_it_calculates_daily_energy_for_one_plugin_hybrid(self):
+        result = get_vehicle_energy([mock_vehicle_phev])
+        daily_rucs = (38 * 175 * 52 / 1000) / 365.25
+        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210) + daily_rucs
+        assert result == expected
+
+    def test_it_combines_vehicles_correctly(self):
+        result = get_vehicle_energy(
+            [
+                mock_vehicle_petrol,
+                mock_vehicle_diesel,
+                mock_vehicle_ev,
+                mock_vehicle_hev,
+                mock_vehicle_phev,
+            ]
+        )
+        expected = (
+            # petrol
+            (31.4 * (250 / 210))
+            # diesel + RUC
+            + (22.8 * (50 / 210))
+            + (76 * 50 * 52 / 1000) / 365.25
+            # EV + RUC
+            + (7.324 * (250 / 210))
+            + (76 * 250 * 52 / 1000) / 365.25
+            # HEV
+            + (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
+            # PHEV + RUC
+            + (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
+            + (38 * 175 * 52 / 1000) / 365.25
+        )
+        assert result == expected
+
+    @patch(
+        "savings.energy.get_machine_energy.scale_daily_to_period",
+    )
+    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
+
+        get_vehicle_energy([mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY)
+
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_energy_daily_petrol,
+            PeriodEnum.WEEKLY,
+        )
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_energy_daily_ev, PeriodEnum.WEEKLY
+        )
+
+    @patch(
+        "savings.energy.get_machine_energy.scale_daily_to_period",
+    )
+    def test_it_calls_scale_daily_to_period_correctly_with_default(
+        self, mock_scale_daily_to_period
+    ):
+        get_vehicle_energy([mock_vehicle_ev, mock_vehicle_petrol])
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_energy_daily_petrol,
+            PeriodEnum.DAILY,
+        )
+        mock_scale_daily_to_period.assert_any_call(
+            self.expected_weighted_energy_daily_ev, PeriodEnum.DAILY
+        )
+
+    def test_it_returns_energy_with_default_period(self):
+        result = get_vehicle_energy([mock_vehicle_ev, mock_vehicle_petrol])
+
+        assert (
+            result
+            == self.expected_weighted_energy_daily_petrol
+            + self.expected_weighted_energy_daily_ev
+        )
+
+    def test_it_returns_energy_with_specified_period(self):
+        result = get_vehicle_energy(
+            [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
+        )
+        expected = (
+            self.expected_weighted_energy_daily_petrol
+            + self.expected_weighted_energy_daily_ev
+        ) * 7
+        assert pytest.approx(result) == expected
+
+
 def get_mock_energy_values(fuel_type, vehicle_info):
     # Return fixed values for testing
     if fuel_type == VehicleFuelTypeEnum.PETROL:
@@ -148,7 +263,7 @@ def get_mock_energy_values(fuel_type, vehicle_info):
     "savings.energy.get_machine_energy.get_energy_per_day",
     side_effect=get_mock_energy_values,
 )
-class TestGetHybridOpexPerDay:
+class TestGetHybridEnergyPerDay:
     def test_plug_in_hybrid(self, _):
         result = _get_hybrid_energy_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID)
         # PHEV: 60% of petrol (30 kWh) + 40% of electric (5 kWh) = 18 + 2

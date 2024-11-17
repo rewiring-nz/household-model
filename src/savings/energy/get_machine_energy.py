@@ -93,6 +93,53 @@ def get_other_appliances_energy_per_period(
     return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
 
 
+def get_vehicle_energy(
+    vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY
+) -> float:
+    """Calculates the energy of a list of vehicles
+
+    Args:
+        vehicles (List[Vehicle]): the list of vehicles
+        period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
+
+    Returns:
+        float: total NZD emitted from vehicles over given period to 2dp
+    """
+    total_energy = 0
+    for vehicle in vehicles:
+        if vehicle.fuel_type in [
+            VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+            VehicleFuelTypeEnum.HYBRID,
+        ]:
+            avg_energy_daily = _get_hybrid_energy_per_day(vehicle.fuel_type)
+        else:
+            avg_energy_daily = get_energy_per_day(
+                vehicle.fuel_type,
+                VEHICLE_INFO,
+            )
+
+        # Weight the energy based on how much they use the vehicle compared to average
+        weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
+        weighted_energy_daily = avg_energy_daily * weighting_factor
+
+        # Add Road User Charges (RUCs), weighted on kms per year
+        rucs_daily = (
+            RUCS[vehicle.fuel_type]  # $/yr/1000km
+            * vehicle.kms_per_week  # km/wk
+            * WEEKS_PER_YEAR  # wk/yr
+            / 1000
+            / DAYS_PER_YEAR  # days/yr
+        )
+        weighted_energy_daily += rucs_daily
+
+        # Convert to given period
+        energy_period = scale_daily_to_period(weighted_energy_daily, period)
+
+        # Add to total
+        total_energy += energy_period
+    return total_energy
+
+
 def _get_hybrid_energy_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
     if not isinstance(vehicle_type, VehicleFuelTypeEnum):
         raise TypeError(
