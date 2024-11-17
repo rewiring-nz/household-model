@@ -28,7 +28,7 @@ from tests.mocks import mock_household, mock_household_electrified
 #         PeriodEnum.OPERATIONAL_LIFETIME: 2000.0,
 #     }.get(period, 0.0)
 
-#     @patch("savings.opex.calculate_opex.get_appliance_opex")
+#     @patch("savings.opex.calculate_opex.get_appliance_energy")
 #     @patch("savings.opex.calculate_opex.get_vehicle_opex")
 #     @patch("savings.opex.calculate_opex.get_other_appliances_opex")
 #     def test_calculate_opex_sums_correctly(

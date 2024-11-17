@@ -18,7 +18,7 @@ from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from savings.opex.get_machine_opex import (
-    get_appliance_opex,
+    get_appliance_energy,
     get_opex_per_day,
     get_other_appliances_opex,
     get_vehicle_opex,
@@ -94,7 +94,7 @@ class TestGetOpexPerDay(TestCase):
 )
 class TestGetApplianceOpex:
     def test_it_calls_get_opex_per_day_correctly(self, mock_get_opex_per_day, _):
-        get_appliance_opex(mock_household.space_heating, SPACE_HEATING_INFO)
+        get_appliance_energy(mock_household.space_heating, SPACE_HEATING_INFO)
         mock_get_opex_per_day.assert_called_once_with(
             SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO
         )
@@ -102,7 +102,7 @@ class TestGetApplianceOpex:
     def test_it_calls_scale_daily_to_period_correctly(
         self, _, mock_scale_daily_to_period
     ):
-        get_appliance_opex(mock_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY)
+        get_appliance_energy(mock_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
             mock_opex_daily, PeriodEnum.WEEKLY
         )
@@ -110,13 +110,13 @@ class TestGetApplianceOpex:
     def test_it_calls_scale_daily_to_period_correctly_with_default(
         self, _, mock_scale_daily_to_period
     ):
-        get_appliance_opex(mock_household.cooktop, COOKTOP_INFO)
+        get_appliance_energy(mock_household.cooktop, COOKTOP_INFO)
         mock_scale_daily_to_period.assert_called_once_with(
             mock_opex_daily, PeriodEnum.DAILY
         )
 
     def test_it_returns_opex_per_period_rounded_to_2dp(self, _, __):
-        result = get_appliance_opex(mock_household.space_heating, SPACE_HEATING_INFO)
+        result = get_appliance_energy(mock_household.space_heating, SPACE_HEATING_INFO)
         assert result == 86.42
 
 

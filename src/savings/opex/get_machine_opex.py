@@ -40,12 +40,12 @@ def get_opex_per_day(
     return opex
 
 
-def get_appliance_opex(
+def get_appliance_energy(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
-    """Calculates the opex from appliance in given household
+    """Calculates the energy needs of appliances in given household
 
     Args:
         appliance (MachineEnum): the appliance
