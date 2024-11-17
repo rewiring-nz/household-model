@@ -21,7 +21,7 @@ from openapi_client.models import (
 from savings.opex.get_machine_energy import get_total_energy_needs
 from savings.opex.get_machine_opex import (
     get_energy_per_period,
-    get_other_appliances_opex,
+    get_other_appliances_opex_per_period,
     get_vehicle_opex,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
@@ -74,7 +74,7 @@ def _get_total_opex(household: Household, period: PeriodEnum) -> float:
 
     appliance_opex = _get_total_appliance_energy(household, period)
     vehicle_opex = get_vehicle_opex(household.vehicles, period)
-    other_opex = get_other_appliances_opex(period)
+    other_opex = get_other_appliances_opex_per_period(period)
     fixed_costs = get_fixed_costs(household, period)
     solar_savings = get_solar_savings(
         energy_needs, household.solar, household.battery, household.location, period

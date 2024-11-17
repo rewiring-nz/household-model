@@ -30,7 +30,7 @@ from tests.mocks import mock_household, mock_household_electrified
 
 #     @patch("savings.opex.calculate_opex.get_energy_per_period")
 #     @patch("savings.opex.calculate_opex.get_vehicle_opex")
-#     @patch("savings.opex.calculate_opex.get_other_appliances_opex")
+#     @patch("savings.opex.calculate_opex.get_other_appliances_opex_per_period")
 #     def test_calculate_opex_sums_correctly(
 #         self, mock_get_other, mock_get_vehicle, mock_get_appliance
 #     ):

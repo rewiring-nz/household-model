@@ -3,6 +3,10 @@ import pytest
 from unittest import TestCase
 from unittest.mock import patch
 
+from constants.machines.other_machines import (
+    ENERGY_NEEDS_OTHER_APPLIANCES,
+    ENERGY_NEEDS_OTHER_MACHINES_PER_DAY,
+)
 from openapi_client.models import (
     SpaceHeatingEnum,
     CooktopEnum,
@@ -22,7 +26,7 @@ from savings.opex.get_machine_opex import (
     get_energy_per_day,
     get_machine_opex_per_period,
     get_other_appliances_energy_per_period,
-    get_other_appliances_opex,
+    get_other_appliances_opex_per_period,
     get_vehicle_opex,
     _get_hybrid_opex_per_day,
 )
@@ -212,26 +216,43 @@ class TestGetOtherAppliancesEnergyPerPeriod:
     "savings.opex.get_machine_opex.scale_daily_to_period",
     return_value=mock_opex_weekly,
 )
-class TestGetOtherAppliancesOpex:
+@patch(
+    "savings.opex.get_machine_opex.get_other_appliances_energy_per_period",
+    return_value=ENERGY_NEEDS_OTHER_MACHINES_PER_DAY,
+)
+class TestGetOtherAppliancesOpexPerPeriod:
     opex_daily = (0.34 + 4.05 + 2.85) * 0.26175
 
-    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-        get_other_appliances_opex(PeriodEnum.WEEKLY)
-        mock_scale_daily_to_period.assert_called_once_with(
-            self.opex_daily, PeriodEnum.WEEKLY
-        )
+    def test_it_calls_energy_calc_correctly(self, mock_energy_calc, mock_scale):
+        get_other_appliances_opex_per_period(energy_per_day=5)
+        mock_energy_calc.assert_not_called()
+
+    def test_it_calls_energy_calc_correctly_with_default(
+        self, mock_energy_calc, mock_scale
+    ):
+        get_other_appliances_opex_per_period()
+        mock_energy_calc.assert_called_once_with()
+
+    def test_it_calls_scale_daily_to_period_correctly(
+        self, mock_energy_calc, mock_scale
+    ):
+        get_other_appliances_opex_per_period(PeriodEnum.WEEKLY)
+        mock_scale.assert_called_once_with(self.opex_daily, PeriodEnum.WEEKLY)
 
     def test_it_calls_scale_daily_to_period_correctly_with_default(
-        self, mock_scale_daily_to_period
+        self, mock_energy_calc, mock_scale
     ):
-        get_other_appliances_opex()
-        mock_scale_daily_to_period.assert_called_once_with(
-            self.opex_daily, PeriodEnum.DAILY
-        )
+        get_other_appliances_opex_per_period()
+        mock_scale.assert_called_once_with(self.opex_daily, PeriodEnum.DAILY)
 
-    def test_it_returns_opex_per_period(self, _):
-        result = get_other_appliances_opex()
+    def test_it_returns_opex_per_period_rounded_to_2dp(self, _, __):
+        result = get_other_appliances_opex_per_period()
         assert result == 86.42
+
+
+def test_get_other_appliances_opex_per_period_e2e():
+    result = get_other_appliances_opex_per_period(PeriodEnum.WEEKLY)
+    assert result == 13.27  # (0.34 + 4.05 + 2.85) * 0.26175 * 7 rounded to 2dp
 
 
 class TestGetVehicleOpexPerDay(TestCase):
