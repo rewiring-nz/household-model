@@ -19,7 +19,7 @@ from constants.utils import PeriodEnum
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from savings.opex.get_machine_opex import (
     get_appliance_energy,
-    get_opex_per_day,
+    get_energy_per_day,
     get_other_appliances_opex,
     get_vehicle_opex,
     _get_hybrid_opex_per_day,
@@ -37,7 +37,7 @@ mock_opex_daily = 12.345
 mock_opex_weekly = 86.415  # 12.345 * 7
 
 
-class TestGetOpexPerDay(TestCase):
+class TestGetEnergyPerDay(TestCase):
     mock_appliance_info: MachineInfoMap = {
         CooktopEnum.GAS: {"kwh_per_day": 10.0, "fuel_type": FuelTypeEnum.NATURAL_GAS},
         SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {
@@ -46,42 +46,30 @@ class TestGetOpexPerDay(TestCase):
         },
     }
 
-    def test_get_opex_per_day_gas_cooktop(self):
-        opex = get_opex_per_day(CooktopEnum.GAS, self.mock_appliance_info)
-        expected_opex = 10.0 * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.NATURAL_GAS]
-        assert opex == expected_opex
-
-    def test_get_opex_per_day_electric_heat_pump(self):
-        opex = get_opex_per_day(
-            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
+    def test_get_energy_per_day(self):
+        assert get_energy_per_day(CooktopEnum.GAS, self.mock_appliance_info) == 10.0
+        assert (
+            get_energy_per_day(
+                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
+            )
+            == 5.0
         )
-        expected_opex = (
-            5.0 * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
-        )
-        assert opex == expected_opex
 
-    def test_get_opex_per_day_handles_missing_fuel_type(self):
-        mock_appliance_info = {
-            CooktopEnum.GAS: {"kwh_per_day": 10.0, "fuel_type": None}
-        }
-        with self.assertRaises(KeyError):
-            get_opex_per_day(CooktopEnum.GAS, mock_appliance_info)
-
-    def test_get_opex_per_day_handles_missing_kwh_per_day(self):
+    def test_get_energy_per_day_handles_missing_kwh_per_day(self):
         mock_appliance_info = {
             CooktopEnum.GAS: {
                 "kwh_per_day": None,
                 "fuel_type": FuelTypeEnum.NATURAL_GAS,
             }
         }
-        with self.assertRaises(TypeError):
-            get_opex_per_day(CooktopEnum.GAS, mock_appliance_info)
+        with self.assertRaises(ValueError):
+            get_energy_per_day(CooktopEnum.GAS, mock_appliance_info)
 
-    def test_get_opex_per_day_handles_invalid_machine_type(self):
+    def test_get_energy_per_day_handles_invalid_machine_type(self):
         invalid_machine_type = CooktopEnum.GAS
         invalid_mock_appliance_info = {}
         with self.assertRaises(KeyError):
-            get_opex_per_day(invalid_machine_type, invalid_mock_appliance_info)
+            get_energy_per_day(invalid_machine_type, invalid_mock_appliance_info)
 
 
 @patch(

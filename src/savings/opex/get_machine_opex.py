@@ -18,26 +18,23 @@ from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
-def get_opex_per_day(
+def get_energy_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
 ) -> float:
-    """Get opex per day for a given machine
+    """Get energy needs per day for a given machine
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
 
     Returns:
-        float: machine's opex in NZD per day, unrounded
+        float: machine's energy needs per day
     """
-    energy = machine_stats_map[machine_type]["kwh_per_day"]
-    fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    fuel_price = COST_PER_FUEL_KWH_TODAY[fuel_type]
-    if fuel_type == FuelTypeEnum.ELECTRICITY:
-        fuel_price = fuel_price["volume_rate"]
-    opex = energy * fuel_price
-    return opex
+    energy_per_day = machine_stats_map[machine_type]["kwh_per_day"]
+    if energy_per_day is None:
+        raise ValueError(f"Can not find kwh_per_day value for {machine_type}")
+    return energy_per_day
 
 
 def get_appliance_energy(
