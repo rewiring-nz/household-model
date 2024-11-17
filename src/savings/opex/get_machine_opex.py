@@ -94,6 +94,22 @@ def get_machine_opex_per_period(
     return round(opex_per_period, 2)
 
 
+def get_other_appliances_energy_per_period(
+    period: PeriodEnum = PeriodEnum.DAILY,
+) -> float:
+    """Calculates the energy of other appliances in a household
+    These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
+    We assume that these are all electric.
+
+    Args:
+        period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
+
+    Returns:
+        float: energy of operating other appliances over given period
+    """
+    return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
+
+
 def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
     """Calculates the opex of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
