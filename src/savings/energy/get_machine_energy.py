@@ -91,3 +91,32 @@ def get_other_appliances_energy_per_period(
         float: energy of operating other appliances over given period
     """
     return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
+
+
+def _get_hybrid_energy_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
+    if not isinstance(vehicle_type, VehicleFuelTypeEnum):
+        raise TypeError(
+            f"vehicle_type must be VehicleFuelTypeEnum, got {type(vehicle_type)}"
+        )
+
+    if vehicle_type not in (
+        VehicleFuelTypeEnum.PLUG_IN_HYBRID,
+        VehicleFuelTypeEnum.HYBRID,
+    ):
+        raise ValueError(
+            f"vehicle_type must be PLUG_IN_HYBRID or HYBRID, got {vehicle_type.value}"
+        )
+
+    petrol = get_energy_per_day(
+        VehicleFuelTypeEnum.PETROL,
+        VEHICLE_INFO,
+    )
+    ev = get_energy_per_day(
+        VehicleFuelTypeEnum.ELECTRIC,
+        VEHICLE_INFO,
+    )
+    if vehicle_type == VehicleFuelTypeEnum.PLUG_IN_HYBRID:
+        # PHEV: Assume 60/40 split between petrol and electric
+        return petrol * 0.6 + ev * 0.4
+    # HEV: Assume 70/30 split between petrol and electric
+    return petrol * 0.7 + ev * 0.3
