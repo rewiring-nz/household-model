@@ -37,25 +37,28 @@ def get_energy_per_day(
     return energy_per_day
 
 
-def get_appliance_energy(
-    appliance: MachineEnum,
-    appliance_info: MachineInfoMap,
+def get_energy_per_period(
+    machine: MachineEnum,
+    machine_info: MachineInfoMap,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
-    """Calculates the energy needs of appliances in given household
+    """Calculates the energy needs of machines in given household over given period
 
     Args:
-        appliance (MachineEnum): the appliance
-        period (PeriodEnum, optional): the period over which to calculate the opex. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily opex value. Defaults to PeriodEnum.DAILY.
+        machine (MachineEnum): the machine
+        machine_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        period (PeriodEnum, optional): the period over which to calculate the energy use. Defaults to PeriodEnum.DAILY.
 
     Returns:
-        float: cost of operating appliance over given period in NZD to 2dp
+        float: energy needs of operating machine over given period in kWh
     """
-    opex_daily = get_opex_per_day(
-        appliance,
-        appliance_info,
+    opex_daily = get_energy_per_day(
+        machine,
+        machine_info,
     )
-    return round(scale_daily_to_period(opex_daily, period), 2)
+    return scale_daily_to_period(opex_daily, period)
+
+
 
 
 def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
