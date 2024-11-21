@@ -1,17 +1,9 @@
-from constants.machines.space_heating import (
-    SPACE_HEATING_INFO,
-)
-from constants.machines.cooktop import (
-    COOKTOP_INFO,
-)
-from constants.machines.water_heating import (
-    WATER_HEATING_INFO,
-)
+from constants.solar import SOLAR_FEEDIN_TARIFF_2024
 from constants.utils import PeriodEnum
 from params import (
     OPERATIONAL_LIFETIME,
 )
-from constants.fuel_stats import COST_PER_FUEL_KWH_TODAY, FuelTypeEnum
+from constants.fuel_stats import COST_PER_FUEL_KWH_AVG_15_YEARS, FuelTypeEnum
 
 from openapi_client.models import (
     Household,
@@ -29,7 +21,10 @@ from savings.opex.get_machine_opex import (
     get_vehicle_opex,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
-from savings.opex.get_energy_consumption import get_energy_consumption
+from savings.opex.get_energy_consumption import (
+    EnergyConsumption,
+    get_energy_consumption,
+)
 
 
 def calculate_opex(
@@ -78,55 +73,67 @@ def _get_total_opex(household: Household, period: PeriodEnum) -> float:
     energy_consumption = get_energy_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )
-
-    return 0
-
-
-# Solar savings
-
-# TODO: Ideally we would calculate the exact house needs based on the appliances listed in survey responses
-# plus extra appliances above, then calculate the actual consumption from grid, generation from solar, and amount sold to grid.
-# But as a quick proxy, we're going to just take the average solar savings
-# and apply it to all households in the dataset.
-
-# Average total energy needs of home
-# TODO: The below is wrong, just use the direct results from the sheet
-# Use value from "Full home"!E25, when C8 Vehicle number is 0 and C12 Solar size is 5 kW
-TOTAL_ELECTRICITY_NEEDS = 13.5  # kWh per day
-POWER_BILL_NO_SOLAR = (
-    TOTAL_ELECTRICITY_NEEDS
-    * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
-)
-
-# How much of the avg total energy needs can solar provide (free)?
-SOLAR_SELF_CONSUMPTION_ON_APPLIANCES = 0.5  # C14
-GENERATED_FROM_SOLAR = TOTAL_ELECTRICITY_NEEDS * SOLAR_SELF_CONSUMPTION_ON_APPLIANCES
-
-# How much do you need from the grid, and how much does it cost?
-CONSUMED_FROM_GRID = TOTAL_ELECTRICITY_NEEDS - GENERATED_FROM_SOLAR  # kWh/day
-POWER_BILL_WITH_SOLAR = (
-    CONSUMED_FROM_GRID
-    * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
-)
-
-# How much do you get from selling the rest to the grid?
-FEED_IN_TARIFF = 0.12  # $ per kWh
-REVENUE_FROM_SOLAR_EXPORT = GENERATED_FROM_SOLAR * 0.12  # $/day
-
-# Average savings from solar per day
-AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_PER_DAY = (
-    POWER_BILL_NO_SOLAR - POWER_BILL_WITH_SOLAR + REVENUE_FROM_SOLAR_EXPORT
-)
-AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_PER_YEAR = (
-    AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_PER_DAY * 365.25
-)
-AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_LIFETIME = (
-    AVG_SAVINGS_FROM_SOLAR_ON_TOTAL_BILL_PER_YEAR * OPERATIONAL_LIFETIME
-)
+    total_bills = get_total_bills(energy_consumption)
+    return total_bills
 
 
-# average savings from solar on total bill per year straight from "Full Home" sheet
-# without vehicles, 5 kWh solar panel, no battery, 12c feed-in
-AVG_SAVINGS_FROM_SOLAR_0_VEHICLES_5KWH = 1035 * OPERATIONAL_LIFETIME
-# with 2 vehicles, 7 kWh solar panel, no battery, 12c feed-in
-AVG_SAVINGS_FROM_SOLAR_2_VEHICLES_7KWH = 1685 * OPERATIONAL_LIFETIME
+def get_total_bills(energy_consumption: EnergyConsumption) -> float:
+    grid_volume_costs = get_grid_volume_cost(
+        energy_consumption.consumed_from_grid, energy_consumption.consumed_from_battery
+    )
+    # grid_fixed_costs = TODO
+    # revenue_from_solar_export = get_solar_feedin_tariff(
+    #     energy_consumption.exported_to_grid
+    # )
+    rucs = get_rucs()
+    return grid_volume_costs + rucs
+    # return grid_volume_costs + grid_fixed_costs + rucs - revenue_from_solar_export
+
+
+def get_grid_volume_cost(e_consumed_from_grid: float, e_from_battery: float) -> float:
+    grid_price = get_effective_grid_price(e_consumed_from_grid, e_from_battery)
+    return e_consumed_from_grid * grid_price
+
+
+def get_effective_grid_price(
+    e_consumed_from_grid: float, e_from_battery: float
+) -> float:
+    """Get the effective grid price
+
+    Adjusts the grid price based on what proportion of the energy consumed from the grid
+    would have been bought off-peak by the battery versus bought at the volume rate.
+    Uses real grid prices averaged over next 15 years (takes inflation into account).
+
+    Args:
+        e_consumed_from_grid (float): energy consumed from the grid in kWh
+        e_from_battery (float): energy consumed from the battery in kWh
+
+    Returns:
+        float: the effective grid price
+    """
+    grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["volume_rate"]
+    if e_from_battery > 0:
+        if e_from_battery >= e_consumed_from_grid:
+            # All energy is from the battery, which could be charged at off peak price
+            grid_price = COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY][
+                "off_peak"
+            ]
+        if e_from_battery < e_consumed_from_grid:
+            # A proportion of the energy consumed from the grid was bought at off peak price
+            percent_of_consumed_from_battery = e_from_battery / e_consumed_from_grid
+            grid_price = (
+                COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["off_peak"]
+                * percent_of_consumed_from_battery
+            ) + (
+                COST_PER_FUEL_KWH_AVG_15_YEARS[FuelTypeEnum.ELECTRICITY]["volume_rate"]
+                * (1 - percent_of_consumed_from_battery)
+            )
+    return grid_price
+
+
+def get_solar_feedin_tariff(e_exported: float) -> float:
+    return e_exported * SOLAR_FEEDIN_TARIFF_2024
+
+
+def get_rucs():
+    pass
