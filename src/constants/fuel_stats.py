@@ -40,7 +40,6 @@ COST_PER_FUEL_KWH_TODAY = {
 }
 
 # Average over next 15 years (real)
-# TODO: Use this price when doing lifetime opex calculations
 # Unit: $/kWh
 COST_PER_FUEL_KWH_AVG_15_YEARS = {
     FuelTypeEnum.ELECTRICITY: {

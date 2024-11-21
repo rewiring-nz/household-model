@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
@@ -8,72 +8,74 @@ from constants.fuel_stats import (
     FuelTypeEnum,
 )
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
-from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
     RUCS,
     VEHICLE_AVG_KMS_PER_WEEK,
     VEHICLE_INFO,
 )
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
+from savings.energy.get_machine_energy import (
+    get_energy_per_day,
+    get_other_appliances_energy_per_period,
+)
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
-def get_opex_per_day(
-    machine_type: MachineEnum,
-    machine_stats_map: MachineInfoMap,
-) -> float:
-    """Get opex per day for a given machine
-
-    Args:
-        machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
-        machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
-
-    Returns:
-        float: machine's opex in NZD per day, unrounded
-    """
-    energy = machine_stats_map[machine_type]["kwh_per_day"]
-    fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    fuel_price = COST_PER_FUEL_KWH_TODAY[fuel_type]
-    if fuel_type == FuelTypeEnum.ELECTRICITY:
-        fuel_price = fuel_price["volume_rate"]
-    opex = energy * fuel_price
-    return opex
-
-
-def get_appliance_opex(
+def get_machine_opex_per_period(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
     period: PeriodEnum = PeriodEnum.DAILY,
+    energy_per_day: Optional[float] = None,
 ) -> float:
-    """Calculates the opex from appliance in given household
+    """Calculates the opex of appliances
+
+    Calculations over a long period of time (e.g. 15 years) should use this function
+    rather than straight multiplying a price over a period
+    (e.g. multiplying the yearly price by 15 to get the price over 15 years)
+    as this function takes into account economic factors such as inflation
 
     Args:
         appliance (MachineEnum): the appliance
-        period (PeriodEnum, optional): the period over which to calculate the opex. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily opex value. Defaults to PeriodEnum.DAILY.
+        appliance_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        period (PeriodEnum): the period over which to calculate the energy use. Defaults to PeriodEnum.DAILY.
+        energy_per_day (float, optional): the energy needs of the machine per day. Will calculate if not provided
 
     Returns:
         float: cost of operating appliance over given period in NZD to 2dp
     """
-    opex_daily = get_opex_per_day(
-        appliance,
-        appliance_info,
-    )
-    return round(scale_daily_to_period(opex_daily, period), 2)
+    if energy_per_day is None:
+        energy_per_day = get_energy_per_day(appliance, appliance_info)
+
+    fuel_type = appliance_info[appliance]["fuel_type"]
+    fuel_price = COST_PER_FUEL_KWH_TODAY[fuel_type]
+    if fuel_type == FuelTypeEnum.ELECTRICITY:
+        fuel_price = fuel_price["volume_rate"]
+    opex_per_day = energy_per_day * fuel_price
+
+    opex_per_period = scale_daily_to_period(opex_per_day, period)
+    return round(opex_per_period, 2)
 
 
-def get_other_appliances_opex(period: PeriodEnum = PeriodEnum.DAILY) -> float:
+def get_other_appliances_opex_per_period(
+    period: PeriodEnum = PeriodEnum.DAILY,
+    energy_per_day: Optional[float] = None,
+) -> float:
     """Calculates the opex of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
     We assume that these are all electric.
 
     Args:
         period (PeriodEnum, optional): the period over which to calculate the opex. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily opex value. Defaults to PeriodEnum.DAILY.
+        energy_per_day (float, optional): the energy needs of the machine per day. Will calculate if not provided
 
     Returns:
         float: cost of operating other appliances over given period in NZD to 2dp
     """
+    if energy_per_day is None:
+        energy_per_day = get_other_appliances_energy_per_period()
+
     opex_daily = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
+        energy_per_day
         * COST_PER_FUEL_KWH_TODAY[FuelTypeEnum.ELECTRICITY]["volume_rate"]
     )
     return round(scale_daily_to_period(opex_daily, period), 2)
@@ -99,7 +101,7 @@ def get_vehicle_opex(
         ]:
             avg_opex_daily = _get_hybrid_opex_per_day(vehicle.fuel_type)
         else:
-            avg_opex_daily = get_opex_per_day(
+            avg_opex_daily = get_energy_per_day(
                 vehicle.fuel_type,
                 VEHICLE_INFO,
             )
@@ -140,11 +142,11 @@ def _get_hybrid_opex_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
             f"vehicle_type must be PLUG_IN_HYBRID or HYBRID, got {vehicle_type.value}"
         )
 
-    petrol = get_opex_per_day(
+    petrol = get_energy_per_day(
         VehicleFuelTypeEnum.PETROL,
         VEHICLE_INFO,
     )
-    ev = get_opex_per_day(
+    ev = get_energy_per_day(
         VehicleFuelTypeEnum.ELECTRIC,
         VEHICLE_INFO,
     )

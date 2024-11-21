@@ -37,6 +37,36 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 ## Solar
 
 - Assumes 0.5% degradation per year, which averages out to 6.92% degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years.
+- Assumes a static capacity factor per region, although this is likely to change over the next 30 years:
+
+| Region                 | Solar capacity factor (%) |
+|------------------------|---------------------------|
+| Northland             | 15.5%                     |
+| Auckland North        | 15.5%                     |
+| Auckland Central      | 15.5%                     |
+| Auckland East         | 15.5%                     |
+| Auckland West         | 15.5%                     |
+| Auckland South        | 15.5%                     |
+| Waikato               | 15.5%                     |
+| Bay of Plenty         | 15.5%                     |
+| Gisborne              | 15.0%                     |
+| Hawkes Bay            | 15.0%                     |
+| Taranaki              | 15.0%                     |
+| Manawatu Wanganui     | 15.0%                     |
+| Wellington            | 14.9%                     |
+| Tasman                | 15.0%                     |
+| Nelson                | 15.5%                     |
+| Marlborough           | 15.0%                     |
+| West Coast            | 15.0%                     |
+| Canterbury            | 14.3%                     |
+| Otago                 | 12.5%                     |
+| Southland             | 12.5%                     |
+| Stewart Island        | 12.5%                     |
+| Chatham Islands       | 12.5%                     |
+| Great Barrier Island  | 15.0%                     |
+| Overseas              | 15.0%                     |
+| Other                 | 15.0%                     |
+
 
 ## Battery
 
@@ -47,3 +77,9 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 ## Vehicles
 
 - Assumes average distance driven per vehicle per year is 10,950 km, rounded to 210 km per week. This is taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/) for the year 2019, to avoid the anomalies from COVID-19.
+- Assumes current Road User Charges (RUCs) without taking inflation or policy changes into account.
+    - Electric: $76 per year per 1000km
+    - Plug-in hybrid: $38 per year per 1000km
+    - Hybrid: $0 per year per 1000km
+    - Petrol: $0 per year per 1000km
+    - Diesel: $76 per year per 1000km
