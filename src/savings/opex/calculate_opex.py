@@ -20,7 +20,9 @@ from openapi_client.models import (
 )
 from savings.energy.get_machine_energy import (
     get_energy_per_period,
+    get_other_appliances_energy_per_period,
     get_total_energy_needs,
+    get_vehicle_energy,
 )
 from savings.opex.get_machine_opex import (
     get_other_appliances_opex_per_period,
@@ -73,24 +75,11 @@ def calculate_opex(
 def _get_total_opex(household: Household, period: PeriodEnum) -> float:
 
     energy_needs = get_total_energy_needs(household, period)
-
-    appliance_opex = _get_total_appliance_energy(household, period)
-    vehicle_opex = get_vehicle_opex(household.vehicles, period)
-    other_opex = get_other_appliances_opex_per_period(period)
-    fixed_costs = get_fixed_costs(household, period)
     solar_savings = get_solar_savings(
         energy_needs, household.solar, household.battery, household.location, period
     )
 
-    return appliance_opex + vehicle_opex + other_opex + fixed_costs - solar_savings
-
-
-def _get_total_appliance_energy(household: Household, period: PeriodEnum):
-    return (
-        get_energy_per_period(household.space_heating, SPACE_HEATING_INFO, period)
-        + get_energy_per_period(household.water_heating, WATER_HEATING_INFO, period)
-        + get_energy_per_period(household.cooktop, COOKTOP_INFO, period)
-    )
+    return 0
 
 
 # Solar savings
