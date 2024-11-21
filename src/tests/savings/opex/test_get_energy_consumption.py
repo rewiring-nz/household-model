@@ -141,3 +141,43 @@ class TestGetEnergyFromBattery:
     def test_it_raises_error_if_more_consumed_than_generated(self):
         with pytest.raises(ValueError):
             get_e_consumed_from_battery(10, 90, 100)
+
+    def test_period(self):
+        capacity = 10
+        expected_daily = 10 * 1 * 0.8522 * (1 - 0.05)
+        assert (
+            get_e_consumed_from_battery(
+                battery_capacity=capacity,
+                e_generated_from_solar=100,
+                e_consumed_from_solar=0,
+                period=PeriodEnum.DAILY,
+            )
+            == expected_daily
+        )
+        assert (
+            get_e_consumed_from_battery(
+                battery_capacity=capacity,
+                e_generated_from_solar=100 * 7,
+                e_consumed_from_solar=0,
+                period=PeriodEnum.WEEKLY,
+            )
+            == expected_daily * 7
+        )
+        assert (
+            get_e_consumed_from_battery(
+                battery_capacity=capacity,
+                e_generated_from_solar=100 * 365.25,
+                e_consumed_from_solar=0,
+                period=PeriodEnum.YEARLY,
+            )
+            == expected_daily * DAYS_PER_YEAR
+        )
+        assert (
+            get_e_consumed_from_battery(
+                battery_capacity=capacity,
+                e_generated_from_solar=100 * 365.25 * 30,
+                e_consumed_from_solar=0,
+                period=PeriodEnum.OPERATIONAL_LIFETIME,
+            )
+            == expected_daily * DAYS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+        )

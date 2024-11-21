@@ -38,7 +38,6 @@ def get_energy_consumption(
     solar: Solar,
     battery: Battery,
     location: LocationEnum,
-    # TODO take period into account, not just per year
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
 
@@ -48,7 +47,7 @@ def get_energy_consumption(
     e_needed_total = energy_needs.appliances + energy_needs.vehicles
 
     # Energy needs met by solar
-    e_generated_from_solar = get_e_generated_from_solar(solar, location)
+    e_generated_from_solar = get_e_generated_from_solar(solar, location, period)
     e_consumed_from_solar = get_e_consumed_from_solar(
         e_generated_from_solar, energy_needs.appliances, energy_needs.vehicles
     )
@@ -58,7 +57,7 @@ def get_energy_consumption(
     if battery.has_battery and battery.capacity is not None:
         # electricity stored in battery, then consumed or exported
         e_consumed_from_battery = get_e_consumed_from_battery(
-            battery.capacity, e_generated_from_solar, e_consumed_from_solar
+            battery.capacity, e_generated_from_solar, e_consumed_from_solar, period
         )
 
     # Energy needs met by grid
@@ -107,14 +106,15 @@ def get_e_consumed_from_solar(
     e_needed_by_vehicles: float,
 ) -> float:
     """Calculate energy consumed from solar
+    All arguments should be energy given or needed over the same period of time.
 
     Args:
-        e_generated_from_solar (float): kWh generated from solar in a year
-        e_needed_by_appliances (float): kWh required by appliances in a year
-        e_needed_by_vehicles (float): kWh required by vehicles in a year
+        e_generated_from_solar (float): kWh generated from solar
+        e_needed_by_appliances (float): kWh required by appliances
+        e_needed_by_vehicles (float): kWh required by vehicles
 
     Returns:
-        float: kWh consumed from the generated solar in one year
+        float: kWh consumed from the generated solar
     """
     e_consumed_from_solar = (
         SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needed_by_appliances
@@ -126,7 +126,10 @@ def get_e_consumed_from_solar(
 
 
 def get_e_consumed_from_battery(
-    battery_capacity: float, e_generated_from_solar: float, e_consumed_from_solar: float
+    battery_capacity: float,
+    e_generated_from_solar: float,
+    e_consumed_from_solar: float,
+    period: PeriodEnum = PeriodEnum.YEARLY,
 ) -> float:
     """Calculate the energy stored and consumed from the battery
 
@@ -138,21 +141,32 @@ def get_e_consumed_from_battery(
         battery_capacity (float): battery nameplate capacity in kWh/cycle
         e_generated_from_solar (float): the electricity in kWh/year generated from solar
         e_consumed_from_solar (float): the electricity in kWh/year consumed from the solar. Should be equal to or less than e_generated_from_solar.
+        period (PeriodEnum): the period over which to calculate
 
     Returns:
-        float: _description_
+        float: energy in kWh per period
     """
     if e_consumed_from_solar > e_generated_from_solar:
         raise ValueError("Energy consumed is higher than energy generated.")
 
     e_remaining_after_self_consumption = e_generated_from_solar - e_consumed_from_solar
-    e_battery_storage_capacity = (
+
+    # TODO: put this into separate function
+    capacity_per_day = (
         battery_capacity  # kWh/cycle
         * BATTERY_CYCLES_PER_DAY  # cycle/day
         * BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS
         * (1 - BATTERY_LOSSES)
-        * DAYS_PER_YEAR  # day/yr
-    )  # kWh/yr
+    )  # kWh/day
+    e_battery_storage_capacity = capacity_per_day
+    if period == PeriodEnum.WEEKLY:
+        e_battery_storage_capacity = capacity_per_day * 7
+    if period == PeriodEnum.YEARLY:
+        e_battery_storage_capacity = capacity_per_day * DAYS_PER_YEAR
+    if period == PeriodEnum.OPERATIONAL_LIFETIME:
+        e_battery_storage_capacity = (
+            capacity_per_day * DAYS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+        )
 
     # If the energy remaining from generation after self-consumption is less than the battery's capacity, battery stores all the remaining energy
     if e_remaining_after_self_consumption < e_battery_storage_capacity:
