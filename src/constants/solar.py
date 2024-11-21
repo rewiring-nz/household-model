@@ -9,6 +9,8 @@ SOLAR_SELF_CONSUMPTION_VEHICLES = 0.5
 SOLAR_FEEDIN_TARIFF_2024 = 0.135
 SOLAR_FEEDIN_TARIFF_AVG_15_YEARS = 0.15222  # real pricing
 
+SOLAR_OPERATIONAL_LIFETIME_YRS = 30
+
 # % of max capacity that it generates on average over 30 years, taking into account degradation
 SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS = 0.9308
 

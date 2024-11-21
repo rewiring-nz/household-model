@@ -1,4 +1,6 @@
 import pytest
+from constants.solar import SOLAR_OPERATIONAL_LIFETIME_YRS
+from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from savings.opex.get_energy_consumption import (
@@ -50,12 +52,13 @@ class TestGetEGeneratedFromSolar:
 
     def test_install_solar_returns_val(self):
         solar = Solar(has_solar=False, install_solar=True, size=6.6)
+        expected = solar.size * 0.155 * 8766 * 0.9308
         assert (
             get_e_generated_from_solar(
                 solar,
                 LocationEnum.AUCKLAND_CENTRAL,
             )
-            == solar.size * 0.155 * 8766 * 0.9308
+            == expected
         )
 
     def test_larger_system_generates_proportionally_more(self):
@@ -67,6 +70,27 @@ class TestGetEGeneratedFromSolar:
         large_generation = get_e_generated_from_solar(large_size, location)
 
         assert large_generation == 2 * small_generation
+
+    def test_period(self):
+        solar = Solar(has_solar=True, size=5.0)
+        location = LocationEnum.AUCKLAND_CENTRAL
+
+        assert (
+            get_e_generated_from_solar(solar, location, PeriodEnum.DAILY)
+            == 5 * 0.155 * 0.9308 * 24
+        )
+        assert (
+            get_e_generated_from_solar(solar, location, PeriodEnum.WEEKLY)
+            == 5 * 0.155 * 0.9308 * 24 * 7
+        )
+        assert (
+            get_e_generated_from_solar(solar, location, PeriodEnum.YEARLY)
+            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR
+        )
+        assert (
+            get_e_generated_from_solar(solar, location, PeriodEnum.OPERATIONAL_LIFETIME)
+            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+        )
 
 
 class TestGetEConsumedFromSolar:
