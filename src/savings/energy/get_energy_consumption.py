@@ -85,14 +85,14 @@ def get_e_generated_from_solar(
         float: energy generated per year in kWh
     """
     e_daily = 0
-    if solar.size is not None and solar.size > 0:
+    if solar.has_solar is True and solar.size is not None and solar.size > 0:
         e_daily = (
             solar.size
             * SOLAR_CAPACITY_FACTOR.get(location)
             * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
             * 24  # hours per day
         )
-    return scale_daily_to_period(e_daily, period, SOLAR_OPERATIONAL_LIFETIME_YRS)
+    return scale_daily_to_period(e_daily, period)
 
 
 def get_e_consumed_from_solar(

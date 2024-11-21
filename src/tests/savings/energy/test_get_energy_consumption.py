@@ -36,29 +36,18 @@ class TestGetEGeneratedFromSolar:
     def test_no_solar_returns_zero(self):
         assert (
             get_e_generated_from_solar(
-                Solar(has_solar=False), LocationEnum.AUCKLAND_CENTRAL
+                Solar(has_solar=False, size=9), LocationEnum.AUCKLAND_CENTRAL
             )
             == 0.0
         )
 
-    def test_dont_install_solar_returns_zero(self):
+    def test_install_solar_none_returns_zero(self):
         assert (
             get_e_generated_from_solar(
-                Solar(has_solar=False, install_solar=False),
+                Solar(hasSolar=True, size=6.6, install_solar=None),
                 LocationEnum.AUCKLAND_CENTRAL,
             )
-            == 0.0
-        )
-
-    def test_install_solar_returns_val(self):
-        solar = Solar(has_solar=False, install_solar=True, size=6.6)
-        expected = solar.size * 0.155 * 8766 * 0.9308
-        assert (
-            get_e_generated_from_solar(
-                solar,
-                LocationEnum.AUCKLAND_CENTRAL,
-            )
-            == expected
+            == 6.6 * 0.155 * 8766 * 0.9308
         )
 
     def test_larger_system_generates_proportionally_more(self):
