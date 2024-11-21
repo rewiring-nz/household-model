@@ -125,16 +125,6 @@ def get_vehicle_energy(
         weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
         weighted_energy_daily = avg_energy_daily * weighting_factor
 
-        # Add Road User Charges (RUCs), weighted on kms per year
-        rucs_daily = (
-            RUCS[vehicle.fuel_type]  # $/yr/1000km
-            * vehicle.kms_per_week  # km/wk
-            * WEEKS_PER_YEAR  # wk/yr
-            / 1000
-            / DAYS_PER_YEAR  # days/yr
-        )
-        weighted_energy_daily += rucs_daily
-
         # Convert to given period
         energy_period = scale_daily_to_period(weighted_energy_daily, period)
 

@@ -3,7 +3,7 @@ from constants.solar import SOLAR_OPERATIONAL_LIFETIME_YRS
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
-from savings.opex.get_energy_consumption import (
+from savings.energy.get_energy_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
     get_e_consumed_from_battery,
