@@ -1,8 +1,8 @@
 import pytest
-from constants.solar import SOLAR_OPERATIONAL_LIFETIME_YRS
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
+from params import OPERATIONAL_LIFETIME
 from savings.energy.get_energy_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
@@ -89,7 +89,7 @@ class TestGetEGeneratedFromSolar:
         )
         assert (
             get_e_generated_from_solar(solar, location, PeriodEnum.OPERATIONAL_LIFETIME)
-            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR * OPERATIONAL_LIFETIME
         )
 
 
@@ -179,5 +179,5 @@ class TestGetEnergyFromBattery:
                 e_consumed_from_solar=0,
                 period=PeriodEnum.OPERATIONAL_LIFETIME,
             )
-            == expected_daily * DAYS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+            == expected_daily * DAYS_PER_YEAR * OPERATIONAL_LIFETIME
         )
