@@ -29,7 +29,7 @@ from savings.opex.get_machine_opex import (
     get_vehicle_opex,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
-from savings.opex.get_solar_savings import get_solar_savings
+from savings.opex.get_energy_consumption import get_energy_consumption
 
 
 def calculate_opex(
@@ -75,7 +75,7 @@ def calculate_opex(
 def _get_total_opex(household: Household, period: PeriodEnum) -> float:
 
     energy_needs = get_total_energy_needs(household, period)
-    solar_savings = get_solar_savings(
+    energy_consumption = get_energy_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )
 

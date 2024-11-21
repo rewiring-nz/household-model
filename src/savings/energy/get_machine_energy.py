@@ -28,17 +28,19 @@ from dataclasses import dataclass
 
 
 @dataclass
-class EnergyNeeds:
+class MachineEnergyNeeds:
     appliances: float
     vehicles: float
     other_appliances: float
 
 
-def get_total_energy_needs(household: Household, period: PeriodEnum) -> EnergyNeeds:
+def get_total_energy_needs(
+    household: Household, period: PeriodEnum
+) -> MachineEnergyNeeds:
     appliance_energy = get_total_appliance_energy(household, period)
     vehicle_energy = get_vehicle_energy(household.vehicles, period)
     other_energy = get_other_appliances_energy_per_period(period)
-    return EnergyNeeds(
+    return MachineEnergyNeeds(
         appliances=appliance_energy,
         vehicles=vehicle_energy,
         other_appliances=other_energy,

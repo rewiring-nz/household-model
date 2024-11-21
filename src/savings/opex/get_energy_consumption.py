@@ -1,7 +1,5 @@
 from multiprocessing import Value
-from typing import Optional, Union
 
-from pydantic import StrictFloat, StrictInt
 from constants.battery import (
     BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS,
     BATTERY_CYCLES_PER_DAY,
@@ -9,7 +7,6 @@ from constants.battery import (
 )
 from constants.fuel_stats import (
     COST_PER_FUEL_KWH_AVG_15_YEARS,
-    FIXED_COSTS_PER_YEAR_AVG_15_YEARS,
     FuelTypeEnum,
 )
 from constants.solar import (
@@ -20,49 +17,65 @@ from constants.solar import (
     SOLAR_SELF_CONSUMPTION_VEHICLES,
 )
 from openapi_client.models.battery import Battery
-from openapi_client.models.household import Household
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
-from savings.energy.get_machine_energy import EnergyNeeds
-from utils.scale_daily_to_period import scale_daily_to_period
+from savings.energy.get_machine_energy import MachineEnergyNeeds
 
 
-def get_solar_savings(
-    energy_needs: EnergyNeeds,
+@dataclass
+class EnergyConsumption:
+    consumed_from_solar: float
+    consumed_from_battery: float
+    consumed_from_grid: float
+    exported_to_grid: float
+
+
+def get_energy_consumption(
+    energy_needs: MachineEnergyNeeds,
     solar: Solar,
     battery: Battery,
     location: LocationEnum,
     # TODO take period into account, not just per year
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
-    if not solar.has_solar or solar.size is None:
-        return 0
 
-    # kWh per year
+    # Energy in kWh per period
+
+    # Total energy needs
     e_needed_total = energy_needs.appliances + energy_needs.vehicles
 
-    e_generated_from_solar = get_e_generated_from_solar(solar.size, location)
+    # Energy needs met by solar
+    e_generated_from_solar = get_e_generated_from_solar(solar, location)
     e_consumed_from_solar = get_e_consumed_from_solar(
         e_generated_from_solar, energy_needs.appliances, energy_needs.vehicles
     )
 
-    e_from_battery = 0
+    # Energy needs met by battery
+    e_consumed_from_battery = 0
     if battery.has_battery and battery.capacity is not None:
         # electricity stored in battery, then consumed or exported
-        e_from_battery = get_e_consumed_from_battery(
+        e_consumed_from_battery = get_e_consumed_from_battery(
             battery.capacity, e_generated_from_solar, e_consumed_from_solar
         )
 
-    e_consumed_from_grid = e_needed_total - e_consumed_from_solar - e_from_battery
+    # Energy needs met by grid
+    e_consumed_from_grid = (
+        e_needed_total - e_consumed_from_solar - e_consumed_from_battery
+    )
+
+    # Excess generated energy exported
     e_exported = e_consumed_from_grid + e_generated_from_solar - e_needed_total
-    # per year
 
-    # TODO: translate this into solar savings
-    return e_exported
+    return EnergyConsumption(
+        consumed_from_solar=e_consumed_from_solar,
+        consumed_from_battery=e_consumed_from_battery,
+        consumed_from_grid=e_consumed_from_grid,
+        exported_to_grid=e_exported,
+    )
 
 
-def get_e_generated_from_solar(solar_size: float, location: LocationEnum) -> float:
+def get_e_generated_from_solar(solar: Solar, location: LocationEnum) -> float:
     """Calculate energy generated from solar
 
     Args:
@@ -72,8 +85,10 @@ def get_e_generated_from_solar(solar_size: float, location: LocationEnum) -> flo
     Returns:
         float: energy generated per year in kWh
     """
+    if not solar.has_solar or solar.size is None or solar.size is 0:
+        return 0
     return (
-        solar_size
+        solar.solar_size
         * SOLAR_CAPACITY_FACTOR.get(location)
         * HOURS_PER_YEAR
         * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS

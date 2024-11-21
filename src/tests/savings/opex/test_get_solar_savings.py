@@ -1,6 +1,6 @@
 import pytest
 from openapi_client.models.location_enum import LocationEnum
-from savings.opex.get_solar_savings import (
+from savings.opex.get_energy_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
     get_e_consumed_from_battery,
