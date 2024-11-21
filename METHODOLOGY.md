@@ -77,3 +77,9 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 ## Vehicles
 
 - Assumes average distance driven per vehicle per year is 10,950 km, rounded to 210 km per week. This is taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/) for the year 2019, to avoid the anomalies from COVID-19.
+- Assumes current Road User Charges (RUCs) without taking inflation or policy changes into account.
+    - Electric: $76 per year per 1000km
+    - Plug-in hybrid: $38 per year per 1000km
+    - Hybrid: $0 per year per 1000km
+    - Petrol: $0 per year per 1000km
+    - Diesel: $76 per year per 1000km

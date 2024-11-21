@@ -1,5 +1,8 @@
+from typing import List
+from constants.machines.vehicles import RUCS
 from constants.solar import SOLAR_FEEDIN_TARIFF_2024
-from constants.utils import PeriodEnum
+from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
+from openapi_client.models.vehicle import Vehicle
 from params import (
     OPERATIONAL_LIFETIME,
 )
@@ -25,6 +28,7 @@ from savings.opex.get_energy_consumption import (
     EnergyConsumption,
     get_energy_consumption,
 )
+from utils.scale_daily_to_period import scale_daily_to_period
 
 
 def calculate_opex(
@@ -92,8 +96,7 @@ def get_total_bills(
     #     energy_consumption.exported_to_grid
     # )
 
-    return grid_volume_costs + fixed_costs + rucs
-    # return grid_volume_costs + grid_fixed_costs + rucs - revenue_from_solar_export
+    return grid_volume_costs + fixed_costs + rucs  # - revenue_from_solar_export
 
 
 def get_grid_volume_cost(e_consumed_from_grid: float, e_from_battery: float) -> float:
@@ -141,5 +144,27 @@ def get_solar_feedin_tariff(e_exported: float) -> float:
     return e_exported * SOLAR_FEEDIN_TARIFF_2024
 
 
-def get_rucs():
-    pass
+def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> float:
+    """Calculates the RUCs for a list of vehicles weighted by kms per year
+
+    Args:
+        vehicles (List[Vehicle]): the list of vehicles
+        period (PeriodEnum, optional): the period over which to calculate the RUCs.
+
+    Returns:
+        float: total NZD emitted from vehicles over given period to 2dp
+    """
+    # TODO: Unit tests
+    total_rucs_daily = 0
+    for vehicle in vehicles:
+        rucs_daily = (
+            RUCS[vehicle.fuel_type]  # $/yr/1000km
+            * vehicle.kms_per_week  # km/wk
+            * WEEKS_PER_YEAR  # wk/yr
+            / 1000
+            / DAYS_PER_YEAR  # days/yr
+        )
+        # Convert to given period
+        total_rucs_daily += rucs_daily
+    total_rucs = scale_daily_to_period(total_rucs_daily, period)
+    return total_rucs
