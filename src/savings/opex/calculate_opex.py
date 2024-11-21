@@ -17,7 +17,7 @@ from savings.energy.get_machine_energy import (
     get_total_energy_needs,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
-from savings.opex.get_energy_consumption import (
+from savings.energy.get_energy_consumption import (
     EnergyConsumption,
     get_energy_consumption,
 )
