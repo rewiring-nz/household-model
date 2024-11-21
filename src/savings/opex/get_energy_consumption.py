@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from multiprocessing import Value
 
 from constants.battery import (
     BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS,
@@ -14,6 +13,7 @@ from constants.solar import (
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
     SOLAR_CAPACITY_FACTOR,
     SOLAR_FEEDIN_TARIFF_2024,
+    SOLAR_OPERATIONAL_LIFETIME_YRS,
     SOLAR_SELF_CONSUMPTION_APPLIANCES,
     SOLAR_SELF_CONSUMPTION_VEHICLES,
 )
@@ -22,6 +22,7 @@ from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
 from savings.energy.get_machine_energy import MachineEnergyNeeds
+from utils.scale_daily_to_period import scale_daily_to_period
 
 
 @dataclass
@@ -76,24 +77,28 @@ def get_energy_consumption(
     )
 
 
-def get_e_generated_from_solar(solar: Solar, location: LocationEnum) -> float:
+def get_e_generated_from_solar(
+    solar: Solar, location: LocationEnum, period: PeriodEnum = PeriodEnum.YEARLY
+) -> float:
     """Calculate energy generated from solar
 
     Args:
         solar (Solar): Information about the solar panel system
         location (LocationEnum): The location around NZ which determines the solar capacity
+        period (PeriodEnum): the period over which to calculate generation
 
     Returns:
         float: energy generated per year in kWh
     """
+    e_daily = 0
     if solar.size is not None and solar.size > 0:
-        return (
+        e_daily = (
             solar.size
             * SOLAR_CAPACITY_FACTOR.get(location)
-            * HOURS_PER_YEAR
             * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
+            * 24  # hours per day
         )
-    return 0
+    return scale_daily_to_period(e_daily, period, SOLAR_OPERATIONAL_LIFETIME_YRS)
 
 
 def get_e_consumed_from_solar(
