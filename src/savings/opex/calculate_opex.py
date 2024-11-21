@@ -14,14 +14,7 @@ from openapi_client.models import (
     OpexValues,
 )
 from savings.energy.get_machine_energy import (
-    get_energy_per_period,
-    get_other_appliances_energy_per_period,
     get_total_energy_needs,
-    get_vehicle_energy,
-)
-from savings.opex.get_machine_opex import (
-    get_other_appliances_opex_per_period,
-    get_vehicle_opex,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
 from savings.opex.get_energy_consumption import (
@@ -154,7 +147,6 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
     Returns:
         float: total NZD emitted from vehicles over given period to 2dp
     """
-    # TODO: Unit tests
     total_rucs_daily = 0
     for vehicle in vehicles:
         rucs_daily = (
@@ -167,4 +159,4 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
         # Convert to given period
         total_rucs_daily += rucs_daily
     total_rucs = scale_daily_to_period(total_rucs_daily, period)
-    return total_rucs
+    return round(total_rucs, 2)
