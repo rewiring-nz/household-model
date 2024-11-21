@@ -1,8 +1,8 @@
 import pytest
-from constants.solar import SOLAR_OPERATIONAL_LIFETIME_YRS
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
+from params import OPERATIONAL_LIFETIME
 from savings.energy.get_energy_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
@@ -36,29 +36,18 @@ class TestGetEGeneratedFromSolar:
     def test_no_solar_returns_zero(self):
         assert (
             get_e_generated_from_solar(
-                Solar(has_solar=False), LocationEnum.AUCKLAND_CENTRAL
+                Solar(has_solar=False, size=9), LocationEnum.AUCKLAND_CENTRAL
             )
             == 0.0
         )
 
-    def test_dont_install_solar_returns_zero(self):
+    def test_install_solar_none_returns_zero(self):
         assert (
             get_e_generated_from_solar(
-                Solar(has_solar=False, install_solar=False),
+                Solar(hasSolar=True, size=6.6, install_solar=None),
                 LocationEnum.AUCKLAND_CENTRAL,
             )
-            == 0.0
-        )
-
-    def test_install_solar_returns_val(self):
-        solar = Solar(has_solar=False, install_solar=True, size=6.6)
-        expected = solar.size * 0.155 * 8766 * 0.9308
-        assert (
-            get_e_generated_from_solar(
-                solar,
-                LocationEnum.AUCKLAND_CENTRAL,
-            )
-            == expected
+            == 6.6 * 0.155 * 8766 * 0.9308
         )
 
     def test_larger_system_generates_proportionally_more(self):
@@ -89,7 +78,7 @@ class TestGetEGeneratedFromSolar:
         )
         assert (
             get_e_generated_from_solar(solar, location, PeriodEnum.OPERATIONAL_LIFETIME)
-            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+            == 5 * 0.155 * 0.9308 * HOURS_PER_YEAR * OPERATIONAL_LIFETIME
         )
 
 
@@ -179,5 +168,5 @@ class TestGetEnergyFromBattery:
                 e_consumed_from_solar=0,
                 period=PeriodEnum.OPERATIONAL_LIFETIME,
             )
-            == expected_daily * DAYS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+            == expected_daily * DAYS_PER_YEAR * OPERATIONAL_LIFETIME
         )

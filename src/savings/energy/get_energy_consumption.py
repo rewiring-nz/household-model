@@ -8,7 +8,6 @@ from constants.battery import (
 from constants.solar import (
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
     SOLAR_CAPACITY_FACTOR,
-    SOLAR_OPERATIONAL_LIFETIME_YRS,
     SOLAR_SELF_CONSUMPTION_APPLIANCES,
     SOLAR_SELF_CONSUMPTION_VEHICLES,
 )
@@ -16,6 +15,7 @@ from openapi_client.models.battery import Battery
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from constants.utils import DAYS_PER_YEAR, PeriodEnum
+from params import OPERATIONAL_LIFETIME
 from savings.energy.get_machine_energy import MachineEnergyNeeds
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -85,14 +85,14 @@ def get_e_generated_from_solar(
         float: energy generated per year in kWh
     """
     e_daily = 0
-    if solar.size is not None and solar.size > 0:
+    if solar.has_solar is True and solar.size is not None and solar.size > 0:
         e_daily = (
             solar.size
             * SOLAR_CAPACITY_FACTOR.get(location)
             * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
             * 24  # hours per day
         )
-    return scale_daily_to_period(e_daily, period, SOLAR_OPERATIONAL_LIFETIME_YRS)
+    return scale_daily_to_period(e_daily, period)
 
 
 def get_e_consumed_from_solar(
@@ -160,7 +160,7 @@ def get_e_consumed_from_battery(
         e_battery_storage_capacity = capacity_per_day * DAYS_PER_YEAR
     if period == PeriodEnum.OPERATIONAL_LIFETIME:
         e_battery_storage_capacity = (
-            capacity_per_day * DAYS_PER_YEAR * SOLAR_OPERATIONAL_LIFETIME_YRS
+            capacity_per_day * DAYS_PER_YEAR * OPERATIONAL_LIFETIME
         )
 
     # If the energy remaining from generation after self-consumption is less than the battery's capacity, battery stores all the remaining energy
