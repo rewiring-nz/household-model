@@ -73,20 +73,26 @@ def _get_total_opex(household: Household, period: PeriodEnum) -> float:
     energy_consumption = get_energy_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )
-    total_bills = get_total_bills(energy_consumption)
+    total_bills = get_total_bills(household, energy_consumption, period)
     return total_bills
 
 
-def get_total_bills(energy_consumption: EnergyConsumption) -> float:
+def get_total_bills(
+    household: Household, energy_consumption: EnergyConsumption, period: PeriodEnum
+) -> float:
+    # Costs
     grid_volume_costs = get_grid_volume_cost(
         energy_consumption.consumed_from_grid, energy_consumption.consumed_from_battery
     )
-    # grid_fixed_costs = TODO
+    fixed_costs = get_fixed_costs(household, period)
+    rucs = get_rucs()
+
+    # Savings
     # revenue_from_solar_export = get_solar_feedin_tariff(
     #     energy_consumption.exported_to_grid
     # )
-    rucs = get_rucs()
-    return grid_volume_costs + rucs
+
+    return grid_volume_costs + fixed_costs + rucs
     # return grid_volume_costs + grid_fixed_costs + rucs - revenue_from_solar_export
 
 
