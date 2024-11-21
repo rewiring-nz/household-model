@@ -1,5 +1,8 @@
 from typing import List, Optional
 
+from constants.machines.cooktop import COOKTOP_INFO
+from constants.machines.space_heating import SPACE_HEATING_INFO
+from constants.machines.water_heating import WATER_HEATING_INFO
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
@@ -26,14 +29,20 @@ from dataclasses import dataclass
 
 @dataclass
 class EnergyNeeds:
-    appliances: int
-    vehicles: int
+    appliances: float
+    vehicles: float
+    other_appliances: float
 
 
 def get_total_energy_needs(household: Household, period: PeriodEnum) -> EnergyNeeds:
-    e_needs_appliances = 10  # includes fixed costs
-    e_needs_vehicles = 20  # includes RUCs
-    return EnergyNeeds(appliances=e_needs_appliances, vehicles=e_needs_vehicles)
+    appliance_energy = get_total_appliance_energy(household, period)
+    vehicle_energy = get_vehicle_energy(household.vehicles, period)
+    other_energy = get_other_appliances_energy_per_period(period)
+    return EnergyNeeds(
+        appliances=appliance_energy,
+        vehicles=vehicle_energy,
+        other_appliances=other_energy,
+    )
 
 
 def get_energy_per_day(
@@ -77,20 +86,12 @@ def get_energy_per_period(
     return scale_daily_to_period(opex_daily, period)
 
 
-def get_other_appliances_energy_per_period(
-    period: PeriodEnum = PeriodEnum.DAILY,
-) -> float:
-    """Calculates the energy of other appliances in a household
-    These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
-    We assume that these are all electric.
-
-    Args:
-        period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
-
-    Returns:
-        float: energy of operating other appliances over given period
-    """
-    return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
+def get_total_appliance_energy(household: Household, period: PeriodEnum):
+    return (
+        get_energy_per_period(household.space_heating, SPACE_HEATING_INFO, period)
+        + get_energy_per_period(household.water_heating, WATER_HEATING_INFO, period)
+        + get_energy_per_period(household.cooktop, COOKTOP_INFO, period)
+    )
 
 
 def get_vehicle_energy(
@@ -167,3 +168,19 @@ def _get_hybrid_energy_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
         return petrol * 0.6 + ev * 0.4
     # HEV: Assume 70/30 split between petrol and electric
     return petrol * 0.7 + ev * 0.3
+
+
+def get_other_appliances_energy_per_period(
+    period: PeriodEnum = PeriodEnum.DAILY,
+) -> float:
+    """Calculates the energy of other appliances in a household
+    These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
+    We assume that these are all electric.
+
+    Args:
+        period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
+
+    Returns:
+        float: energy of operating other appliances over given period
+    """
+    return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
