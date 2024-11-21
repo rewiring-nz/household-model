@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from multiprocessing import Value
 
 from constants.battery import (
@@ -79,20 +80,20 @@ def get_e_generated_from_solar(solar: Solar, location: LocationEnum) -> float:
     """Calculate energy generated from solar
 
     Args:
-        solar_size (float): The size of the solar panel system in kW, >= 0
+        solar (Solar): Information about the solar panel system
         location (LocationEnum): The location around NZ which determines the solar capacity
 
     Returns:
         float: energy generated per year in kWh
     """
-    if not solar.has_solar or solar.size is None or solar.size is 0:
-        return 0
-    return (
-        solar.solar_size
-        * SOLAR_CAPACITY_FACTOR.get(location)
-        * HOURS_PER_YEAR
-        * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
-    )
+    if solar.size is not None and solar.size > 0:
+        return (
+            solar.size
+            * SOLAR_CAPACITY_FACTOR.get(location)
+            * HOURS_PER_YEAR
+            * SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS
+        )
+    return 0
 
 
 def get_e_consumed_from_solar(
