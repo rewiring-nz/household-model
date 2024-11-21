@@ -82,14 +82,14 @@ def get_total_bills(
         energy_consumption.consumed_from_grid, energy_consumption.consumed_from_battery
     )
     fixed_costs = get_fixed_costs(household, period)
-    rucs = get_rucs()
+    rucs = get_rucs(household.vehicles, period)
 
     # Savings
-    # revenue_from_solar_export = get_solar_feedin_tariff(
-    #     energy_consumption.exported_to_grid
-    # )
+    revenue_from_solar_export = get_solar_feedin_tariff(
+        energy_consumption.exported_to_grid
+    )
 
-    return grid_volume_costs + fixed_costs + rucs  # - revenue_from_solar_export
+    return grid_volume_costs + fixed_costs + rucs - revenue_from_solar_export
 
 
 def get_grid_volume_cost(e_consumed_from_grid: float, e_from_battery: float) -> float:
@@ -133,10 +133,6 @@ def get_effective_grid_price(
     return grid_price
 
 
-def get_solar_feedin_tariff(e_exported: float) -> float:
-    return e_exported * SOLAR_FEEDIN_TARIFF_2024
-
-
 def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> float:
     """Calculates the RUCs for a list of vehicles weighted by kms per year
 
@@ -160,3 +156,7 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
         total_rucs_daily += rucs_daily
     total_rucs = scale_daily_to_period(total_rucs_daily, period)
     return round(total_rucs, 2)
+
+
+def get_solar_feedin_tariff(e_exported: float) -> float:
+    return e_exported * SOLAR_FEEDIN_TARIFF_2024
