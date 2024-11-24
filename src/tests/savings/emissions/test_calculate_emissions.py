@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+from constants.machines.machine_info import AVERAGE_PEOPLE_PER_HOUSEHOLD
 from savings.emissions.calculate_emissions import calculate_emissions
 from constants.utils import PeriodEnum
 from params import OPERATIONAL_LIFETIME
@@ -8,11 +9,13 @@ from tests.mocks import mock_household, mock_household_electrified
 
 class TestCalculateEmissions(unittest.TestCase):
 
-    get_appliance_emissions_side_effect = lambda self, occupancy, period: {
-        PeriodEnum.WEEKLY: 1.0,
-        PeriodEnum.YEARLY: 52.0,
-        PeriodEnum.OPERATIONAL_LIFETIME: 500.0,
-    }.get(period, 0.0)
+    get_appliance_emissions_side_effect = (
+        lambda self, appliance, appliance_info, occupancy, period: {
+            PeriodEnum.WEEKLY: 1.0,
+            PeriodEnum.YEARLY: 52.0,
+            PeriodEnum.OPERATIONAL_LIFETIME: 500.0,
+        }.get(period, 0.0)
+    )
 
     get_vehicle_emissions_side_effect = lambda self, vehicles, period: {
         PeriodEnum.WEEKLY: 2.0,
@@ -20,7 +23,7 @@ class TestCalculateEmissions(unittest.TestCase):
         PeriodEnum.OPERATIONAL_LIFETIME: 7000.0,
     }.get(period, 0.0)
 
-    get_other_emissions_side_effect = lambda self, period: {
+    get_other_emissions_side_effect = lambda self, occupancy, period: {
         PeriodEnum.WEEKLY: 0.5,
         PeriodEnum.YEARLY: 26.5,
         PeriodEnum.OPERATIONAL_LIFETIME: 2000.0,
@@ -58,22 +61,22 @@ class TestCalculateEmissions(unittest.TestCase):
 
     def test_calculate_emissions_real_values(self):
         result = calculate_emissions(mock_household, mock_household_electrified)
-
+        occupancy_multiplier = mock_household.occupancy / AVERAGE_PEOPLE_PER_HOUSEHOLD
         before = {
-            "space_heating_wood": 14.44 * 0.016,
-            "water_heating_gas": 6.6 * 0.201,
-            "cooktop_resistance": 0.83 * 0.074,
+            "space_heating_wood": 14.44 * 0.016 * occupancy_multiplier,
+            "water_heating_gas": 6.6 * 0.201 * occupancy_multiplier,
+            "cooktop_resistance": 0.83 * 0.074 * occupancy_multiplier,
             "petrol_car": 31.4 * 0.258 * (250 / 210),
             "diesel_car": 22.8 * 0.253 * (50 / 210),
-            "other": (0.34 + 4.05 + 2.85) * 0.074,
+            "other": (0.34 + 4.05 + 2.85) * 0.074 * occupancy_multiplier,
         }
         after = {
-            "space_heating_heat_pump": 2.3 * 0.074,
-            "water_heating_heat_pump": 1.71 * 0.074,
-            "cooktop_resistance": 0.83 * 0.074,  # didn't swap
+            "space_heating_heat_pump": 2.3 * 0.074 * occupancy_multiplier,
+            "water_heating_heat_pump": 1.71 * 0.074 * occupancy_multiplier,
+            "cooktop_resistance": 0.83 * 0.074 * occupancy_multiplier,  # didn't swap
             "ev_car": 7.324 * 0.074 * (250 / 210),
             "diesel_car": 22.8 * 0.253 * (50 / 210),  # didn't want to switch
-            "other": (0.34 + 4.05 + 2.85) * 0.074,
+            "other": (0.34 + 4.05 + 2.85) * 0.074 * occupancy_multiplier,
         }
         before_daily = sum(before.values())
         after_daily = sum(after.values())
