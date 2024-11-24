@@ -65,7 +65,13 @@ def _get_total_emissions(household: Household, period: PeriodEnum):
 
 def _get_total_appliance_emissions(household: Household, period: PeriodEnum):
     return (
-        get_appliance_emissions(household.space_heating, SPACE_HEATING_INFO, period)
-        + get_appliance_emissions(household.water_heating, WATER_HEATING_INFO, period)
-        + get_appliance_emissions(household.cooktop, COOKTOP_INFO, period)
+        get_appliance_emissions(
+            household.space_heating, SPACE_HEATING_INFO, household.occupancy, period
+        )
+        + get_appliance_emissions(
+            household.water_heating, WATER_HEATING_INFO, household.occupancy, period
+        )
+        + get_appliance_emissions(
+            household.cooktop, COOKTOP_INFO, household.occupancy, period
+        )
     )

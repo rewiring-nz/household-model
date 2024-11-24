@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
@@ -17,12 +17,14 @@ from utils.scale_daily_to_period import scale_daily_to_period
 def get_emissions_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
+    occupancy: int,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        occupancy (int, optional): The number of people in the household. Defaults to 3.
 
     Returns:
         float: machine's emissions in kgCO2e per day
@@ -36,6 +38,7 @@ def get_emissions_per_day(
 def get_appliance_emissions(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
+    occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     """Calculates the emissions from appliance in given household
@@ -43,14 +46,12 @@ def get_appliance_emissions(
     Args:
         appliance (MachineEnum): the appliance
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
+        occupancy (int, optional): The number of people in the household. Defaults to 3.
 
     Returns:
         float: kgCO2e emitted from appliance over given period
     """
-    emissions_daily = get_emissions_per_day(
-        appliance,
-        appliance_info,
-    )
+    emissions_daily = get_emissions_per_day(appliance, appliance_info, occupancy)
     return scale_daily_to_period(emissions_daily, period)
 
 

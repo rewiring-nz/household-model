@@ -83,3 +83,21 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
     - Hybrid: $0 per year per 1000km
     - Petrol: $0 per year per 1000km
     - Diesel: $76 per year per 1000km
+
+## Occupancy
+
+The energy needs of the household have been scaled from the NZ averages based on occupancy ratios from the [Australian Energy Regulator Electricity and Gas consumption benchmarks for residential customers 2020 study](https://www.aer.gov.au/industry/registers/resources/guidelines/electricity-and-gas-consumption-benchmarks-residential-customers-2020).
+
+We used the numbers for climate zone 6 (Mild temperate, such as urban Melbourne, Adelaide Hills, Ulladulla; [see Table 1 on page 15](https://www.aer.gov.au/system/files/Residential%20energy%20consumption%20benchmarks%20-%209%20December%202020_0.pdf)). Using the spreadsheet of [Frontier Economics - Simple electricity and gas benchmarks - From June 2021](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021) and taking an average across all states and seasons, we found the following electricity consumption and ratios.
+
+We did not use the separate gas energy consumption numbers as we were only requiring an idea of a ratio, and when we calculated the ratios, where wasn't a material difference with the electricity consumption ratios.
+
+| Household Size | Average Electricity Use per Season (kWh) | Ratio |
+|----------------|-----------------------------------------|-------|
+| 1              | 803                                     | 1.0   |
+| 2              | 1,328                                   | 1.7   |
+| 3              | 1,410                                   | 1.8   |
+| 4              | 1,583                                   | 2.0   |
+| 5+             | 2,018                                   | 2.5   |
+
+We used this ratio to scale up the energy consumption rates for the average NZ household, which assumes 2.7 people per home according to 2018 Census data ([Household size in New Zealand, Figure.NZ](https://figure.nz/chart/vdTbdOaKUE9zTKo3)), and average energy consumption values from the Residential Baseline Study (total energy use by machine types such as heat pumps, gas heaters, etc.).
