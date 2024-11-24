@@ -11,27 +11,29 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import PeriodEnum
+from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
 def get_emissions_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
-    occupancy: int,
+    occupancy: Optional[int] = None,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
-        occupancy (int, optional): The number of people in the household. Defaults to 3.
+        occupancy (int, optional): The number of people in the household.
 
     Returns:
         float: machine's emissions in kgCO2e per day
     """
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    emissions = energy * EMISSIONS_FACTORS[fuel_type]
+    energy_scaled = scale_energy_by_occupancy(energy, occupancy)
+    emissions = energy_scaled * EMISSIONS_FACTORS[fuel_type]
     return emissions
 
 

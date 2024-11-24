@@ -17,9 +17,8 @@ def scale_energy_by_occupancy(
         float: energy consumption scaled proportionally
     """
 
-    occupancy_float = float(
-        occupancy_int if occupancy_int is not None else AVERAGE_PEOPLE_PER_HOUSEHOLD
-    )
+    if occupancy_int is None:
+        return energy_per_average_household
 
-    multiplier = occupancy_float / AVERAGE_PEOPLE_PER_HOUSEHOLD
+    multiplier = float(occupancy_int) / AVERAGE_PEOPLE_PER_HOUSEHOLD
     return energy_per_average_household * multiplier

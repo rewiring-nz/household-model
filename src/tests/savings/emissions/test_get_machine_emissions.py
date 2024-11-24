@@ -1,3 +1,4 @@
+import pytest
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -15,7 +16,6 @@ from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
 from savings.emissions.get_machine_emissions import (
     get_appliance_emissions,
-    scale_daily_to_period,
     get_emissions_per_day,
     get_other_appliance_emissions,
     get_vehicle_emissions,
@@ -53,6 +53,13 @@ class TestGetEmissionsPerDay(TestCase):
         )
         expected_emissions = 5.0 * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
         assert emissions == expected_emissions
+
+    def test_get_emissions_per_day_scaled_by_occupancy(self):
+        emissions = get_emissions_per_day(
+            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info, 3
+        )
+        expected_emissions = 5.0 * 3 / 2.7 * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
+        assert pytest.approx(emissions) == expected_emissions
 
     def test_get_emissions_per_day_handles_missing_fuel_type(self):
         mock_appliance_info = {
@@ -92,7 +99,7 @@ class TestGetApplianceEmissions:
     ):
         get_appliance_emissions(mock_household.space_heating, SPACE_HEATING_INFO)
         mock_get_emissions_per_day.assert_called_once_with(
-            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO
+            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, None
         )
 
     def test_it_calls_get_emissions_for_water_heating_correctly(
@@ -100,7 +107,7 @@ class TestGetApplianceEmissions:
     ):
         get_appliance_emissions(mock_household.water_heating, WATER_HEATING_INFO)
         mock_get_emissions_per_day.assert_called_once_with(
-            WaterHeatingEnum.GAS, WATER_HEATING_INFO
+            WaterHeatingEnum.GAS, WATER_HEATING_INFO, None
         )
 
     def test_it_calls_get_emissions_for_cooktop_correctly(
@@ -108,7 +115,7 @@ class TestGetApplianceEmissions:
     ):
         get_appliance_emissions(mock_household.cooktop, COOKTOP_INFO)
         mock_get_emissions_per_day.assert_called_once_with(
-            CooktopEnum.ELECTRIC_RESISTANCE, COOKTOP_INFO
+            CooktopEnum.ELECTRIC_RESISTANCE, COOKTOP_INFO, None
         )
 
     def test_it_calls_scale_daily_to_period_correctly(
@@ -116,7 +123,7 @@ class TestGetApplianceEmissions:
     ):
         get_appliance_emissions(mock_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
-            mock_emissions_daily, PeriodEnum.WEEKLY
+            mock_emissions_daily, PeriodEnum.DAILY
         )
 
     def test_it_calls_scale_daily_to_period_correctly_with_default(
