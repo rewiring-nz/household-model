@@ -149,7 +149,7 @@ class TestGetOtherApplianceEmissions:
     emissions_daily = (0.34 + 4.05 + 2.85) * 0.074
 
     def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-        get_other_appliance_emissions(PeriodEnum.WEEKLY)
+        get_other_appliance_emissions(None, PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
             self.emissions_daily, PeriodEnum.WEEKLY
         )

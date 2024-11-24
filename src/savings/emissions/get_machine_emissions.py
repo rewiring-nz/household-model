@@ -48,7 +48,7 @@ def get_appliance_emissions(
     Args:
         appliance (MachineEnum): the appliance
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
-        occupancy (int, optional): The number of people in the household. Defaults to 3.
+        occupancy (int, optional): The number of people in the household. Defaults to None.
 
     Returns:
         float: kgCO2e emitted from appliance over given period
@@ -57,21 +57,24 @@ def get_appliance_emissions(
     return scale_daily_to_period(emissions_daily, period)
 
 
-def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> float:
+def get_other_appliance_emissions(
+    occupancy: Optional[int] = None, period: PeriodEnum = PeriodEnum.DAILY
+) -> float:
     """Calculates the emissions of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
     We assume that these are all electric.
 
     Args:
+        occupancy (int, optional): The number of people in the household. Defaults to None.
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
 
     Returns:
         float: kgCO2e emitted from other appliances over given period
     """
-    emissions_daily = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-        * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
+    energy_scaled = scale_energy_by_occupancy(
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, occupancy
     )
+    emissions_daily = energy_scaled * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
     return scale_daily_to_period(emissions_daily, period)
 
 

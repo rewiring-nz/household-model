@@ -8,7 +8,7 @@ from tests.mocks import mock_household, mock_household_electrified
 
 class TestCalculateEmissions(unittest.TestCase):
 
-    get_appliance_emissions_side_effect = lambda self, household, info, period: {
+    get_appliance_emissions_side_effect = lambda self, occupancy, period: {
         PeriodEnum.WEEKLY: 1.0,
         PeriodEnum.YEARLY: 52.0,
         PeriodEnum.OPERATIONAL_LIFETIME: 500.0,

@@ -59,7 +59,7 @@ def calculate_emissions(
 def _get_total_emissions(household: Household, period: PeriodEnum):
     appliance_emissions = _get_total_appliance_emissions(household, period)
     vehicle_emissions = get_vehicle_emissions(household.vehicles, period)
-    other_emissions = get_other_appliance_emissions(period)
+    other_emissions = get_other_appliance_emissions(household.occupancy, period)
     return appliance_emissions + vehicle_emissions + other_emissions
 
 
