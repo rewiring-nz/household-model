@@ -61,7 +61,7 @@ class TestCalculateEmissions(unittest.TestCase):
 
     def test_calculate_emissions_real_values(self):
         result = calculate_emissions(mock_household, mock_household_electrified)
-        occupancy_multiplier = mock_household.occupancy / AVERAGE_PEOPLE_PER_HOUSEHOLD
+        occupancy_multiplier = 2 / 2.7
         before = {
             "space_heating_wood": 14.44 * 0.016 * occupancy_multiplier,
             "water_heating_gas": 6.6 * 0.201 * occupancy_multiplier,
