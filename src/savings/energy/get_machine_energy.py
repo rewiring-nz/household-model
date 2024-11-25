@@ -29,7 +29,7 @@ def get_total_energy_needs(
 ) -> MachineEnergyNeeds:
     appliance_energy = get_total_appliance_energy(household, period)
     vehicle_energy = get_vehicle_energy(household.vehicles, period)
-    other_energy = get_other_appliances_energy_per_period(period)
+    other_energy = get_other_appliances_energy_per_period(household.occupancy, period)
     return MachineEnergyNeeds(
         appliances=appliance_energy,
         vehicles=vehicle_energy,
@@ -82,9 +82,15 @@ def get_energy_per_period(
 
 def get_total_appliance_energy(household: Household, period: PeriodEnum):
     return (
-        get_energy_per_period(household.space_heating, SPACE_HEATING_INFO, period)
-        + get_energy_per_period(household.water_heating, WATER_HEATING_INFO, period)
-        + get_energy_per_period(household.cooktop, COOKTOP_INFO, period)
+        get_energy_per_period(
+            household.space_heating, SPACE_HEATING_INFO, household.occupancy, period
+        )
+        + get_energy_per_period(
+            household.water_heating, WATER_HEATING_INFO, household.occupancy, period
+        )
+        + get_energy_per_period(
+            household.cooktop, COOKTOP_INFO, household.occupancy, period
+        )
     )
 
 
