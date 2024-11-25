@@ -18,6 +18,7 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
+from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
@@ -50,12 +51,14 @@ def get_total_energy_needs(
 def get_energy_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
+    occupancy: Optional[int] = None,
 ) -> float:
     """Get energy needs per day for a given machine
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        occupancy (int, optional): The number of people in the household.
 
     Returns:
         float: machine's energy needs per day
@@ -63,12 +66,14 @@ def get_energy_per_day(
     energy_per_day = machine_stats_map[machine_type]["kwh_per_day"]
     if energy_per_day is None:
         raise ValueError(f"Can not find kwh_per_day value for {machine_type}")
+    energy_scaled = scale_energy_by_occupancy(energy_per_day, occupancy)
     return energy_per_day
 
 
 def get_energy_per_period(
     machine: MachineEnum,
     machine_info: MachineInfoMap,
+    occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     """Calculates the energy needs of machines in given household over given period
@@ -76,15 +81,13 @@ def get_energy_per_period(
     Args:
         machine (MachineEnum): the machine
         machine_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        occupancy (int, optional): The number of people in the household. Defaults to None.
         period (PeriodEnum, optional): the period over which to calculate the energy use. Defaults to PeriodEnum.DAILY.
 
     Returns:
         float: energy needs of operating machine over given period in kWh
     """
-    opex_daily = get_energy_per_day(
-        machine,
-        machine_info,
-    )
+    opex_daily = get_energy_per_day(machine, machine_info, occupancy)
     return scale_daily_to_period(opex_daily, period)
 
 
@@ -163,6 +166,7 @@ def _get_hybrid_energy_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
 
 
 def get_other_appliances_energy_per_period(
+    occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     """Calculates the energy of other appliances in a household
@@ -170,9 +174,13 @@ def get_other_appliances_energy_per_period(
     We assume that these are all electric.
 
     Args:
+        occupancy (int, optional): The number of people in the household. Defaults to None.
         period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
 
     Returns:
         float: energy of operating other appliances over given period
     """
-    return scale_daily_to_period(ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, period)
+    energy_scaled = scale_energy_by_occupancy(
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, occupancy
+    )
+    return scale_daily_to_period(energy_scaled, period)
