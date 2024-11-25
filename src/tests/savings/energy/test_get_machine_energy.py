@@ -84,15 +84,25 @@ class TestGetEnergyPerDay(TestCase):
 )
 class TestGetEnergyPerPeriod:
     def test_it_calls_get_energy_per_day_correctly(self, mock_get_energy_per_day, _):
+        get_energy_per_period(mock_household.space_heating, SPACE_HEATING_INFO, 1)
+        mock_get_energy_per_day.assert_called_once_with(
+            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, 1
+        )
+
+    def test_it_calls_get_energy_per_day_correctly_with_defaults(
+        self, mock_get_energy_per_day, _
+    ):
         get_energy_per_period(mock_household.space_heating, SPACE_HEATING_INFO)
         mock_get_energy_per_day.assert_called_once_with(
-            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO
+            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, None
         )
 
     def test_it_calls_scale_daily_to_period_correctly(
         self, _, mock_scale_daily_to_period
     ):
-        get_energy_per_period(mock_household.cooktop, COOKTOP_INFO, PeriodEnum.WEEKLY)
+        get_energy_per_period(
+            mock_household.cooktop, COOKTOP_INFO, 1, PeriodEnum.WEEKLY
+        )
         mock_scale_daily_to_period.assert_called_once_with(
             mock_energy_daily, PeriodEnum.WEEKLY
         )
@@ -114,25 +124,43 @@ class TestGetEnergyPerPeriod:
     "savings.energy.get_machine_energy.scale_daily_to_period",
     return_value=mock_energy_weekly,
 )
+@patch(
+    "savings.energy.get_machine_energy.scale_energy_by_occupancy",
+    return_value=mock_energy_daily,
+)
 class TestGetOtherAppliancesEnergyPerPeriod:
     energy = 0.34 + 4.05 + 2.85
 
-    def test_it_calls_scale_daily_to_period_correctly(self, mock_scale_daily_to_period):
-        get_other_appliances_energy_per_period(PeriodEnum.WEEKLY)
+    def test_it_calls_scale_energy_by_occupancy_correctly(
+        self, mock_scale_energy_by_occupancy, mock_scale_daily_to_period
+    ):
+        get_other_appliances_energy_per_period(1, PeriodEnum.WEEKLY)
+        mock_scale_energy_by_occupancy.assert_called_once_with(self.energy, 1)
+
+    def test_it_calls_scale_energy_by_occupancy_correctly_with_default(
+        self, mock_scale_energy_by_occupancy, mock_scale_daily_to_period
+    ):
+        get_other_appliances_energy_per_period()
+        mock_scale_energy_by_occupancy.assert_called_once_with(self.energy, None)
+
+    def test_it_calls_scale_daily_to_period_correctly(
+        self, mock_scale_energy_by_occupancy, mock_scale_daily_to_period
+    ):
+        get_other_appliances_energy_per_period(None, PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
-            self.energy, PeriodEnum.WEEKLY
+            mock_energy_daily, PeriodEnum.WEEKLY
         )
 
     def test_it_calls_scale_daily_to_period_correctly_with_default(
-        self, mock_scale_daily_to_period
+        self, mock_scale_energy_by_occupancy, mock_scale_daily_to_period
     ):
         get_other_appliances_energy_per_period()
         mock_scale_daily_to_period.assert_called_once_with(
-            self.energy, PeriodEnum.DAILY
+            mock_energy_daily, PeriodEnum.DAILY
         )
 
-    def test_it_returns_energy_per_period(self, _):
-        assert get_other_appliances_energy_per_period(PeriodEnum.WEEKLY) == 17.5
+    def test_it_returns_energy_per_period(self, _, __):
+        assert get_other_appliances_energy_per_period(1, PeriodEnum.WEEKLY) == 17.5
         assert get_other_appliances_energy_per_period() == 17.5
 
 

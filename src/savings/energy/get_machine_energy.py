@@ -1,31 +1,20 @@
+from dataclasses import dataclass
 from typing import List, Optional
 
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.machines.water_heating import WATER_HEATING_INFO
-from openapi_client.models.vehicle import Vehicle
-from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
-
-from constants.fuel_stats import (
-    COST_PER_FUEL_KWH_TODAY,
-    FuelTypeEnum,
-)
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
 from constants.machines.vehicles import (
-    RUCS,
     VEHICLE_AVG_KMS_PER_WEEK,
     VEHICLE_INFO,
 )
-from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
+from constants.utils import PeriodEnum
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
-
-from constants.utils import PeriodEnum
-from openapi_client.models.household import Household
-
-from dataclasses import dataclass
+from openapi_client.models import Vehicle, VehicleFuelTypeEnum, Household
 
 
 @dataclass
@@ -67,7 +56,7 @@ def get_energy_per_day(
     if energy_per_day is None:
         raise ValueError(f"Can not find kwh_per_day value for {machine_type}")
     energy_scaled = scale_energy_by_occupancy(energy_per_day, occupancy)
-    return energy_per_day
+    return energy_scaled
 
 
 def get_energy_per_period(
