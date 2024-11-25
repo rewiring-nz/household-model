@@ -4,6 +4,7 @@ from constants.machines.machine_info import MachineInfoMap
 from openapi_client.models.location_enum import LocationEnum
 
 # kwh_per_day are from values in Machines!D75:J75, which are average for the whole house
+# which assumes 2.7 people per household.
 # https://docs.google.com/spreadsheets/d/1_eAAx5shTHSJAUuHdfj7AQafS0BZJn_0F48yngCpFXI/edit?gid=0#gid=0
 
 SPACE_HEATING_INFO: MachineInfoMap = {

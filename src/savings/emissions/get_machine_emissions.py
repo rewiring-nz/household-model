@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
@@ -11,31 +11,36 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import PeriodEnum
+from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
 def get_emissions_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
+    occupancy: Optional[int] = None,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
     Args:
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        occupancy (int, optional): The number of people in the household.
 
     Returns:
         float: machine's emissions in kgCO2e per day
     """
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    emissions = energy * EMISSIONS_FACTORS[fuel_type]
+    energy_scaled = scale_energy_by_occupancy(energy, occupancy)
+    emissions = energy_scaled * EMISSIONS_FACTORS[fuel_type]
     return emissions
 
 
 def get_appliance_emissions(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
+    occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
     """Calculates the emissions from appliance in given household
@@ -43,32 +48,33 @@ def get_appliance_emissions(
     Args:
         appliance (MachineEnum): the appliance
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
+        occupancy (int, optional): The number of people in the household. Defaults to None.
 
     Returns:
         float: kgCO2e emitted from appliance over given period
     """
-    emissions_daily = get_emissions_per_day(
-        appliance,
-        appliance_info,
-    )
+    emissions_daily = get_emissions_per_day(appliance, appliance_info, occupancy)
     return scale_daily_to_period(emissions_daily, period)
 
 
-def get_other_appliance_emissions(period: PeriodEnum = PeriodEnum.DAILY) -> float:
+def get_other_appliance_emissions(
+    occupancy: Optional[int] = None, period: PeriodEnum = PeriodEnum.DAILY
+) -> float:
     """Calculates the emissions of other appliances in a household
     These may include space cooling (fans, aircon), refrigeration, laundry, lighting, etc.
     We assume that these are all electric.
 
     Args:
+        occupancy (int, optional): The number of people in the household. Defaults to None.
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
 
     Returns:
         float: kgCO2e emitted from other appliances over given period
     """
-    emissions_daily = (
-        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
-        * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
+    energy_scaled = scale_energy_by_occupancy(
+        ENERGY_NEEDS_OTHER_MACHINES_PER_DAY, occupancy
     )
+    emissions_daily = energy_scaled * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
     return scale_daily_to_period(emissions_daily, period)
 
 
