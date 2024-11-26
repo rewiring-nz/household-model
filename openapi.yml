@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Household savings
-  version: 0.0.6
+  version: 0.0.7
   description: |-
     This is the API for a household savings model. You can provide details about a household's energy use, and receive information about the household's potential emissions & cost savings from electrifying their fossil fuel machines, as well as the upfront costs of switching.
 tags:
@@ -248,7 +248,6 @@ components:
         - LPG
         - ELECTRIC_RESISTANCE
         - ELECTRIC_HEAT_PUMP
-        - DONT_KNOW
     WaterHeatingEnum:
       description: The method of water heating
       type: string
@@ -258,7 +257,6 @@ components:
         - ELECTRIC_RESISTANCE
         - ELECTRIC_HEAT_PUMP
         - SOLAR
-        - DONT_KNOW
     CooktopEnum:
       description: The main energy source for cooking
       type: string
@@ -267,7 +265,6 @@ components:
         - LPG
         - ELECTRIC_RESISTANCE
         - ELECTRIC_INDUCTION
-        - DONT_KNOW
     VehicleFuelTypeEnum:
       type: string
       enum:

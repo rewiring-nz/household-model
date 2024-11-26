@@ -20,10 +20,6 @@ COOKTOP_INFO: MachineInfoMap = {
         "kwh_per_day": 0.75,
         "fuel_type": FuelTypeEnum.ELECTRICITY,
     },
-    CooktopEnum.DONT_KNOW: {
-        "kwh_per_day": None,
-        "fuel_type": None,
-    },
 }
 
 # From 'Product prices'!D25:D27
@@ -43,9 +39,5 @@ COOKTOP_UPFRONT_COST = {
     CooktopEnum.ELECTRIC_INDUCTION: {
         "item_price": 1430,
         "install_cost": 1265,
-    },
-    CooktopEnum.DONT_KNOW: {
-        "item_price": 0,
-        "install_cost": 0,
     },
 }

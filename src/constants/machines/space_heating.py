@@ -28,10 +28,6 @@ SPACE_HEATING_INFO: MachineInfoMap = {
         "kwh_per_day": 2.3,
         "fuel_type": FuelTypeEnum.ELECTRICITY,
     },
-    SpaceHeatingEnum.DONT_KNOW: {
-        "kwh_per_day": None,
-        "fuel_type": None,
-    },
 }
 
 # From 'Product prices'!E8

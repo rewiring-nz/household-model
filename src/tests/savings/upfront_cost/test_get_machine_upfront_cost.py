@@ -81,16 +81,6 @@ class TestGetCooktopUpfrontCost(TestCase):
             == 0
         )
 
-    def test_it_returns_zero_if_dont_know(
-        self,
-    ):
-        assert (
-            get_cooktop_upfront_cost(
-                CooktopEnum.DONT_KNOW, CooktopEnum.ELECTRIC_INDUCTION
-            )
-            == 0
-        )
-
 
 class TestGetWaterHeatingUpfrontCost(TestCase):
     def test_it_returns_water_heating_upfront_cost_of_electrified_option_if_not_already_installed(
@@ -122,16 +112,6 @@ class TestGetWaterHeatingUpfrontCost(TestCase):
             get_water_heating_upfront_cost(
                 WaterHeatingEnum.ELECTRIC_RESISTANCE,
                 WaterHeatingEnum.ELECTRIC_RESISTANCE,
-            )
-            == 0
-        )
-
-    def test_it_returns_zero_if_dont_know(
-        self,
-    ):
-        assert (
-            get_water_heating_upfront_cost(
-                WaterHeatingEnum.DONT_KNOW, WaterHeatingEnum.ELECTRIC_HEAT_PUMP
             )
             == 0
         )
@@ -196,16 +176,6 @@ class TestGetSpaceHeatingUpfrontCost(TestCase):
         assert (
             get_space_heating_upfront_cost(
                 SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
-            )
-            == 0
-        )
-
-    def test_it_returns_zero_if_dont_know(
-        self,
-    ):
-        assert (
-            get_space_heating_upfront_cost(
-                SpaceHeatingEnum.DONT_KNOW, SpaceHeatingEnum.ELECTRIC_HEAT_PUMP
             )
             == 0
         )

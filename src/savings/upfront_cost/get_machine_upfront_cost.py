@@ -32,7 +32,7 @@ def get_battery_upfront_cost(current: Battery) -> float:
 
 
 def get_cooktop_upfront_cost(current: CooktopEnum, electrified: CooktopEnum) -> float:
-    if current == electrified or current == CooktopEnum.DONT_KNOW:
+    if current == electrified:
         return 0
     cost_info = COOKTOP_UPFRONT_COST.get(electrified)
     return round(sum(cost_info.values()), 2)
@@ -41,7 +41,7 @@ def get_cooktop_upfront_cost(current: CooktopEnum, electrified: CooktopEnum) -> 
 def get_water_heating_upfront_cost(
     current: WaterHeatingEnum, electrified: WaterHeatingEnum
 ) -> float:
-    if current == electrified or current == WaterHeatingEnum.DONT_KNOW:
+    if current == electrified:
         return 0
     cost_info = WATER_HEATING_UPFRONT_COST.get(electrified)
     return round(sum(cost_info.values()), 2)
@@ -52,7 +52,7 @@ def get_space_heating_upfront_cost(
     electrified: SpaceHeatingEnum,
     location: Optional[LocationEnum] = None,
 ) -> float:
-    if current == electrified or current == SpaceHeatingEnum.DONT_KNOW:
+    if current == electrified:
         return 0
     cost_info = SPACE_HEATING_UPFRONT_COST.get(electrified)
     cost_per_heater = sum(cost_info.values())

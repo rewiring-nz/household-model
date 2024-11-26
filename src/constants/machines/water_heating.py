@@ -27,10 +27,6 @@ WATER_HEATING_INFO: MachineInfoMap = {
         "kwh_per_day": 1.71,  # Need to check this, but assume same as heat pump for now
         "fuel_type": FuelTypeEnum.SOLAR,
     },
-    WaterHeatingEnum.DONT_KNOW: {
-        "kwh_per_day": None,
-        "fuel_type": None,
-    },
 }
 
 # From 'Product prices'!D17:D21
@@ -55,9 +51,5 @@ WATER_HEATING_UPFRONT_COST = {
         # Not sure on price but also low priority because we don't recommend switching to rooftop direct-solar water heating (like Solahart)
         "item_price": None,
         "install_cost": None,
-    },
-    WaterHeatingEnum.DONT_KNOW: {
-        "item_price": 0,
-        "install_cost": 0,
     },
 }
