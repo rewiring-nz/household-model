@@ -1,13 +1,44 @@
 import pytest
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
+from openapi_client.models.battery import Battery
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from params import OPERATIONAL_LIFETIME
 from savings.energy.get_energy_consumption import (
+    EnergyConsumption,
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
     get_e_consumed_from_battery,
+    get_energy_consumption,
 )
+from savings.energy.get_machine_energy import MachineEnergyNeeds
+
+
+class TestGetEnergyConsumption:
+    def test_large_solar_install_and_large_battery(self):
+        energy_needs = MachineEnergyNeeds(
+            appliances=2000,
+            vehicles=4000,
+            other_appliances=1000,
+        )  # 7000 kWh total per year
+        solar = Solar(has_solar=True, size=20)
+        battery = Battery(has_battery=True, capacity=40)
+
+        expected = EnergyConsumption(
+            consumed_from_solar=3000,
+            consumed_from_battery=11828.109900000001,
+            consumed_from_grid=0,
+            exported_to_grid=18294.11768,  # generated from solar (25294.11768) - total energy needs (7000)
+        )
+        result = get_energy_consumption(
+            energy_needs,
+            solar,
+            battery,
+            LocationEnum.AUCKLAND_CENTRAL,
+            PeriodEnum.YEARLY,
+        )
+
+        assert result == expected
 
 
 class TestGetEGeneratedFromSolar:

@@ -16,6 +16,7 @@ Household energy needs scale non-linearly based on occupancy. For example, a 1-b
 
 We used the numbers for climate zone 6 (Mild temperate, such as urban Melbourne, Adelaide Hills, Ulladulla; [see Table 1 on page 15](https://www.aer.gov.au/system/files/Residential%20energy%20consumption%20benchmarks%20-%209%20December%202020_0.pdf)). Using the spreadsheet of [Frontier Economics - Simple electricity and gas benchmarks - From June 2021](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021) and taking an average across all states and seasons, we found the following electricity consumption and ratios.
 
+<<<<<<< Updated upstream
 We did not use the separate gas energy consumption numbers as we were only requiring an idea of a ratio, and when we calculated the ratios, where wasn't a material difference with the electricity consumption ratios.
 
 | Household Size | Average Electricity Use per Season (kWh) | Ratio |
@@ -62,7 +63,7 @@ Costs in forward years are calculated using the consumer price index for each fu
 
 #### Solar and Battery Cost, Specification, and Utilisation
 
-Solar prices are estimated at $2,000/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. For full household calculations, we use an example 7kW installation. Assuming 0.5% degradation per year over a 30-year lifetime. Inverter replacement costs are assumed at $2,500. The solar capacity factor assumption is 15%. 
+Solar prices are estimated at $2277.78/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. This is essentially $2000/kW plus the cost of an inverter which lasts 15 years. Assuming 0.5% degradation per year over a 30-year lifetime, which averages out to 6.92% degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years. Inverter replacement costs are assumed at $2,500. The solar capacity factor assumption is 15%. 
 
 We assume 50% of appliance energy needs and 50% of vehicle energy needs can be met during the solar window. Water heating, which is near a third of average household loads, can be moved almost entirely into the solar window in what is described as a “thermal battery”. This is similar to existing “ripple control” used in New Zealand electric water heaters to avoid peak electricity times. Other appliances, such as  space heaters, can only be moved a small amount, with significant energy needs being met outside the solar window. We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week. The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods. 
 
@@ -75,6 +76,7 @@ Battery costs are assumed at $1000/kWh, from multiple surveys of 2023 installati
 #### Solar by region
 
 Assumes a static capacity factor per region, although this is likely to increase over the next 30 years as it has historically:
+
 
 | Region                 | Solar capacity factor (%) |
 |------------------------|---------------------------|

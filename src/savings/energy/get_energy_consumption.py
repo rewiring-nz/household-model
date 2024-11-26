@@ -36,16 +36,22 @@ def get_energy_consumption(
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
 
+    print(f"\n\n PERIOD: {period}")
     # Energy in kWh per period
 
     # Total energy needs
-    e_needed_total = energy_needs.appliances + energy_needs.vehicles
+    e_needed_total = (
+        energy_needs.appliances + energy_needs.vehicles + energy_needs.other_appliances
+    )
+    print(f"e_needed_total: {e_needed_total}")
 
     # Energy needs met by solar
     e_generated_from_solar = get_e_generated_from_solar(solar, location, period)
     e_consumed_from_solar = get_e_consumed_from_solar(
         e_generated_from_solar, energy_needs.appliances, energy_needs.vehicles
     )
+    print(f"e_generated_from_solar: {e_generated_from_solar}")
+    print(f"e_consumed_from_solar: {e_consumed_from_solar}")
 
     # Energy needs met by battery
     e_consumed_from_battery = 0
@@ -59,9 +65,15 @@ def get_energy_consumption(
     e_consumed_from_grid = (
         e_needed_total - e_consumed_from_solar - e_consumed_from_battery
     )
+    if e_consumed_from_grid < 0:
+        e_consumed_from_grid = 0
 
     # Excess generated energy exported
     e_exported = e_consumed_from_grid + e_generated_from_solar - e_needed_total
+    print(f"e_consumed_from_battery: {e_consumed_from_battery}")
+    print(f"e_consumed_from_grid: {e_consumed_from_grid}")
+    print(f"total consumed from household: {e_consumed_from_grid}")
+    print(f"e_exported: {e_exported}")
 
     return EnergyConsumption(
         consumed_from_solar=e_consumed_from_solar,

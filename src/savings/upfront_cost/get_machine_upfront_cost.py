@@ -13,9 +13,8 @@ from openapi_client.models.solar import Solar
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.water_heating_enum import WaterHeatingEnum
 
-# Doesn't take into account the inverter
-# TODO: update
-SOLAR_COST_PER_KW = 20500 / 9
+# Takes into account the inverter
+SOLAR_COST_PER_KW = 20500 / 9  # $2277.78
 
 BATTERY_COST_PER_KWH = 1000
 

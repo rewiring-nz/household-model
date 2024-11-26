@@ -29,17 +29,26 @@ def calculate_opex(
 ) -> Opex:
 
     # Weekly
+    print(f"\n\nWEEKLY")
+    print(f"\nBefore")
     weekly_before = _get_total_opex(current_household, PeriodEnum.WEEKLY)
+    print(f"\nAfter")
     weekly_after = _get_total_opex(electrified_household, PeriodEnum.WEEKLY)
 
+    print(f"\n\nYEARLY")
     # Yearly
+    print(f"\nBefore")
     yearly_before = _get_total_opex(current_household, PeriodEnum.YEARLY)
+    print(f"\nAfter")
     yearly_after = _get_total_opex(electrified_household, PeriodEnum.YEARLY)
 
+    print(f"\n\nLIFETIME")
     # Operational lifetime
+    print(f"\nBefore")
     lifetime_before = _get_total_opex(
         current_household, PeriodEnum.OPERATIONAL_LIFETIME
     )
+    print(f"\nAfter")
     lifetime_after = _get_total_opex(
         electrified_household, PeriodEnum.OPERATIONAL_LIFETIME
     )
@@ -159,4 +168,5 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
 
 
 def get_solar_feedin_tariff(e_exported: float) -> float:
+    # TODO: Use average prices over 15 years if period is operational lifetime
     return e_exported * SOLAR_FEEDIN_TARIFF_2024
