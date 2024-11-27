@@ -61,7 +61,7 @@ FIXED_COSTS_PER_YEAR_2024 = {
 }
 
 FIXED_COSTS_PER_YEAR_AVG_15_YEARS = {
-    FuelTypeEnum.ELECTRICITY: 865.70526,
-    FuelTypeEnum.NATURAL_GAS: 827.10354,
-    FuelTypeEnum.LPG: 82.80315,
+    FuelTypeEnum.ELECTRICITY: 865.71,
+    FuelTypeEnum.NATURAL_GAS: 827.10,
+    FuelTypeEnum.LPG: 82.803,
 }
