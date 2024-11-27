@@ -6,34 +6,95 @@ Our modelling uses household and vehicle energy use data at a per machine level 
 
 ## 1.2 Assumptions used in the model
 
-#### Energy Use by Appliance
+### Energy Use by Appliance
 
 We derive average household energy use across different appliances through the Australian and New Zealand Residential Baseline Study 2021, published November 2022.[^1]  
 
-#### Occupancy and Energy Use
+### Scaling energy use by occupancy
 
-Household energy needs scale non-linearly based on occupancy. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). We have used ratios from the [Australian Energy Regulator Electricity and Gas consumption benchmarks for residential customers 2020 study](https://www.aer.gov.au/industry/registers/resources/guidelines/electricity-and-gas-consumption-benchmarks-residential-customers-2020) to scale the energy consumption of a household based on its occupancy, from the NZ averages.
+#### Background
 
-We used the numbers for climate zone 6 (Mild temperate, such as urban Melbourne, Adelaide Hills, Ulladulla; [see Table 1 on page 15](https://www.aer.gov.au/system/files/Residential%20energy%20consumption%20benchmarks%20-%209%20December%202020_0.pdf)). Using the spreadsheet of [Frontier Economics - Simple electricity and gas benchmarks - From June 2021](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021) and taking an average across all states and seasons, we found the following electricity consumption and ratios.
+Household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
 
-<<<<<<< Updated upstream
-We did not use the separate gas energy consumption numbers as we were only requiring an idea of a ratio, and when we calculated the ratios, where wasn't a material difference with the electricity consumption ratios.
+Given that much of our energy consumption rates for each household appliances was based on averages from the Australian and New Zealand Residential Baseline Study 2021 (published November 2022), and given that the average New Zealand household has 2.7 occupants according to 2018 Census data ([Household size in New Zealand, Figure.NZ](https://figure.nz/chart/vdTbdOaKUE9zTKo3)), we needed to calculate a multiplier for the occupancy options given in the calculator.
 
+#### Data collection
+
+We used electricity consumption numbers from data collected by the Australian Energy Regulator in their [Electricity and Gas consumption benchmarks for residential customers 2020 study](https://www.aer.gov.au/industry/registers/resources/guidelines/electricity-and-gas-consumption-benchmarks-residential-customers-2020). From the [Frontier Economics - Simple electricity and gas benchmarks - From June 2021](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021) data sheet, on the "Climate zone 6" sheet (Mild temperate, such as urban Melbourne, Adelaide Hills, Ulladulla, similar to NZ average; [see Table 1 on page 15](https://www.aer.gov.au/system/files/Residential%20energy%20consumption%20benchmarks%20-%209%20December%202020_0.pdf)), we averaged across all states and seasons, and we found the following electricity consumption and ratios.
+
+_Table 1: Energy consumption by household size ([Source](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021))_
 | Household Size | Average Electricity Use per Season (kWh) | Ratio |
 |----------------|-----------------------------------------|-------|
-| 1              | 803                                     | 1.0   |
-| 2              | 1,328                                   | 1.7   |
-| 3              | 1,410                                   | 1.8   |
-| 4              | 1,583                                   | 2.0   |
-| 5+             | 2,018                                   | 2.5   |
+| 1              | 803                                     | 1.00   |
+| 2              | 1,328                                   | 1.65   |
+| 3              | 1,410                                   | 1.75   |
+| 4              | 1,583                                   | 1.97   |
+| 5+             | 2,018                                   | 2.51   |
 
-We used this ratio to scale up the energy consumption rates for the average NZ household, which assumes 2.7 people per home according to 2018 Census data ([Household size in New Zealand, Figure.NZ](https://figure.nz/chart/vdTbdOaKUE9zTKo3)), and average energy consumption values from the Residential Baseline Study (total energy use by machine types such as heat pumps, gas heaters, etc.).
 
-#### Energy Use by Vehicles
+We did not use the separate gas energy consumption numbers to scale gas energy use as the ratios turned out to be very similar to the electricity consumption ratios for household size, and the immaterial difference was not worth the extra complexity.
+
+#### Nonlinear interpolation
+
+In order to calculate the multiplier of the average energy consumption values, we first needed to find the ratio value for our reference occupancy of 2.7. To do this, we fitted an exponential model to the data in Table 1, using the first four data points and excluding `5+` as this is not actually a discrete data point, but a range. Please refer to `notebooks/occupancy.ipynb` for the working on model fitting.
+
+$f(x) = a \cdot (1 - e^{-b \cdot (x-1)}) + c$
+
+Where:
+
+- $x$ is the number of occupants
+- $a$, $b$, and $c$ are fitted parameters
+
+We selected this nonlinear exponential model because the relationship should:
+
+- be nonlinear
+- start close to 1 when x = 1
+- have a sharp initial increase in consumption (from 1 to 2 occupants)
+- show diminishing returns as occupancy increases (plateau)
+
+There are limitations to this modelling approach given that it is based on very few data points, and certainly does not account for specific household characteristics (e.g. a 2-person apartment that luxuriates in fresh hot baths every day).
+
+The interpolated value of the fitted exponential model at 2.7 occupants was 1.79.
+
+#### Scaling multiplier
+
+To find the multiplier that we can use to scale our reference energy values, we then use the following formula:
+
+$E_{new} = E_{ref} \cdot \frac{f(x)}{f(x_{ref})}$
+
+Where:
+
+- $E_{new}$ is the estimated energy consumption for the new  given household size
+- $E_{ref}$ is the reference energy consumption from our existing data about the average household
+- $f(x)$ is the exponential scaling function
+- $x$ is the number of occupants
+- $x_{ref}$ is the reference occupancy (2.7)
+
+Since this formula was fitted to only the first four values of household size, and is not intended to work with a range like `5+ occupants`, it will not work for the `5+` category. The jump from 4 to 5+ occupants in the original data (Table 1) is actually quite high. The jump from 3 to 4 occupants is 0.2, but 4 to 5+ is 0.5. This makes sense because 5+ includes households larger than 5, so extrapolating for $x = 5$ would not give an accurate figure.
+
+Instead, we've instead taken the relative increase in energy consumption between `4` and `5+` occupants from Table 1 (27.5% increase from 1,583 kWh to 2,018 kWh) and applied this to the energy consumption scaling factor $f(4)$.
+
+$f(5+) = f(4) \cdot (1+\frac{2,018 - 1,583}{1,583}) \approx 1.37$
+
+This rounds out our table of scaling factors for all the occupancy options that we have available:
+
+Table 2: Scaling factors for energy consumption based on occupancy
+
+| Occupants | Energy Consumption scaling factor |
+|-----------|--------------------------|
+| 1 | 0.56 |
+| 2 | 0.90 |
+| 2.7 (reference) | 1.00 |
+| 3 | 1.03 |
+| 4 | 1.07 |
+| 5+ | 1.09 |
+
+
+### Energy Use by Vehicles
 
 We derive average vehicle energy use through the EECA energy end use database for 2019.[^2] We use data from 2019 for vehicles as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019\. The amount of vehicles per home is sourced from the Census 2018\. The number of vehicle types (light passenger and light commercial) is sourced from the Motor Vehicle Association historic sales data.[^3]
 
-#### Energy Efficiency of appliances
+### Energy Efficiency of appliances
 
 We use energy factors / coefficient of performance across each appliance type to calculate the base energy requirements needed by a household depending on what appliances it uses. Heat pump space heating Coefficient Of Performance (COP) is sourced from EECA and a COP of 4.08 is used for the average heat pump.[^4] Space heating energy factors for other appliances are sourced from the Warm Homes Technical Report published by the Ministry for the Environment in November 2005.[^5] 
 
@@ -41,11 +102,11 @@ Water heating efficiencies are sourced from the US Department of Energy \- Energ
 
 Cooktop efficiency is sourced from the Frontier Energy Residential Cooktop Performance and Energy Comparison Study Report \# 501318071-R0, published in July 2019.[^7] Electric oven efficiency is assumed at 95%, and gas/LPG oven at 90%. 
 
-#### Energy Efficiency of Vehicles
+### Energy Efficiency of Vehicles
 
 We use miles per gallon (MPG) vehicle driving data from the US Department of Energy fuel economy database to calculate the different energy requirements across vehicle types popular in New Zealand.[^8] For electric vehicles, this includes charging losses. To calculate the average efficiency difference between an electric and internal combustion engine (ICE) vehicle, we use a comparison of popular New Zealand vehicles both ICE and electric and their fueleconomy.gov MPG combined rating from the website administered by Oak Ridge National Laboratory for the U.S. Department of Energy and the U.S. Environmental Protection Agency. Where fueleconomy.gov data is not available for some electric vehicles in New Zealand (e.g. BYD), we use the Electric Vehicle Database real range energy consumption estimate.[^9] Where the energy consumption is not available for any remaining vehicles through either of these methods, we use manufacturer estimates provided in technical vehicle documentation or a comparative vehicle model. The average MPG for an ICE vehicle used is 30.24, the average MPG for an electric vehicle used is 117.13.
 
-#### Energy Prices
+### Energy Prices
 
 Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the MBIE Energy Prices data.[^10] These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024\. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly raterom natural gas offers available on PowerSwitch.The following fuel prices are used:
 
@@ -61,7 +122,7 @@ Household electricity price is calculated using data from MBIE Energy Prices and
 
 Costs in forward years are calculated using the consumer price index for each fuel, and the national numbers shown in this paper are Real 2024 dollars. Energy costs for product comparisons use the average energy price over 15 years from the date of purchase. 
 
-#### Solar and Battery Cost, Specification, and Utilisation
+### Solar and Battery Cost, Specification, and Utilisation
 
 Solar prices are estimated at $2277.78/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. This is essentially $2000/kW plus the cost of an inverter which lasts 15 years. Assuming 0.5% degradation per year over a 30-year lifetime, which averages out to 6.92% degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years. Inverter replacement costs are assumed at $2,500. The solar capacity factor assumption is 15%. 
 
@@ -73,7 +134,7 @@ For individual appliance comparisons we calculate a cost/kWh for solar based on 
 
 Battery costs are assumed at $1000/kWh, from multiple surveys of 2023 installation costs in New Zealand direct from battery installers, in addition to comparison of available online prices for batteries in New Zealand. Battery cycle costs are calculated over a 15 year, 5475 cycle life. Degradation is assumed at 60% after the 15th year with an accelerating degradation curve from the first year of use. We assume a round trip efficiency of 95%. 
 
-#### Solar by region
+### Solar by region
 
 Assumes a static capacity factor per region, although this is likely to increase over the next 30 years as it has historically:
 
@@ -106,7 +167,7 @@ Assumes a static capacity factor per region, although this is likely to increase
 | Overseas              | 15.0%                     |
 | Other                 | 15.0%                     |
 
-#### Appliance Prices 
+### Appliance Prices 
 
 Appliance prices come from a comparison of over 100 different quotes for appliance costs, sourced both online and direct from installers. An average capital cost and average install cost is used for each individual appliance. The scope of the appliance cost comparison aims to compare products that are not the cheapest possible product, nor the most expensive, as appliance costs can vary significantly. The aim of the comparison was to create an assumed common cost for each option, in the middle of the cost spectrum. 
 
@@ -127,15 +188,15 @@ The following appliance price and installation cost are assumed:
 * Induction cooktops are $1,400, and $1,300 for installation.   
 * Resistance cooktops are $900, and $300 for installation. 
 
-#### Vehicle Prices
+### Vehicle Prices
 
 Vehicle prices are based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024\. Clean car rebate is not included as it was phased out in 2024\. The average new price used for ICE vehicles is $41,175 and the average new price used for EV’s is $55,176. One $2,000 EV charger per home is also added onto the costs of a new EV. RUCs are included on electric vehicles at 11,000km per year, $76 per 1000km. 
 
-#### Finance Rates, Terms, and Lifetimes 
+### Finance Rates, Terms, and Lifetimes 
 
 The primary finance rate used to compare homes is 5.5%. The term used for the finance is 15 years, with acknowledgement that some homes may pay this off faster and reduce total interest spending on finance. The lifetime for appliances, vehicles, and batteries is assumed at 15 years, with solar panels at 30 years with one replacement inverter required. Solar panels often have 25–30-year performance warranties, some up to 40 years, and the assumption is that products will not die the moment the warranty ends. Batteries often have 10-year warranties for capacity, e.g. the Tesla Powerwall 2 has a 70% capacity warranty of 10 years, and some have 15 year warranties. The assumption is that capacity will continue to degrade increasingly, and the battery will still remain functional (at lower capacity) for 15 years. Electric vehicles often come with 8-year warranties (and/or around 160,000km) for the battery and drivetrain, and it is assumed the vehicles will last longer than their warranties as most cars significantly outlast their warranty (e.g. a 15 year old car did not have a 15 year warranty). Heat pumps, water heaters, and stovetops are assumed to last 15 years, noting that the quality of device impacts this lifetime, and this study has purposely avoided choosing only the cheapest options, instead aiming for common expected pricing in the middle of the cost spectrum for appliance choices.
 
-#### Price History and Forecasts 
+### Price History and Forecasts 
 
 Historic prices for electricity, gas, LPG, petrol, diesel, and wood are modelled using the quarterly consumer price index for the associated type of fuel for the past 24 years \- indexed to 2000 \- with today’s pricing as the basis.[^12] Future prices for each of these energy types is based on the Real price increase seen historically. Calculated as the average nominal price increase minus the average All groups CPI increase. 
 
@@ -145,7 +206,7 @@ Battery price history is based on the paper by Ziegler from 2021,[^16] adjusted 
 
 Electric vehicle price forecasts are based on an index derived from the Climate Change Commission (CCC) EV price parity forecast Scenario B,[^18] reconciled with market EV and ICE pricing data comparisons done by Rewiring Aotearoa. We found that both EV and ICE vehicle prices on market were lower than the average price used in the CCC forecast, and that the CCC forecast delayed by 1 year represented a more reflective mix of the higher cost of EVs today (about 130% of ICE vehicle costs).
 
-#### Emissions factors
+### Emissions factors
 
 These figures are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
 
@@ -158,7 +219,7 @@ These figures are taken from the Ministry for the Environment's [Measuring emiss
 | Petrol        | 0.258                         |
 | Diesel        | 0.253                         |
 
-#### Inflation Rates
+### Inflation Rates
 
 We base the rate of inflation of product prices on the New Zealand CPI history from 2000 to 2024 at 2.56%. Energy inflation rates are determined by the respective category rate of inflation in the New Zealand CPI history, with gas at 4.55%, electricity at 3.69%, petrol and diesel at 5.29%, and solid fuels at 3.86%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). Specifically, 1.14% for electricity, 2.00% for gas and LPG, 2.73% for petrol and diesel, and solid fuels at 1.30%. The primary numbers presented are based on 2024 dollars and use these real inflation rates.
 

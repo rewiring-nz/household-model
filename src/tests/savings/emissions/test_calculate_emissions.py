@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-from constants.machines.machine_info import AVERAGE_PEOPLE_PER_HOUSEHOLD
 from savings.emissions.calculate_emissions import calculate_emissions
 from constants.utils import PeriodEnum
 from params import OPERATIONAL_LIFETIME
@@ -61,7 +60,7 @@ class TestCalculateEmissions(unittest.TestCase):
 
     def test_calculate_emissions_real_values(self):
         result = calculate_emissions(mock_household, mock_household_electrified)
-        occupancy_multiplier = 2 / 2.7
+        occupancy_multiplier = 1.07
         before = {
             "space_heating_wood": 14.44 * 0.016 * occupancy_multiplier,
             "water_heating_gas": 6.6 * 0.201 * occupancy_multiplier,

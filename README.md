@@ -23,6 +23,18 @@ pipenv run fastapi run
 
 You can check out the auto-generated API docs at http://127.0.0.1:8000/docs.
 
+## Run notebooks
+
+To run the notebooks in `notebooks/`, you need to first create a new python kernel.
+
+```bash
+# Create a new kernel
+pipenv run python -m ipykernel install --user --name=household-model
+
+# Run juypter notebook (or open in VS Code and select environment)
+pipenv run jupyter notebook
+```
+
 
 ## Contributing
 

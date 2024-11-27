@@ -58,9 +58,7 @@ class TestGetEmissionsPerDay(TestCase):
         emissions = get_emissions_per_day(
             SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info, 3
         )
-        expected_emissions = (
-            5.0 * 1.8 / 2.7 * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
-        )
+        expected_emissions = 5.0 * 1.03 * EMISSIONS_FACTORS[FuelTypeEnum.ELECTRICITY]
         assert pytest.approx(emissions) == expected_emissions
 
     def test_get_emissions_per_day_handles_missing_fuel_type(self):

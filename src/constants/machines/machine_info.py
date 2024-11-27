@@ -7,9 +7,6 @@ from openapi_client.models.water_heating_enum import WaterHeatingEnum
 
 MachineEnum = SpaceHeatingEnum | WaterHeatingEnum | CooktopEnum | VehicleFuelTypeEnum
 
-# From household size 2018 Census data
-AVERAGE_PEOPLE_PER_HOUSEHOLD = 2.7
-
 
 class MachineInfo(TypedDict):
     kwh_per_day: Optional[float]  # kWh/day

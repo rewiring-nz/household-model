@@ -1,14 +1,13 @@
 from typing import Optional
 
-from constants.machines.machine_info import AVERAGE_PEOPLE_PER_HOUSEHOLD
 
-# Ratios from AER Electricity and Gas consumption benchmarks for residential customers 2020 study
-OCCUPANCY_SCALE = {
-    1: 1,
-    2: 1.7,
-    3: 1.8,
-    4: 2.0,
-    5: 2.5,
+# See Methodology for source & calculations
+OCCUPANCY_MULTIPLIER = {
+    1: 0.56,
+    2: 0.90,
+    3: 1.03,
+    4: 1.07,
+    5: 1.37,  # calculated for 5+
 }
 
 
@@ -36,5 +35,4 @@ def scale_energy_by_occupancy(
     if occupancy_int > 5:
         occupancy_int = 5
 
-    multiplier = OCCUPANCY_SCALE[occupancy_int] / AVERAGE_PEOPLE_PER_HOUSEHOLD
-    return energy_per_average_household * multiplier
+    return energy_per_average_household * OCCUPANCY_MULTIPLIER[occupancy_int]
