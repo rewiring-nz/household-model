@@ -13,15 +13,28 @@ VEHICLE_INFO: MachineInfoMap = {
         "kwh_per_day": 22.8,
         "fuel_type": FuelTypeEnum.DIESEL,
     },
-    # For PHEV and HEV, we're going to assume the emissions are a % of a petrol car, and the rest is electric
-    VehicleFuelTypeEnum.HYBRID: {
-        "kwh_per_day": None,
-        "fuel_type": None,
-    },
-    VehicleFuelTypeEnum.PLUG_IN_HYBRID: {
-        "kwh_per_day": None,
-        "fuel_type": None,
-    },
+    VehicleFuelTypeEnum.HYBRID: [
+        # Assume 70% petrol, 30% electric
+        {
+            "kwh_per_day": 31.4 * 0.7,
+            "fuel_type": FuelTypeEnum.PETROL,
+        },
+        {
+            "kwh_per_day": 7.324 * 0.3,
+            "fuel_type": FuelTypeEnum.ELECTRICITY,
+        },
+    ],
+    VehicleFuelTypeEnum.PLUG_IN_HYBRID: [
+        # Assume 60% petrol, 40% electric
+        {
+            "kwh_per_day": 31.4 * 0.6,
+            "fuel_type": FuelTypeEnum.PETROL,
+        },
+        {
+            "kwh_per_day": 7.324 * 0.4,
+            "fuel_type": FuelTypeEnum.ELECTRICITY,
+        },
+    ],
     VehicleFuelTypeEnum.ELECTRIC: {
         "kwh_per_day": 7.324,
         "fuel_type": FuelTypeEnum.ELECTRICITY,

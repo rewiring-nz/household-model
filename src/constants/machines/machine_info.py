@@ -1,4 +1,4 @@
-from typing import Dict, Optional, TypedDict
+from typing import Dict, List, Optional, TypedDict, Union
 from constants.fuel_stats import FuelTypeEnum
 from openapi_client.models.cooktop_enum import CooktopEnum
 from openapi_client.models.space_heating_enum import SpaceHeatingEnum
@@ -13,4 +13,4 @@ class MachineInfo(TypedDict):
     fuel_type: Optional[FuelTypeEnum]  # kgCO2e/kWh
 
 
-MachineInfoMap = Dict[MachineEnum, MachineInfo]
+MachineInfoMap = Dict[MachineEnum, Union[MachineInfo, List[MachineInfo]]]

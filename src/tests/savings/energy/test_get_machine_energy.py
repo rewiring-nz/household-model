@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
+from constants.machines.vehicles import VEHICLE_INFO
 from openapi_client.models import (
     SpaceHeatingEnum,
     CooktopEnum,
@@ -57,6 +58,16 @@ class TestGetEnergyPerDay(TestCase):
         assert get_energy_per_day(
             SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
         ) == {FuelTypeEnum.ELECTRICITY: 5.0}
+
+    def test_get_energy_per_day_multiple_fuels(self):
+        assert get_energy_per_day(VehicleFuelTypeEnum.HYBRID, VEHICLE_INFO) == {
+            FuelTypeEnum.PETROL: 31.4 * 0.7,
+            FuelTypeEnum.ELECTRICITY: 7.324 * 0.3,
+        }
+        assert get_energy_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID, VEHICLE_INFO) == {
+            FuelTypeEnum.PETROL: 31.4 * 0.6,
+            FuelTypeEnum.ELECTRICITY: 7.324 * 0.4,
+        }
 
     def test_get_energy_per_day_handles_missing_kwh_per_day(self):
         mock_appliance_info = {

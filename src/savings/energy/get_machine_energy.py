@@ -53,18 +53,25 @@ def get_energy_per_day(
     Returns:
         Dict[FuelTypeEnum, float]: machine's energy needs per day per fuel type
     """
+    machine_infos = machine_stats_map[machine_type]
+    if type(machine_stats_map[machine_type]) != list:
+        machine_infos = [machine_infos]
 
-    energy_per_day = machine_stats_map[machine_type]["kwh_per_day"]
-    if energy_per_day is None:
-        raise ValueError(f"Can not find kwh_per_day value for {machine_type}")
+    e_fuel_type = {}
 
-    fuel_type = machine_stats_map[machine_type]["fuel_type"]
-    if fuel_type is None:
-        raise ValueError(f"Can not find fuel type value for {machine_type}")
+    for machine_info in machine_infos:
+        e_daily = machine_info["kwh_per_day"]
+        if e_daily is None:
+            raise ValueError(f"Can not find kwh_per_day value for {machine_type}")
 
-    energy_scaled = scale_energy_by_occupancy(energy_per_day, occupancy)
+        fuel_type = machine_info["fuel_type"]
+        if fuel_type is None:
+            raise ValueError(f"Can not find fuel type value for {machine_type}")
 
-    return {fuel_type: energy_scaled}
+        e_daily_scaled = scale_energy_by_occupancy(e_daily, occupancy)
+        e_fuel_type[fuel_type] = e_daily_scaled
+
+    return e_fuel_type
 
 
 def get_energy_per_period(
