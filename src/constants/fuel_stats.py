@@ -39,29 +39,29 @@ COST_PER_FUEL_KWH_TODAY = {
     FuelTypeEnum.SOLAR: 0,
 }
 
-# Average over next 15 years (real)
-# Unit: $/kWh
-COST_PER_FUEL_KWH_AVG_15_YEARS = {
-    FuelTypeEnum.ELECTRICITY: {
-        "volume_rate": 0.29515,
-        "off_peak": 0.19507,
-    },
-    FuelTypeEnum.NATURAL_GAS: 0.14161,
-    FuelTypeEnum.LPG: 0.30544,
-    FuelTypeEnum.WOOD: 0.12837,
-    FuelTypeEnum.PETROL: 0.36584,
-    FuelTypeEnum.DIESEL: 0.24925,
-    FuelTypeEnum.SOLAR: 0,
-}
-
 FIXED_COSTS_PER_YEAR_2024 = {
     FuelTypeEnum.ELECTRICITY: 767.7555,
     FuelTypeEnum.NATURAL_GAS: 689.22675,
     FuelTypeEnum.LPG: 69,
 }
 
+# Average over next 15 years (real, 2024-2038 inclusive)
+# Unit: $/kWh
+COST_PER_FUEL_KWH_AVG_15_YEARS = {
+    FuelTypeEnum.ELECTRICITY: {
+        "volume_rate": 0.28365,
+        "off_peak": 0.18747,
+    },
+    FuelTypeEnum.NATURAL_GAS: 0.13602,
+    FuelTypeEnum.LPG: 0.29339,
+    FuelTypeEnum.WOOD: 0.12968,
+    FuelTypeEnum.PETROL: 0.35125,
+    FuelTypeEnum.DIESEL: 0.23931,
+    FuelTypeEnum.SOLAR: 0,
+}
+
 FIXED_COSTS_PER_YEAR_AVG_15_YEARS = {
-    FuelTypeEnum.ELECTRICITY: 865.71,
-    FuelTypeEnum.NATURAL_GAS: 827.10,
-    FuelTypeEnum.LPG: 82.803,
+    FuelTypeEnum.ELECTRICITY: 831.99,
+    FuelTypeEnum.NATURAL_GAS: 794.48,
+    FuelTypeEnum.LPG: 79.537,
 }
