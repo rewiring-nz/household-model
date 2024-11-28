@@ -21,6 +21,7 @@ from savings.energy.get_machine_energy import (
     get_energy_per_period,
     get_other_appliances_energy_per_period,
     _get_hybrid_energy_per_day,
+    get_total_appliance_energy,
     get_vehicle_energy,
 )
 from tests.mocks import (
@@ -32,11 +33,12 @@ from tests.mocks import (
     mock_vehicle_phev,
 )
 
-mock_energy_daily = 2.5
-mock_energy_weekly = 17.5  # 12.345 * 7
-
-mock_opex_daily = 12.345
-mock_opex_weekly = 86.415  # 12.345 * 7
+mock_energy_daily = {
+    FuelTypeEnum.ELECTRICITY: 2.5,
+}
+mock_energy_weekly = {
+    FuelTypeEnum.ELECTRICITY: 17.5,  # 12.345 * 7
+}
 
 
 class TestGetEnergyPerDay(TestCase):
@@ -76,7 +78,7 @@ class TestGetEnergyPerDay(TestCase):
 
 @patch(
     "savings.energy.get_machine_energy.scale_daily_to_period",
-    return_value=mock_energy_weekly,
+    return_value=mock_energy_weekly[FuelTypeEnum.ELECTRICITY],
 )
 @patch(
     "savings.energy.get_machine_energy.get_energy_per_day",
@@ -104,7 +106,7 @@ class TestGetEnergyPerPeriod:
             mock_household.cooktop, COOKTOP_INFO, 1, PeriodEnum.WEEKLY
         )
         mock_scale_daily_to_period.assert_called_once_with(
-            mock_energy_daily, PeriodEnum.WEEKLY
+            mock_energy_daily[FuelTypeEnum.ELECTRICITY], PeriodEnum.WEEKLY
         )
 
     def test_it_calls_scale_daily_to_period_correctly_with_default(
@@ -112,21 +114,117 @@ class TestGetEnergyPerPeriod:
     ):
         get_energy_per_period(mock_household.cooktop, COOKTOP_INFO)
         mock_scale_daily_to_period.assert_called_once_with(
-            mock_energy_daily, PeriodEnum.DAILY
+            mock_energy_daily[FuelTypeEnum.ELECTRICITY], PeriodEnum.DAILY
         )
+
+    def test_it_calls_scale_daily_to_period_per_fuel_type(
+        self, mock_get_energy_per_day, mock_scale_daily_to_period
+    ):
+        mock_get_energy_per_day.side_effect = [
+            {
+                FuelTypeEnum.ELECTRICITY: 2,
+                FuelTypeEnum.PETROL: 3,
+            }
+        ]
+
+        get_energy_per_period(mock_household.cooktop, COOKTOP_INFO)
+        assert len(mock_scale_daily_to_period.call_args_list) == 2
+        mock_scale_daily_to_period.assert_any_call(2, PeriodEnum.DAILY)
+        mock_scale_daily_to_period.assert_any_call(3, PeriodEnum.DAILY)
 
     def test_it_returns_energy_per_period(self, _, __):
         result = get_energy_per_period(mock_household.space_heating, SPACE_HEATING_INFO)
-        assert result == 17.5
+        assert result == mock_energy_weekly
+
+
+@patch(
+    "savings.energy.get_machine_energy.get_energy_per_period",
+    side_effect=[
+        {
+            FuelTypeEnum.ELECTRICITY: 1,
+            FuelTypeEnum.NATURAL_GAS: 5,
+            FuelTypeEnum.LPG: 3,
+            FuelTypeEnum.WOOD: 4,
+            FuelTypeEnum.PETROL: 0.5,
+            FuelTypeEnum.DIESEL: 7,
+        },
+        {
+            FuelTypeEnum.ELECTRICITY: 2,
+            FuelTypeEnum.NATURAL_GAS: 10,
+            FuelTypeEnum.LPG: 6,
+            FuelTypeEnum.WOOD: 4.5,
+            FuelTypeEnum.PETROL: 0.5,
+            FuelTypeEnum.DIESEL: 8,
+        },
+        {
+            FuelTypeEnum.ELECTRICITY: 3,
+            FuelTypeEnum.NATURAL_GAS: 15,
+            FuelTypeEnum.LPG: 9,
+            FuelTypeEnum.WOOD: 5,
+            FuelTypeEnum.PETROL: 0.5,
+            FuelTypeEnum.DIESEL: 9,
+        },
+    ],
+)
+class TestGetTotalApplianceEnergy:
+    def test_it_combines_fuel_types_correctly(self, mock_get_energy_per_period):
+        result = get_total_appliance_energy(mock_household, PeriodEnum.DAILY)
+        expected = {
+            FuelTypeEnum.ELECTRICITY: 6,
+            FuelTypeEnum.NATURAL_GAS: 30,
+            FuelTypeEnum.LPG: 18,
+            FuelTypeEnum.WOOD: 13.5,
+            FuelTypeEnum.PETROL: 1.5,
+            FuelTypeEnum.DIESEL: 24,
+        }
+        assert result == expected
+
+    def test_it_works_if_fuel_types_missing(self, mock_get_energy_per_period):
+        mock_get_energy_per_period.side_effect = [
+            {
+                FuelTypeEnum.ELECTRICITY: 1,
+                FuelTypeEnum.NATURAL_GAS: 0,
+                FuelTypeEnum.LPG: 0,
+                FuelTypeEnum.WOOD: 0,
+                # FuelTypeEnum.PETROL: 0.5,
+                # FuelTypeEnum.DIESEL: 7,
+            },
+            {
+                FuelTypeEnum.ELECTRICITY: 2,
+                FuelTypeEnum.NATURAL_GAS: 0,
+                FuelTypeEnum.LPG: 0,
+                FuelTypeEnum.WOOD: 0,
+                FuelTypeEnum.PETROL: 0.5,
+                # FuelTypeEnum.DIESEL: 8,
+            },
+            {
+                FuelTypeEnum.ELECTRICITY: 3,
+                FuelTypeEnum.NATURAL_GAS: 0,
+                FuelTypeEnum.LPG: 0,
+                FuelTypeEnum.WOOD: 0,
+                FuelTypeEnum.PETROL: 0.5,
+                # FuelTypeEnum.DIESEL: 9,
+            },
+        ]
+        result = get_total_appliance_energy(mock_household, PeriodEnum.DAILY)
+        expected = {
+            FuelTypeEnum.ELECTRICITY: 6,
+            FuelTypeEnum.NATURAL_GAS: 0,
+            FuelTypeEnum.LPG: 0,
+            FuelTypeEnum.WOOD: 0,
+            FuelTypeEnum.PETROL: 1.0,
+            FuelTypeEnum.DIESEL: 0,  # Still includes a key for it with zero value
+        }
+        assert result == expected
 
 
 @patch(
     "savings.energy.get_machine_energy.scale_daily_to_period",
-    return_value=mock_energy_weekly,
+    return_value=mock_energy_weekly[FuelTypeEnum.ELECTRICITY],
 )
 @patch(
     "savings.energy.get_machine_energy.scale_energy_by_occupancy",
-    return_value=mock_energy_daily,
+    return_value=mock_energy_daily[FuelTypeEnum.ELECTRICITY],
 )
 class TestGetOtherAppliancesEnergyPerPeriod:
     energy = 0.34 + 4.05 + 2.85
@@ -148,7 +246,7 @@ class TestGetOtherAppliancesEnergyPerPeriod:
     ):
         get_other_appliances_energy_per_period(None, PeriodEnum.WEEKLY)
         mock_scale_daily_to_period.assert_called_once_with(
-            mock_energy_daily, PeriodEnum.WEEKLY
+            mock_energy_daily[FuelTypeEnum.ELECTRICITY], PeriodEnum.WEEKLY
         )
 
     def test_it_calls_scale_daily_to_period_correctly_with_default(
@@ -156,12 +254,16 @@ class TestGetOtherAppliancesEnergyPerPeriod:
     ):
         get_other_appliances_energy_per_period()
         mock_scale_daily_to_period.assert_called_once_with(
-            mock_energy_daily, PeriodEnum.DAILY
+            mock_energy_daily[FuelTypeEnum.ELECTRICITY], PeriodEnum.DAILY
         )
 
     def test_it_returns_energy_per_period(self, _, __):
-        assert get_other_appliances_energy_per_period(1, PeriodEnum.WEEKLY) == 17.5
-        assert get_other_appliances_energy_per_period() == 17.5
+        assert get_other_appliances_energy_per_period(1, PeriodEnum.WEEKLY) == {
+            FuelTypeEnum.ELECTRICITY: 17.5
+        }
+        assert get_other_appliances_energy_per_period() == {
+            FuelTypeEnum.ELECTRICITY: 17.5
+        }
 
 
 class TestGetVehicleEnergyPerDay(TestCase):
