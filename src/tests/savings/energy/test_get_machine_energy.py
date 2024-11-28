@@ -51,13 +51,12 @@ class TestGetEnergyPerDay(TestCase):
     }
 
     def test_get_energy_per_day(self):
-        assert get_energy_per_day(CooktopEnum.GAS, self.mock_appliance_info) == 10.0
-        assert (
-            get_energy_per_day(
-                SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
-            )
-            == 5.0
-        )
+        assert get_energy_per_day(CooktopEnum.GAS, self.mock_appliance_info) == {
+            FuelTypeEnum.NATURAL_GAS: 10.0
+        }
+        assert get_energy_per_day(
+            SpaceHeatingEnum.ELECTRIC_HEAT_PUMP, self.mock_appliance_info
+        ) == {FuelTypeEnum.ELECTRICITY: 5.0}
 
     def test_get_energy_per_day_handles_missing_kwh_per_day(self):
         mock_appliance_info = {
