@@ -183,55 +183,22 @@ To calculate emissions, we take the energy consumption from the various machines
 
 ### Energy
 
-Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the MBIE Energy Prices data.[^10] These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
+Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the MBIE Energy Prices data, based on 2024 New Zealand dollars.[^10] These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
 
-#### Today's energy prices (2024)
+We base the rate of inflation on the New Zealand CPI history from 2000 to 2024 at 2.56%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). The specific rate of inflation for each fuel type, alongside today's fixed & volume costs versus the average over the next 15 years, can be found in the table below. Our cost savings calculations for weekly & yearly savings use 2024 prices, while our lifetime savings use the average prices over 15 years.
 
-Weekly and yearly savings are calculated using today's Real NZ dollar prices listed below:
+Table 1: Energy prices
 
-| Fuel type              | Fixed costs ($/yr) | Volume costs ($/kWh) |
-|------------------------|-----------------|-----------------------|
-| Gas                   | 689.00 (ConsumerNZ)         | 0.118                |
-| LPG                   | 69.00 (Genesis LPG pricing)          | 0.25452                |
-| Petrol                | -               | 0.28884                |
-| Diesel                | -               | 0.19679                |
-| Wood                  | -               | 0.11250                |
-| Electricity (standard)| 767.76 (ConsumerNZ average estimate for May 2024)         | 0.26175              |
-| Electricity (off-peak)|           | 0.173                |
-
-#### Projected prices from inflation
-
-We base the rate of inflation of product prices on the New Zealand CPI history from 2000 to 2024 at 2.56%. Energy inflation rates are determined by the respective category rate of inflation in the New Zealand CPI history, with gas at 4.55%, electricity at 3.69%, petrol and diesel at 5.29%, and solid fuels at 3.86%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). Specifically, 1.14% for electricity, 2.00% for gas and LPG, 2.73% for petrol and diesel, and solid fuels at 1.30%. The primary numbers presented are based on 2024 dollars and use these real inflation rates.
-
-Savings over 15 years use the forward pricing, taking into account inflation using the consumer price index for each fuel:
-
-| Fuel type              | Fixed costs ($/yr)     | Volume costs ($/kWh) |
-|------------------------|------------------------|-----------------------|
-| Gas                   | 827.10                | 0.14161              |
-| LPG                   | 82.803                | 0.30544              |
-| Petrol                | -                     | 0.36584              |
-| Diesel                | -                     | 0.24925              |
-| Wood                  | -                     | 0.12837              |
-| Electricity (standard)| 865.71                | 0.29515              |
-| Electricity (off-peak)| -                     | 0.19507              |
-
-Table 1: Energy prices ($/kWh)
-TODO: Tidy this and use it instead of inflation being in the paragraph
-
-| Energy Type                                | Rate of Inflation (Real) | 2024 Prices | Average Pricing Over Next 15 Years (Real) |
-|--------------------------------------------|--------------------------|-------------|-------------------------------------------|
-| Natural Gas                                | 2.55%                    | $0.118    | $0.14161                                  |
-| Natural Gas (Fixed Supply Charge - yearly) | 2.55%                    | $689.22675  | $827.10354                                |
-| LPG                                        | 2.55%                    | $0.25452    | $0.30544                                  |
-| LPG (Fixed Supply Charge - yearly)         | 2.55%                    | $69.00   | $82.80315                                 |
-| Wood                                       | 1.86%                    | $0.11250    | $0.12837                                  |
-| Electricity (volume rate)                  | 1.69%                    | $0.26175    | $0.29515                                  |
-| Electricity (Fixed Supply Charge - yearly) | 1.69%                    | $767.7555  | $865.70526                                |
-| Electricity (controlled)                   | 1.69%                    | $0.242    | $0.27287                                  |
-| Electricity (night-rate)                   | 1.69%                    | $0.173    | $0.19507                                  |
-| Electricity (solar feed-back tariff)        | 1.69%                    | $0.135    | $0.15222                                  |
-| Petrol                                     | 3.29%                    | $0.28884    | $0.36584                                  |
-| Diesel                                     | 3.29%                    | $0.19679    | $0.24925                                  |
+| Fuel type                | Fixed costs in 2024 ($/yr) | Volume costs in 2024 ($/kWh) | Rate of Inflation (Real) | Average fixed costs over next 15 years ($/yr) | Average volume cost over next 15 years ($/kWh) |
+|--------------------------|---------------------------|------------------------------|---------------------------|-----------------------------------------------|-----------------------------------------------|
+| Gas                     | 689.22675                | 0.118                      | 2.00%                     | 794.48                                     | 0.13602                                       |
+| LPG                     | 69.00                    | 0.25452                      | 2.00%                     | 79.537                                      | 0.29339                                       |
+| Petrol                  | -                        | 0.28884                      | 2.73%                     | -                                             | 0.35125                                       |
+| Diesel                  | -                        | 0.19679                      | 2.73%                     | -                                             | 0.23931                                       |
+| Wood                    | -                        | 0.11250                      | 2.00%                     | -                                             | 0.12968                                       |
+| Electricity (standard)  | 767.7555                 | 0.26175                      | 1.14%                     | 831.99                                     | 0.28365                                       |
+| Electricity (off-peak)  | -                        | 0.17300                      | 1.14%                     | -                                             | 0.18747                                       |
+| Electricity (solar feed-back tariff) | -         | 0.135                        | 1.14%                     | -                                             | 0.14632                                       |
 
 ### Solar
 
