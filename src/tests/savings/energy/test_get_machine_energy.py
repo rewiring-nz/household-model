@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from constants.machines.vehicles import VEHICLE_INFO
+from models.electrify_household import electrify_cooktop
 from openapi_client.models import (
     SpaceHeatingEnum,
     CooktopEnum,
@@ -326,18 +327,15 @@ class TestGetVehicleEnergyPerDay(TestCase):
                 mock_vehicle_phev,
             ]
         )
-        expected = (
-            # petrol
-            (31.4 * (250 / 210))
-            # diesel
-            + (22.8 * (50 / 210))
-            # EV
-            + (7.324 * (250 / 210))
-            # HEV
-            + (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
-            # PHEV
-            + (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
-        )
+        expected = {
+            FuelTypeEnum.PETROL: (31.4 * (250 / 210))  # petrol
+            + (self.petrol * 0.7 * (150 / 210))  # HEV
+            + (self.petrol * 0.6 * (175 / 210)),  # PHEV
+            FuelTypeEnum.DIESEL: (22.8 * (50 / 210)),  # diesel
+            FuelTypeEnum.ELECTRICITY: (7.324 * (250 / 210))  # EV
+            + (self.ev * 0.3 * (150 / 210))  # HEV
+            + (self.ev * 0.4 * (175 / 210)),  # PHEV
+        }
         assert result == expected
 
     @patch(
@@ -375,18 +373,17 @@ class TestGetVehicleEnergyPerDay(TestCase):
     def test_it_returns_energy_with_default_period(self):
         result = get_vehicle_energy([mock_vehicle_ev, mock_vehicle_petrol])
 
-        assert (
-            result
-            == self.expected_weighted_energy_daily_petrol
-            + self.expected_weighted_energy_daily_ev
-        )
+        assert result == {
+            FuelTypeEnum.PETROL: self.expected_weighted_energy_daily_petrol,
+            FuelTypeEnum.ELECTRICITY: self.expected_weighted_energy_daily_ev,
+        }
 
     def test_it_returns_energy_with_specified_period(self):
         result = get_vehicle_energy(
             [mock_vehicle_ev, mock_vehicle_petrol], PeriodEnum.WEEKLY
         )
-        expected = (
-            self.expected_weighted_energy_daily_petrol
-            + self.expected_weighted_energy_daily_ev
-        ) * 7
+        expected = {
+            FuelTypeEnum.PETROL: self.expected_weighted_energy_daily_petrol * 7,
+            FuelTypeEnum.ELECTRICITY: self.expected_weighted_energy_daily_ev * 7,
+        }
         assert pytest.approx(result) == expected

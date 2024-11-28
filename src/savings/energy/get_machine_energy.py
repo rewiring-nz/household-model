@@ -136,7 +136,7 @@ def get_vehicle_energy(
     Returns:
         Dict[FuelTypeEnum, float]: total energy required from vehicles over given period per fuel type
     """
-    total_energy = 0
+    total_energy = {}
     for vehicle in vehicles:
         avg_e_daily = get_energy_per_day(
             vehicle.fuel_type,
@@ -145,13 +145,21 @@ def get_vehicle_energy(
 
         # Weight the energy based on how much they use the vehicle compared to average
         weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
-        weighted_e_daily = avg_e_daily * weighting_factor
+        weighted_e_daily = {
+            fuel_type: e * weighting_factor for fuel_type, e in avg_e_daily.items()
+        }
 
         # Convert to given period
-        weighted_e_daily_scaled = scale_daily_to_period(weighted_e_daily, period)
+        weighted_e_daily_scaled = {
+            fuel_type: scale_daily_to_period(e, period)
+            for fuel_type, e in weighted_e_daily.items()
+        }
 
-        # Add to total
-        total_energy += weighted_e_daily_scaled
+        # Add to totals
+        total_energy = {
+            k: total_energy.get(k, 0) + weighted_e_daily_scaled.get(k, 0)
+            for k in set(total_energy) | set(weighted_e_daily_scaled)
+        }
     return total_energy
 
 
