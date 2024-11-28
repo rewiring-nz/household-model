@@ -21,7 +21,6 @@ from savings.energy.get_machine_energy import (
     get_energy_per_day,
     get_energy_per_period,
     get_other_appliances_energy_per_period,
-    _get_hybrid_energy_per_day,
     get_total_appliance_energy,
     get_vehicle_energy,
 )
@@ -286,25 +285,35 @@ class TestGetVehicleEnergyPerDay(TestCase):
 
     def test_it_calculates_daily_energy_for_one_petrol_car(self):
         result = get_vehicle_energy([mock_vehicle_petrol])
-        assert result == self.expected_weighted_energy_daily_petrol
+        assert result == {
+            FuelTypeEnum.PETROL: self.expected_weighted_energy_daily_petrol
+        }
 
     def test_it_calculates_daily_energy_for_one_diesel_car(self):
         result = get_vehicle_energy([mock_vehicle_diesel])
         expected = 22.8 * 50 / 210
-        assert result == expected
+        assert result == {FuelTypeEnum.DIESEL: expected}
 
     def test_it_calculates_daily_energy_for_one_ev(self):
         result = get_vehicle_energy([mock_vehicle_ev])
-        assert result == self.ev * (250 / 210)
+        assert result == {FuelTypeEnum.ELECTRICITY: self.ev * (250 / 210)}
 
     def test_it_calculates_daily_energy_for_one_hybrid(self):
         result = get_vehicle_energy([mock_vehicle_hev])
-        expected = (self.petrol * 0.7 + self.ev * 0.3) * (150 / 210)
+        weighting_factor = 150 / 210
+        expected = {
+            FuelTypeEnum.PETROL: self.petrol * 0.7 * weighting_factor,
+            FuelTypeEnum.ELECTRICITY: self.ev * 0.3 * weighting_factor,
+        }
         assert result == expected
 
     def test_it_calculates_daily_energy_for_one_plugin_hybrid(self):
         result = get_vehicle_energy([mock_vehicle_phev])
-        expected = (self.petrol * 0.6 + self.ev * 0.4) * (175 / 210)
+        weighting_factor = 175 / 210
+        expected = {
+            FuelTypeEnum.PETROL: self.petrol * 0.6 * weighting_factor,
+            FuelTypeEnum.ELECTRICITY: self.ev * 0.4 * weighting_factor,
+        }
         assert result == expected
 
     def test_it_combines_vehicles_correctly(self):
@@ -381,54 +390,3 @@ class TestGetVehicleEnergyPerDay(TestCase):
             + self.expected_weighted_energy_daily_ev
         ) * 7
         assert pytest.approx(result) == expected
-
-
-def get_mock_energy_values(fuel_type, vehicle_info):
-    # Return fixed values for testing
-    if fuel_type == VehicleFuelTypeEnum.PETROL:
-        return 30.0  # 30 kWh per day for petrol
-    if fuel_type == VehicleFuelTypeEnum.ELECTRIC:
-        return 5.0  # 5 kWh per day for electric
-    return 0.0
-
-
-@patch(
-    "savings.energy.get_machine_energy.get_energy_per_day",
-    side_effect=get_mock_energy_values,
-)
-class TestGetHybridEnergyPerDay:
-    def test_plug_in_hybrid(self, _):
-        result = _get_hybrid_energy_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID)
-        # PHEV: 60% of petrol (30 kWh) + 40% of electric (5 kWh) = 18 + 2
-        assert result == 20.0
-
-    def test_hybrid(self, _):
-        result = _get_hybrid_energy_per_day(VehicleFuelTypeEnum.HYBRID)
-        # HEV: 70% of petrol (30 kWh) + 30% of electric (5 kWh) = 21 + 1.5
-        assert result == 22.5
-
-    def test_different_energy_values(self, mock_energy_values):
-        # Override the mock for this specific test
-        mock_energy_values.side_effect = lambda fuel_type, vehicle_info: {
-            VehicleFuelTypeEnum.PETROL: 200.0,
-            VehicleFuelTypeEnum.ELECTRIC: 30.0,
-        }.get(fuel_type, 0.0)
-
-        phev_result = _get_hybrid_energy_per_day(VehicleFuelTypeEnum.PLUG_IN_HYBRID)
-        hev_result = _get_hybrid_energy_per_day(VehicleFuelTypeEnum.HYBRID)
-
-        # PHEV: 60% of 200 + 40% of 30 = 120 + 12 = 132
-        assert phev_result == 132.0
-
-        # HEV: 70% of 200 + 30% of 30 = 140 + 9 = 149
-        assert hev_result == 149.0
-
-    def test_wrong_type_raises_type_error(self, mock_get_energy):
-        with pytest.raises(TypeError, match="vehicle_type must be VehicleFuelTypeEnum"):
-            _get_hybrid_energy_per_day("HYBRID")
-
-    def test_non_hybrid_vehicle_type_raises_value_error(self, mock_get_energy):
-        with pytest.raises(
-            ValueError, match="vehicle_type must be PLUG_IN_HYBRID or HYBRID"
-        ):
-            _get_hybrid_energy_per_day(VehicleFuelTypeEnum.PETROL)

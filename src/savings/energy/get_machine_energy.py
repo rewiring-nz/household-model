@@ -134,60 +134,25 @@ def get_vehicle_energy(
         period (PeriodEnum, optional): the period over which to calculate the energy. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily energy value. Defaults to PeriodEnum.DAILY.
 
     Returns:
-        float: total NZD emitted from vehicles over given period to 2dp
+        Dict[FuelTypeEnum, float]: total energy required from vehicles over given period per fuel type
     """
     total_energy = 0
     for vehicle in vehicles:
-        if vehicle.fuel_type in [
-            VehicleFuelTypeEnum.PLUG_IN_HYBRID,
-            VehicleFuelTypeEnum.HYBRID,
-        ]:
-            avg_energy_daily = _get_hybrid_energy_per_day(vehicle.fuel_type)
-        else:
-            avg_energy_daily = get_energy_per_day(
-                vehicle.fuel_type,
-                VEHICLE_INFO,
-            )
+        avg_e_daily = get_energy_per_day(
+            vehicle.fuel_type,
+            VEHICLE_INFO,
+        )
 
         # Weight the energy based on how much they use the vehicle compared to average
         weighting_factor = vehicle.kms_per_week / VEHICLE_AVG_KMS_PER_WEEK
-        weighted_energy_daily = avg_energy_daily * weighting_factor
+        weighted_e_daily = avg_e_daily * weighting_factor
 
         # Convert to given period
-        energy_period = scale_daily_to_period(weighted_energy_daily, period)
+        weighted_e_daily_scaled = scale_daily_to_period(weighted_e_daily, period)
 
         # Add to total
-        total_energy += energy_period
+        total_energy += weighted_e_daily_scaled
     return total_energy
-
-
-def _get_hybrid_energy_per_day(vehicle_type: VehicleFuelTypeEnum) -> float:
-    if not isinstance(vehicle_type, VehicleFuelTypeEnum):
-        raise TypeError(
-            f"vehicle_type must be VehicleFuelTypeEnum, got {type(vehicle_type)}"
-        )
-
-    if vehicle_type not in (
-        VehicleFuelTypeEnum.PLUG_IN_HYBRID,
-        VehicleFuelTypeEnum.HYBRID,
-    ):
-        raise ValueError(
-            f"vehicle_type must be PLUG_IN_HYBRID or HYBRID, got {vehicle_type.value}"
-        )
-
-    petrol = get_energy_per_day(
-        VehicleFuelTypeEnum.PETROL,
-        VEHICLE_INFO,
-    )
-    ev = get_energy_per_day(
-        VehicleFuelTypeEnum.ELECTRIC,
-        VEHICLE_INFO,
-    )
-    if vehicle_type == VehicleFuelTypeEnum.PLUG_IN_HYBRID:
-        # PHEV: Assume 60/40 split between petrol and electric
-        return petrol * 0.6 + ev * 0.4
-    # HEV: Assume 70/30 split between petrol and electric
-    return petrol * 0.7 + ev * 0.3
 
 
 def get_other_appliances_energy_per_period(
