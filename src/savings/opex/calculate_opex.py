@@ -26,6 +26,7 @@ from savings.energy.get_other_energy_consumption import (
     OtherEnergyConsumption,
     get_other_energy_consumption,
 )
+from savings.opex.get_other_energy_costs import get_other_energy_costs
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
@@ -97,12 +98,12 @@ def get_total_bills(
     other_energy_consumption: OtherEnergyConsumption,
     period: PeriodEnum,
 ) -> float:
-    # TODO: calculate costs based on each fuel type
     # Costs
     grid_volume_costs = get_grid_volume_cost(
         electricity_consumption.consumed_from_grid,
         electricity_consumption.consumed_from_battery,
     )
+    other_energy_costs = get_other_energy_costs(other_energy_consumption)
     fixed_costs = get_fixed_costs(household, period)
     rucs = get_rucs(household.vehicles, period)
 
