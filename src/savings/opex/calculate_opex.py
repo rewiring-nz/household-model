@@ -112,7 +112,13 @@ def get_total_bills(
         electricity_consumption.exported_to_grid
     )
 
-    return grid_volume_costs + fixed_costs + rucs - revenue_from_solar_export
+    return (
+        grid_volume_costs
+        + other_energy_costs
+        + fixed_costs
+        + rucs
+        - revenue_from_solar_export
+    )
 
 
 def get_grid_volume_cost(e_consumed_from_grid: float, e_from_battery: float) -> float:
