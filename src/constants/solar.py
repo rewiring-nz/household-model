@@ -1,10 +1,16 @@
-# % of solar that is self-consumed
 from openapi_client.models.location_enum import LocationEnum
 
 
+# % of solar that is self-consumed
 SOLAR_SELF_CONSUMPTION_APPLIANCES = 0.5
 SOLAR_SELF_CONSUMPTION_VEHICLES = 0.5
 SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES = 0.5
+
+MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE = {
+    "appliances": SOLAR_SELF_CONSUMPTION_APPLIANCES,
+    "vehicles": SOLAR_SELF_CONSUMPTION_VEHICLES,
+    "other_appliances": SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES,
+}
 
 # $/kWh
 SOLAR_FEEDIN_TARIFF_2024 = 0.135

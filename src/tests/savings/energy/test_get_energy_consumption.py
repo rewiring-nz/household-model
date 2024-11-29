@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from constants.fuel_stats import FuelTypeEnum
 import pytest
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
@@ -11,6 +12,7 @@ from savings.energy.get_energy_consumption import (
     get_e_consumed_from_solar,
     get_e_consumed_from_battery,
     get_energy_consumption,
+    _get_max_e_consumed_from_solar,
 )
 from savings.energy.get_machine_energy import MachineEnergyNeeds
 
@@ -114,25 +116,106 @@ class TestGetEGeneratedFromSolar:
         )
 
 
+class TestGetMaxEConsumedFromSolar:
+    def test_it_uses_self_consumption_correctly(self):
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 5000.0,
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 3000.0,
+                FuelTypeEnum.PETROL: 6000.0,
+                FuelTypeEnum.DIESEL: 2500.0,
+            },
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
+        }
+        assert _get_max_e_consumed_from_solar(
+            e_needs,
+        ) == {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 2500,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 1500,
+            },
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 7},
+        }
+
+    def test_it_handles_missing_categories(self):
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 5000.0,
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+        }
+        assert _get_max_e_consumed_from_solar(e_needs) == {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 2500.0,
+            },
+        }
+
+
 class TestGetEConsumedFromSolar:
     def test_calculates_consumption_when_below_generation(self):
         e_generated_from_solar = 10000.0
         e_needs = {
             "appliances": {FuelTypeEnum.ELECTRICITY: 5000.0},
             "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0},
-            "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
+        }
+
+        result = get_e_consumed_from_solar(e_generated_from_solar, e_needs)
+
+        e_consumed_from_solar = {
+            "appliances": {FuelTypeEnum.ELECTRICITY: 2500.0},
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 1500.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 7.0},
+        }
+        e_remaining_from_solar = 10000.0 - (2500 + 1500 + 7)
+        e_needs_remaining = {
+            "appliances": {FuelTypeEnum.ELECTRICITY: 2500.0},
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 1500.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 7.0},
+        }
+        assert result == (
+            e_consumed_from_solar,
+            e_remaining_from_solar,
+            e_needs_remaining,
+        )
+
+    def test_ignores_non_electric_needs(self):
+        e_generated_from_solar = 10000.0
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 5000.0,
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 3000.0,
+                FuelTypeEnum.PETROL: 6000.0,
+                FuelTypeEnum.DIESEL: 2500.0,
+            },
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
         }
 
         e_consumed_from_solar = {
             "appliances": {FuelTypeEnum.ELECTRICITY: 2500.0},
             "vehicles": {FuelTypeEnum.ELECTRICITY: 1500.0},
-            "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 7.0},
         }
-        e_remaining_from_solar = 10000 - (2500 + 1500)
+        e_remaining_from_solar = 10000 - (2500 + 1500 + 7)
         e_needs_remaining = {
-            "appliances": {FuelTypeEnum.ELECTRICITY: 2500.0},
-            "vehicles": {FuelTypeEnum.ELECTRICITY: 1500.0},
-            "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 2500.0,
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 1500.0,
+                FuelTypeEnum.PETROL: 6000.0,
+                FuelTypeEnum.DIESEL: 2500.0,
+            },
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 7.0},
         }
         assert get_e_consumed_from_solar(e_generated_from_solar, e_needs) == (
             e_consumed_from_solar,
@@ -141,30 +224,100 @@ class TestGetEConsumedFromSolar:
         )
 
     def test_caps_consumption_at_generation(self):
-        assert get_e_consumed_from_solar(
+        result = get_e_consumed_from_solar(
             5000.0,
             # At 50% self-consumption, there's an extra 1000 kWh required that's not met by solar
+            # This should be distributed proportionally to the self-consumed values
             {
                 "appliances": {FuelTypeEnum.ELECTRICITY: 8000.0},
                 "vehicles": {FuelTypeEnum.ELECTRICITY: 4000.0},
                 "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
             },
-        ) == (
+        )
+        expected = (
             # consumed from solar
             {
-                "appliances": {FuelTypeEnum.ELECTRICITY: 3500.0},
-                "vehicles": {FuelTypeEnum.ELECTRICITY: 1500.0},
+                "appliances": {
+                    FuelTypeEnum.ELECTRICITY: (8000 * 0.5) - (1000 * 4000 / 6000)
+                },
+                "vehicles": {
+                    FuelTypeEnum.ELECTRICITY: (4000 * 0.5) - (1000 * 2000 / 6000)
+                },
                 "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
             },
             # remaining from solar
             0,
             # remaining needs; assume even distribution
             {
-                "appliances": {FuelTypeEnum.ELECTRICITY: 5500.0},
-                "vehicles": {FuelTypeEnum.ELECTRICITY: 2500.0},
+                "appliances": {FuelTypeEnum.ELECTRICITY: 4666.666666666666},
+                "vehicles": {FuelTypeEnum.ELECTRICITY: 2333.333333333333},
                 "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
             },
         )
+        assert result == expected
+
+    def test_all_electric_needs_met(self):
+        with patch(
+            "savings.energy.get_energy_consumption.MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE",
+            {
+                "appliances": 1,  # 100% self-consumption
+                "vehicles": 1,
+                "other_appliances": 1,
+            },
+        ):
+            result = get_e_consumed_from_solar(
+                5000.0,
+                {
+                    # 4999 kWh required at 100% self-consumption for all categories
+                    "appliances": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                    "vehicles": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                    "other_appliances": {FuelTypeEnum.ELECTRICITY: 999.0},
+                },
+            )
+            expected = (
+                # consumed from solar
+                {
+                    "appliances": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                    "vehicles": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                    "other_appliances": {FuelTypeEnum.ELECTRICITY: 999.0},
+                },
+                # remaining from solar
+                1,
+                # remaining needs - none
+                {
+                    "appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
+                    "vehicles": {FuelTypeEnum.ELECTRICITY: 0.0},
+                    "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
+                },
+            )
+        assert result == expected
+
+    def test_no_generation(self):
+        result = get_e_consumed_from_solar(
+            0,
+            {
+                "appliances": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                "vehicles": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                "other_appliances": {FuelTypeEnum.ELECTRICITY: 999.0},
+            },
+        )
+        expected = (
+            # consumed from solar
+            {
+                "appliances": {FuelTypeEnum.ELECTRICITY: 0},
+                "vehicles": {FuelTypeEnum.ELECTRICITY: 0},
+                "other_appliances": {FuelTypeEnum.ELECTRICITY: 0},
+            },
+            # remaining from solar
+            0,
+            # remaining needs - none
+            {
+                "appliances": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                "vehicles": {FuelTypeEnum.ELECTRICITY: 2000.0},
+                "other_appliances": {FuelTypeEnum.ELECTRICITY: 999.0},
+            },
+        )
+        assert result == expected
 
     def test_with_only_appliance_load(self):
         assert get_e_consumed_from_solar(
@@ -178,11 +331,11 @@ class TestGetEConsumedFromSolar:
             # consumed from solar
             {
                 "appliances": {FuelTypeEnum.ELECTRICITY: 750.0},
-                "vehicles": {FuelTypeEnum.ELECTRICITY: 1000.0},
+                "vehicles": {FuelTypeEnum.ELECTRICITY: 0.0},
                 "other_appliances": {FuelTypeEnum.ELECTRICITY: 0.0},
             },
             # remaining from solar
-            4250,
+            4250.0,
             # remaining needs
             {
                 "appliances": {FuelTypeEnum.ELECTRICITY: 750.0},

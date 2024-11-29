@@ -8,6 +8,7 @@ from constants.battery import (
 )
 from constants.fuel_stats import FuelTypeEnum
 from constants.solar import (
+    MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE,
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
     SOLAR_CAPACITY_FACTOR,
     SOLAR_SELF_CONSUMPTION_APPLIANCES,
@@ -44,7 +45,7 @@ def get_energy_consumption(
     # Energy in kWh per period
 
     # Total energy needs # TODO remove this, don't need it
-    e_needed_total: Dict[FuelTypeEnum, float] = sum_dicts()
+    e_needed_total: Dict[FuelTypeEnum, float] = sum_dicts([])
     print(f"e_needed_total: {energy_needs}")
 
     # Energy needs met by solar
@@ -109,10 +110,30 @@ def get_e_generated_from_solar(
     return scale_daily_to_period(e_daily, period)
 
 
+def _get_max_e_consumed_from_solar(e_needs: MachineEnergyNeeds) -> MachineEnergyNeeds:
+    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
+    return {
+        cat: {
+            FuelTypeEnum.ELECTRICITY: e_needs[cat][FuelTypeEnum.ELECTRICITY]
+            * MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE[cat]
+        }
+        for cat in categories
+        if cat in e_needs
+    }
+
+
+def _calculate_e_consumed_from_solar_with_deficit(
+    e_demand: float, total_demand: float, total_deficit: float
+) -> float:
+    proportion_of_demand = e_demand / total_demand
+    deficit_portion = total_deficit * proportion_of_demand
+    return e_demand - deficit_portion
+
+
 def get_e_consumed_from_solar(
     e_generated_from_solar: float,
     e_needs: MachineEnergyNeeds,
-) -> Tuple[float, MachineEnergyNeeds]:
+) -> Tuple[MachineEnergyNeeds, float, MachineEnergyNeeds]:
     """Calculate energy consumed from solar
     All arguments should be energy given or needed over the same period of time.
 
@@ -121,18 +142,55 @@ def get_e_consumed_from_solar(
         e_needs (MachineEnergyNeeds): kWh required per fuel type by machine types
 
     Returns:
-        float: kWh remaining from the generated solar
         MachineEnergyNeeds: kWh consumed from the generated solar
+        float: kWh remaining from the generated solar
         MachineEnergyNeeds: kWh remaining to be met by other sources
     """
-    e_consumed_from_solar = (
-        SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needs.appliances
-        + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needs.vehicles
-        + SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES * e_needs.other_appliances
+    # Calculate electric needs across categories
+    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
+
+    # Default to meeting all electricity needs at self-consumption rate
+    e_consumed_from_solar = _get_max_e_consumed_from_solar(e_needs)
+
+    # Calculate total maximum energy consumed from solar at self-consumption rate
+    total_max_consumed_from_solar = sum(
+        e_needs_for_cat[FuelTypeEnum.ELECTRICITY]
+        for e_needs_for_cat in e_consumed_from_solar.values()
     )
-    if e_consumed_from_solar > e_generated_from_solar:
-        return e_generated_from_solar
-    return e_consumed_from_solar
+
+    # If all electric needs can be met with solar, some solar remains, energy needs remain based on self-consumption
+    if total_max_consumed_from_solar <= e_generated_from_solar:
+        remaining_solar = e_generated_from_solar - total_max_consumed_from_solar
+
+    # If not enough solar generation to meet all electric needs,
+    # Distribute the deficit across categories, proportional to self-consumed energy size
+    if total_max_consumed_from_solar > e_generated_from_solar:
+        deficit = total_max_consumed_from_solar - e_generated_from_solar
+        for cat in categories:
+            e_consumed_from_solar[cat][FuelTypeEnum.ELECTRICITY] = (
+                _calculate_e_consumed_from_solar_with_deficit(
+                    e_consumed_from_solar[cat][FuelTypeEnum.ELECTRICITY],
+                    total_max_consumed_from_solar,
+                    deficit,
+                )
+            )
+        remaining_solar = 0
+
+    e_needs_remaining = {
+        cat: {
+            fuel_type: (
+                # Calculate remaining electricity need after solar consumption
+                e_needs[cat][fuel_type] - e_consumed_from_solar[cat][fuel_type]
+                if fuel_type == FuelTypeEnum.ELECTRICITY
+                # Other fuel types stay as is
+                else val
+            )
+            for fuel_type, val in e_needs[cat].items()
+        }
+        for cat in categories
+        if cat in e_needs
+    }
+    return e_consumed_from_solar, remaining_solar, e_needs_remaining
 
 
 def get_e_consumed_from_battery(
