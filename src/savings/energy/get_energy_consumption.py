@@ -50,11 +50,13 @@ def get_energy_consumption(
 
     # Energy needs met by solar
     e_generated_from_solar = get_e_generated_from_solar(solar, location, period)
-    e_consumed_from_solar, e_needs_remaining = get_e_consumed_from_solar(
-        e_generated_from_solar, energy_needs
-    )
     print(f"e_generated_from_solar: {e_generated_from_solar}")
+
+    e_consumed_from_solar, e_generated_remaining, e_needs_remaining = (
+        get_e_consumed_from_solar(e_generated_from_solar, energy_needs)
+    )
     print(f"e_consumed_from_solar: {e_consumed_from_solar}")
+    print(f"e_needs_remaining: {e_needs_remaining}")
 
     # Energy needs met by battery
     e_consumed_from_battery = 0
@@ -84,6 +86,22 @@ def get_energy_consumption(
         consumed_from_grid=e_consumed_from_grid,
         exported_to_grid=e_exported,
     )
+
+
+def sum_energy_for_fuel_type(
+    e_needs: MachineEnergyNeeds, fuel_type: FuelTypeEnum
+) -> float:
+    # Sums the energy needs across categories for a given fuel type
+    e = 0
+    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
+    for cat in categories:
+        if e_needs.get(cat) is not None:
+            e += sum(
+                need * MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE[cat]
+                for fuel, need in e_needs.get(cat).items()
+                if fuel == fuel_type
+            )
+    return e
 
 
 def get_e_generated_from_solar(
@@ -142,9 +160,7 @@ def get_e_consumed_from_solar(
         e_needs (MachineEnergyNeeds): kWh required per fuel type by machine types
 
     Returns:
-        MachineEnergyNeeds: kWh consumed from the generated solar
-        float: kWh remaining from the generated solar
-        MachineEnergyNeeds: kWh remaining to be met by other sources
+        Tuple[MachineEnergyNeeds, float, MachineEnergyNeeds]: kWh consumed from the generated solar, kWh remaining from the generated solar, kWh remaining to be met by other sources
     """
     # Calculate electric needs across categories
     categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())

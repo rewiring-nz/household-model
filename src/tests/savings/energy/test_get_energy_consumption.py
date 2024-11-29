@@ -13,6 +13,7 @@ from savings.energy.get_energy_consumption import (
     get_e_consumed_from_battery,
     get_energy_consumption,
     _get_max_e_consumed_from_solar,
+    sum_energy_for_fuel_type,
 )
 from savings.energy.get_machine_energy import MachineEnergyNeeds
 
@@ -42,6 +43,63 @@ class TestGetEnergyConsumption:
         )
 
         assert result == expected
+
+
+class TestSumEnergyForFuelType:
+    def test_basic_electricity_summation(self):
+        e_needs = {
+            "appliances": {FuelTypeEnum.ELECTRICITY: 5000.0},
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
+        }
+
+        result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+        assert result == (5000.0 * 0.5 + 3000.0 * 0.5 + 14.0 * 0.5)
+
+    def test_multiple_fuel_types_in_category(self):
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 5000.0,
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0, FuelTypeEnum.PETROL: 1000.0},
+        }
+        result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+        assert result == (5000.0 * 0.5 + 3000.0 * 0.5)
+
+    def test_missing_category(self):
+        e_needs = {
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0},
+        }
+
+        result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+        assert result == (3000.0 * 0.5)
+
+    def test_no_matching_fuel_type(self):
+        e_needs = {
+            "appliances": {FuelTypeEnum.NATURAL_GAS: 5000.0},
+            "vehicles": {FuelTypeEnum.PETROL: 3000.0},
+        }
+        result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+        assert result == 0
+
+    def test_empty_needs(self):
+        e_needs = {}
+        result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+        assert result == 0
+
+    def test_different_consumption_rates(self):
+        e_needs = {
+            "appliances": {FuelTypeEnum.ELECTRICITY: 5000.0},
+            "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0},
+            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
+        }
+        with patch(
+            "savings.energy.get_energy_consumption.MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE",
+            {"appliances": 0.7, "vehicles": 0.3, "other_appliances": 0.5},
+        ):
+            result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
+            assert result == (5000.0 * 0.7 + 3000.0 * 0.3 + 14.0 * 0.5)
 
 
 class TestGetEGeneratedFromSolar:
