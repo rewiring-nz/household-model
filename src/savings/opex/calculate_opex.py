@@ -17,9 +17,9 @@ from savings.energy.get_machine_energy import (
     get_total_energy_needs,
 )
 from savings.opex.get_fixed_costs import get_fixed_costs
-from savings.energy.get_energy_consumption import (
+from savings.energy.get_electricity_consumption import (
     EnergyConsumption,
-    get_energy_consumption,
+    get_electricity_consumption,
 )
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -76,7 +76,7 @@ def calculate_opex(
 def _get_total_opex(household: Household, period: PeriodEnum) -> float:
 
     energy_needs = get_total_energy_needs(household, period)
-    energy_consumption = get_energy_consumption(
+    energy_consumption = get_electricity_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )
     total_bills = get_total_bills(household, energy_consumption, period)

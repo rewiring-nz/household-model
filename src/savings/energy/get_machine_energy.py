@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypedDict
 
 from constants.fuel_stats import FuelTypeEnum
 from constants.machines.cooktop import COOKTOP_INFO
@@ -19,8 +18,7 @@ from openapi_client.models import Vehicle, Household
 from utils.sum_dicts import sum_dicts
 
 
-@dataclass
-class MachineEnergyNeeds:
+class MachineEnergyNeeds(TypedDict):
     appliances: Dict[FuelTypeEnum, float]
     vehicles: Dict[FuelTypeEnum, float]
     other_appliances: Dict[FuelTypeEnum, float]
@@ -32,11 +30,11 @@ def get_total_energy_needs(
     appliance_energy = get_total_appliance_energy(household, period)
     vehicle_energy = get_vehicle_energy(household.vehicles, period)
     other_energy = get_other_appliances_energy_per_period(household.occupancy, period)
-    return MachineEnergyNeeds(
-        appliances=appliance_energy,
-        vehicles=vehicle_energy,
-        other_appliances=other_energy,
-    )
+    return {
+        "appliances": appliance_energy,
+        "vehicles": vehicle_energy,
+        "other_appliances": other_energy,
+    }
 
 
 def get_energy_per_day(

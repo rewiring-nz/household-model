@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Dict, Tuple
+from typing import Dict, Tuple, TypedDict
 
 from constants.battery import (
     BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS,
@@ -11,9 +10,6 @@ from constants.solar import (
     MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE,
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
     SOLAR_CAPACITY_FACTOR,
-    SOLAR_SELF_CONSUMPTION_APPLIANCES,
-    SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES,
-    SOLAR_SELF_CONSUMPTION_VEHICLES,
 )
 from openapi_client.models.battery import Battery
 from openapi_client.models.location_enum import LocationEnum
@@ -22,31 +18,25 @@ from constants.utils import DAYS_PER_YEAR, PeriodEnum
 from params import OPERATIONAL_LIFETIME
 from savings.energy.get_machine_energy import MachineEnergyNeeds
 from utils.scale_daily_to_period import scale_daily_to_period
-from utils.sum_dicts import sum_dicts
 
 
-@dataclass
-class EnergyConsumption:
+class ElectricityConsumption(TypedDict):
     consumed_from_solar: float
     consumed_from_battery: float
     consumed_from_grid: float
     exported_to_grid: float
 
 
-def get_energy_consumption(
+def get_electricity_consumption(
     energy_needs: MachineEnergyNeeds,
     solar: Solar,
     battery: Battery,
     location: LocationEnum,
     period: PeriodEnum = PeriodEnum.DAILY,
-) -> float:
+) -> ElectricityConsumption:
 
     print(f"\n\n PERIOD: {period}")
     # Energy in kWh per period
-
-    # Total energy needs # TODO remove this, don't need it
-    e_needed_total: Dict[FuelTypeEnum, float] = sum_dicts([])
-    print(f"e_needed_total: {energy_needs}")
 
     # Energy needs met by solar
     e_generated_from_solar = get_e_generated_from_solar(solar, location, period)
@@ -60,32 +50,43 @@ def get_energy_consumption(
 
     # Energy needs met by battery
     e_consumed_from_battery = 0
+    # We don't consider self-consumption rates for battery, so we can combine the electricity consumed from solar by different machines at this stage. In future, we may wish to be more sophisticated about how certain machines pull more from the battery due to usage patterns.
+    total_e_consumed_from_solar = sum_energy_for_fuel_type(
+        e_consumed_from_solar, FuelTypeEnum.ELECTRICITY
+    )
+    total_e_needs_remaining = sum_energy_for_fuel_type(
+        e_needs_remaining, FuelTypeEnum.ELECTRICITY
+    )
     if battery.has_battery and battery.capacity is not None:
         # electricity stored in battery, then consumed or exported
         e_consumed_from_battery = get_e_consumed_from_battery(
-            battery.capacity, e_generated_from_solar, e_consumed_from_solar, period
+            battery.capacity,
+            e_generated_from_solar,
+            total_e_consumed_from_solar,
+            period,
         )
 
     # Energy needs met by grid
-    e_consumed_from_grid = (
-        e_needed_total - e_consumed_from_solar - e_consumed_from_battery
-    )
-    if e_consumed_from_grid < 0:
-        e_consumed_from_grid = 0
+    total_e_consumed_from_grid = total_e_needs_remaining - e_consumed_from_battery
 
+    if total_e_consumed_from_grid < 0:
+        total_e_consumed_from_grid = 0
+
+    total_e_needs = sum_energy_for_fuel_type(energy_needs, FuelTypeEnum.ELECTRICITY)
     # Excess generated energy exported
-    e_exported = e_consumed_from_grid + e_generated_from_solar - e_needed_total
+    e_exported = total_e_consumed_from_grid + e_generated_from_solar - total_e_needs
     print(f"e_consumed_from_battery: {e_consumed_from_battery}")
-    print(f"e_consumed_from_grid: {e_consumed_from_grid}")
-    print(f"total consumed from household: {e_consumed_from_grid}")
+    print(f"total_e_consumed_from_grid: {total_e_consumed_from_grid}")
+    print(f"total_e_consumed_from_grid: {total_e_consumed_from_grid}")
     print(f"e_exported: {e_exported}")
 
-    return EnergyConsumption(
-        consumed_from_solar=e_consumed_from_solar,
-        consumed_from_battery=e_consumed_from_battery,
-        consumed_from_grid=e_consumed_from_grid,
-        exported_to_grid=e_exported,
-    )
+    electricity_consumption: ElectricityConsumption = {
+        "consumed_from_solar": total_e_consumed_from_solar,
+        "consumed_from_battery": e_consumed_from_battery,
+        "consumed_from_grid": total_e_consumed_from_grid,
+        "exported_to_grid": e_exported,
+    }
+    return electricity_consumption
 
 
 def sum_energy_for_fuel_type(
