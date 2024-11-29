@@ -1,14 +1,17 @@
 from dataclasses import dataclass
+from typing import Dict, Tuple
 
 from constants.battery import (
     BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS,
     BATTERY_CYCLES_PER_DAY,
     BATTERY_LOSSES,
 )
+from constants.fuel_stats import FuelTypeEnum
 from constants.solar import (
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
     SOLAR_CAPACITY_FACTOR,
     SOLAR_SELF_CONSUMPTION_APPLIANCES,
+    SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES,
     SOLAR_SELF_CONSUMPTION_VEHICLES,
 )
 from openapi_client.models.battery import Battery
@@ -18,6 +21,7 @@ from constants.utils import DAYS_PER_YEAR, PeriodEnum
 from params import OPERATIONAL_LIFETIME
 from savings.energy.get_machine_energy import MachineEnergyNeeds
 from utils.scale_daily_to_period import scale_daily_to_period
+from utils.sum_dicts import sum_dicts
 
 
 @dataclass
@@ -39,16 +43,14 @@ def get_energy_consumption(
     print(f"\n\n PERIOD: {period}")
     # Energy in kWh per period
 
-    # Total energy needs
-    e_needed_total = (
-        energy_needs.appliances + energy_needs.vehicles + energy_needs.other_appliances
-    )
-    print(f"e_needed_total: {e_needed_total}")
+    # Total energy needs # TODO remove this, don't need it
+    e_needed_total: Dict[FuelTypeEnum, float] = sum_dicts()
+    print(f"e_needed_total: {energy_needs}")
 
     # Energy needs met by solar
     e_generated_from_solar = get_e_generated_from_solar(solar, location, period)
-    e_consumed_from_solar = get_e_consumed_from_solar(
-        e_generated_from_solar, energy_needs.appliances, energy_needs.vehicles
+    e_consumed_from_solar, e_needs_remaining = get_e_consumed_from_solar(
+        e_generated_from_solar, energy_needs
     )
     print(f"e_generated_from_solar: {e_generated_from_solar}")
     print(f"e_consumed_from_solar: {e_consumed_from_solar}")
@@ -109,23 +111,24 @@ def get_e_generated_from_solar(
 
 def get_e_consumed_from_solar(
     e_generated_from_solar: float,
-    e_needed_by_appliances: float,
-    e_needed_by_vehicles: float,
-) -> float:
+    e_needs: MachineEnergyNeeds,
+) -> Tuple[float, MachineEnergyNeeds]:
     """Calculate energy consumed from solar
     All arguments should be energy given or needed over the same period of time.
 
     Args:
         e_generated_from_solar (float): kWh generated from solar
-        e_needed_by_appliances (float): kWh required by appliances
-        e_needed_by_vehicles (float): kWh required by vehicles
+        e_needs (MachineEnergyNeeds): kWh required per fuel type by machine types
 
     Returns:
-        float: kWh consumed from the generated solar
+        float: kWh remaining from the generated solar
+        MachineEnergyNeeds: kWh consumed from the generated solar
+        MachineEnergyNeeds: kWh remaining to be met by other sources
     """
     e_consumed_from_solar = (
-        SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needed_by_appliances
-        + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needed_by_vehicles
+        SOLAR_SELF_CONSUMPTION_APPLIANCES * e_needs.appliances
+        + SOLAR_SELF_CONSUMPTION_VEHICLES * e_needs.vehicles
+        + SOLAR_SELF_CONSUMPTION_OTHER_APPLIANCES * e_needs.other_appliances
     )
     if e_consumed_from_solar > e_generated_from_solar:
         return e_generated_from_solar

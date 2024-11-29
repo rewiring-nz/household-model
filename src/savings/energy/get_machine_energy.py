@@ -15,7 +15,8 @@ from constants.utils import PeriodEnum
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
-from openapi_client.models import Vehicle, VehicleFuelTypeEnum, Household
+from openapi_client.models import Vehicle, Household
+from utils.sum_dicts import sum_dicts
 
 
 @dataclass
@@ -156,10 +157,7 @@ def get_vehicle_energy(
         }
 
         # Add to totals
-        total_energy = {
-            k: total_energy.get(k, 0) + weighted_e_daily_scaled.get(k, 0)
-            for k in set(total_energy) | set(weighted_e_daily_scaled)
-        }
+        total_energy = sum_dicts([total_energy, weighted_e_daily_scaled])
     return total_energy
 
 

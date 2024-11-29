@@ -1,6 +1,7 @@
-from typing import Dict
+from typing import Dict, List
 
 
-def sum_dicts(x: Dict, y: Dict) -> Dict:
-    """Sums the values of two dicts where there are the same keys."""
-    return {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
+def sum_dicts(dicts: List[Dict]) -> Dict:
+    """Sums the values of multiple dicts where there are the same keys."""
+    all_keys = set().union(*dicts)
+    return {k: sum(d.get(k, 0) for d in dicts) for k in all_keys}
