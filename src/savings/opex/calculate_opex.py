@@ -100,8 +100,8 @@ def get_total_bills(
 ) -> float:
     # Costs
     grid_volume_costs = get_grid_volume_cost(
-        electricity_consumption.consumed_from_grid,
-        electricity_consumption.consumed_from_battery,
+        electricity_consumption["consumed_from_grid"],
+        electricity_consumption["consumed_from_battery"],
     )
     other_energy_costs = get_other_energy_costs(other_energy_consumption)
     fixed_costs = get_fixed_costs(household, period)
@@ -109,7 +109,7 @@ def get_total_bills(
 
     # Savings
     revenue_from_solar_export = get_solar_feedin_tariff(
-        electricity_consumption.exported_to_grid
+        electricity_consumption["exported_to_grid"]
     )
 
     return (
