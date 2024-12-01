@@ -166,6 +166,15 @@ We also assume:
     - We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week.
     - The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods.
 
+### Battery
+
+We assume:
+
+- Average degradation of 85.22% over a 15 year product lifetime
+- 1 battery cycle per day (it is filled up and depleted once per day)
+- 5% of electricity stored is lost to electronics & wiring to keep the battery running
+- All the electricity stored in the battery is from solar. The model does not handle the scenario where there are batteries but no solar (we don't model arbitrage). The API does not accept households with a battery but no solar.
+
 ## Emissions
 
 To calculate emissions, we take the energy consumption from the various machines, and multiply these by the emissions factors. We use these emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).

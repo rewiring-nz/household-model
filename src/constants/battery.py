@@ -5,6 +5,3 @@ BATTERY_AVG_DEGRADED_PERFORMANCE_15_YRS = 0.8522
 
 # % of capacity that is lost to the electronics & wiring within the battery
 BATTERY_LOSSES = 0.05
-
-# discount of grid price due to off-peak load shift with battery (e.g. charging EV at night)
-DISCOUNT_ON_GRID_WITH_BATTERY = 0.2

@@ -9,7 +9,7 @@ from params import OPERATIONAL_LIFETIME
 from savings.energy.get_electricity_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
-    get_e_consumed_from_battery,
+    get_e_stored_in_battery,
     get_electricity_consumption,
     _get_max_e_consumed_from_solar,
     sum_energy_for_fuel_type,
@@ -208,6 +208,25 @@ class TestGetMaxEConsumedFromSolar:
         assert _get_max_e_consumed_from_solar(e_needs) == {
             "appliances": {
                 FuelTypeEnum.ELECTRICITY: 2500.0,
+            },
+            # Doesn't fill in missing categories
+        }
+
+    def test_it_handles_no_electricity_fuel_type(self):
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {
+                FuelTypeEnum.DIESEL: 2000.0,
+            },
+        }
+        assert _get_max_e_consumed_from_solar(e_needs) == {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 0,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 0,
             },
         }
 
@@ -453,14 +472,14 @@ class TestGetEConsumedFromSolar:
 
 class TestGetEnergyFromBattery:
     def test_when_remaining_energy_less_than_capacity_returns_remaining_energy(self):
-        result = get_e_consumed_from_battery(
+        result = get_e_stored_in_battery(
             battery_capacity=10, e_generated_from_solar=100, e_consumed_from_solar=95
         )
         assert result == 5.0  # 100 - 95 = 5 kWh remaining
 
     def test_when_remaining_energy_exceeds_capacity_returns_capacity(self):
         # 3000 kWh/yr remaining from solar generation after self-consumption
-        result = get_e_consumed_from_battery(
+        result = get_e_stored_in_battery(
             battery_capacity=10, e_generated_from_solar=3500, e_consumed_from_solar=500
         )
         # Battery capacity is 10 kWh/cycle, which is around 2957 kWh/yr
@@ -468,26 +487,26 @@ class TestGetEnergyFromBattery:
         assert result == battery_capacity_per_yr
 
     def test_with_zero_battery_capacity_returns_zero(self):
-        result = get_e_consumed_from_battery(
+        result = get_e_stored_in_battery(
             battery_capacity=0, e_generated_from_solar=100, e_consumed_from_solar=90
         )
         assert result == 0.0
 
     def test_with_equal_generation_and_consumption_returns_zero(self):
-        result = get_e_consumed_from_battery(
+        result = get_e_stored_in_battery(
             battery_capacity=10, e_generated_from_solar=100, e_consumed_from_solar=100
         )
         assert result == 0.0
 
     def test_it_raises_error_if_more_consumed_than_generated(self):
         with pytest.raises(ValueError):
-            get_e_consumed_from_battery(10, 90, 100)
+            get_e_stored_in_battery(10, 90, 100)
 
     def test_period(self):
         capacity = 10
         expected_daily = 10 * 1 * 0.8522 * (1 - 0.05)
         assert (
-            get_e_consumed_from_battery(
+            get_e_stored_in_battery(
                 battery_capacity=capacity,
                 e_generated_from_solar=100,
                 e_consumed_from_solar=0,
@@ -496,7 +515,7 @@ class TestGetEnergyFromBattery:
             == expected_daily
         )
         assert (
-            get_e_consumed_from_battery(
+            get_e_stored_in_battery(
                 battery_capacity=capacity,
                 e_generated_from_solar=100 * 7,
                 e_consumed_from_solar=0,
@@ -505,7 +524,7 @@ class TestGetEnergyFromBattery:
             == expected_daily * 7
         )
         assert (
-            get_e_consumed_from_battery(
+            get_e_stored_in_battery(
                 battery_capacity=capacity,
                 e_generated_from_solar=100 * 365.25,
                 e_consumed_from_solar=0,
@@ -514,7 +533,7 @@ class TestGetEnergyFromBattery:
             == expected_daily * DAYS_PER_YEAR
         )
         assert (
-            get_e_consumed_from_battery(
+            get_e_stored_in_battery(
                 battery_capacity=capacity,
                 e_generated_from_solar=100 * 365.25 * 30,
                 e_consumed_from_solar=0,
