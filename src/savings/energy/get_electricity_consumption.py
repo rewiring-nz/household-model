@@ -133,7 +133,7 @@ def _get_max_e_consumed_from_solar(e_needs: MachineEnergyNeeds) -> MachineEnergy
     categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
     return {
         cat: {
-            FuelTypeEnum.ELECTRICITY: e_needs[cat][FuelTypeEnum.ELECTRICITY]
+            FuelTypeEnum.ELECTRICITY: e_needs[cat].get(FuelTypeEnum.ELECTRICITY, 0)
             * MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE[cat]
         }
         for cat in categories

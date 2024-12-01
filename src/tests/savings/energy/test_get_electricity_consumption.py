@@ -209,6 +209,25 @@ class TestGetMaxEConsumedFromSolar:
             "appliances": {
                 FuelTypeEnum.ELECTRICITY: 2500.0,
             },
+            # Doesn't fill in missing categories
+        }
+
+    def test_it_handles_no_electricity_fuel_type(self):
+        e_needs = {
+            "appliances": {
+                FuelTypeEnum.NATURAL_GAS: 2000.0,
+            },
+            "vehicles": {
+                FuelTypeEnum.DIESEL: 2000.0,
+            },
+        }
+        assert _get_max_e_consumed_from_solar(e_needs) == {
+            "appliances": {
+                FuelTypeEnum.ELECTRICITY: 0,
+            },
+            "vehicles": {
+                FuelTypeEnum.ELECTRICITY: 0,
+            },
         }
 
 
