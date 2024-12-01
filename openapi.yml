@@ -163,7 +163,7 @@ components:
           type: boolean        
     Battery:
       type: object
-      description: The household's home battery system
+      description: The household's home battery system. To have or want to install a battery, you must have or want to install solar. The model does not accept households with battery but no solar.
       required:
         - hasBattery
       properties:
