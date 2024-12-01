@@ -106,11 +106,17 @@ def get_total_bills(
     other_energy_costs = get_other_energy_costs(other_energy_consumption)
     fixed_costs = get_fixed_costs(household, period)
     rucs = get_rucs(household.vehicles, period)
+    print("\n\ngrid_volume_costs: ", grid_volume_costs)
+    print("other_energy_costs: ", other_energy_costs)
+    print("fixed_costs: ", fixed_costs)
+    print("rucs: ", rucs)
 
     # Savings
     revenue_from_solar_export = get_solar_feedin_tariff(
         electricity_consumption["exported_to_grid"]
     )
+    print("revenue_from_solar_export: ", revenue_from_solar_export)
+    print("\n\n")
 
     return (
         grid_volume_costs
