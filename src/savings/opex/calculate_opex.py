@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from constants.machines.vehicles import RUCS
 from constants.solar import SOLAR_FEEDIN_TARIFF_2024
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
@@ -16,11 +16,17 @@ from openapi_client.models import (
 from savings.energy.get_machine_energy import (
     get_total_energy_needs,
 )
+from savings.energy.get_other_energy_consumption import get_other_energy_consumption
 from savings.opex.get_fixed_costs import get_fixed_costs
-from savings.energy.get_energy_consumption import (
-    EnergyConsumption,
-    get_energy_consumption,
+from savings.energy.get_electricity_consumption import (
+    ElectricityConsumption,
+    get_electricity_consumption,
 )
+from savings.energy.get_other_energy_consumption import (
+    OtherEnergyConsumption,
+    get_other_energy_consumption,
+)
+from savings.opex.get_other_energy_costs import get_other_energy_costs
 from utils.scale_daily_to_period import scale_daily_to_period
 
 
@@ -76,29 +82,49 @@ def calculate_opex(
 def _get_total_opex(household: Household, period: PeriodEnum) -> float:
 
     energy_needs = get_total_energy_needs(household, period)
-    energy_consumption = get_energy_consumption(
+    electricity_consumption = get_electricity_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )
-    total_bills = get_total_bills(household, energy_consumption, period)
+    other_energy_consumption = get_other_energy_consumption(energy_needs)
+    total_bills = get_total_bills(
+        household, electricity_consumption, other_energy_consumption, period
+    )
     return total_bills
 
 
 def get_total_bills(
-    household: Household, energy_consumption: EnergyConsumption, period: PeriodEnum
+    household: Household,
+    electricity_consumption: ElectricityConsumption,
+    other_energy_consumption: OtherEnergyConsumption,
+    period: PeriodEnum,
 ) -> float:
     # Costs
     grid_volume_costs = get_grid_volume_cost(
-        energy_consumption.consumed_from_grid, energy_consumption.consumed_from_battery
+        electricity_consumption["consumed_from_grid"],
+        electricity_consumption["consumed_from_battery"],
     )
+    other_energy_costs = get_other_energy_costs(other_energy_consumption)
     fixed_costs = get_fixed_costs(household, period)
     rucs = get_rucs(household.vehicles, period)
+    print("\n\ngrid_volume_costs: ", grid_volume_costs)
+    print("other_energy_costs: ", other_energy_costs)
+    print("fixed_costs: ", fixed_costs)
+    print("rucs: ", rucs)
 
     # Savings
     revenue_from_solar_export = get_solar_feedin_tariff(
-        energy_consumption.exported_to_grid
+        electricity_consumption["exported_to_grid"]
     )
+    print("revenue_from_solar_export: ", revenue_from_solar_export)
+    print("\n\n")
 
-    return grid_volume_costs + fixed_costs + rucs - revenue_from_solar_export
+    return (
+        grid_volume_costs
+        + other_energy_costs
+        + fixed_costs
+        + rucs
+        - revenue_from_solar_export
+    )
 
 
 def get_grid_volume_cost(e_consumed_from_grid: float, e_from_battery: float) -> float:
