@@ -14,3 +14,9 @@ class MachineInfo(TypedDict):
 
 
 MachineInfoMap = Dict[MachineEnum, Union[MachineInfo, List[MachineInfo]]]
+
+MACHINE_CATEGORIES = [
+    "appliances",
+    "vehicles",
+    "other_appliances",
+]

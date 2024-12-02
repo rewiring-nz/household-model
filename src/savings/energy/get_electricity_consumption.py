@@ -6,6 +6,7 @@ from constants.battery import (
     BATTERY_LOSSES,
 )
 from constants.fuel_stats import FuelTypeEnum
+from constants.machines.machine_info import MACHINE_CATEGORIES
 from constants.solar import (
     MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE,
     SOLAR_AVG_DEGRADED_PERFORMANCE_30_YRS,
@@ -46,6 +47,7 @@ def get_electricity_consumption(
     e_consumed_from_solar, e_generated_remaining, e_needs_remaining = (
         get_e_consumed_from_solar(total_e_generated_from_solar, energy_needs)
     )
+
     total_e_consumed_from_solar = sum_energy_for_fuel_type(
         e_consumed_from_solar, FuelTypeEnum.ELECTRICITY
     )
@@ -96,14 +98,12 @@ def sum_energy_for_fuel_type(
 ) -> float:
     # Sums the energy needs across categories for a given fuel type
     e = 0
-    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
-    for cat in categories:
+    for cat in MACHINE_CATEGORIES:
         if e_needs.get(cat) is not None:
-            e += sum(
-                need * MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE[cat]
-                for fuel, need in e_needs.get(cat).items()
-                if fuel == fuel_type
-            )
+            fuel_type_needs_for_cat = [
+                need for fuel, need in e_needs.get(cat).items() if fuel == fuel_type
+            ]
+            e += sum(fuel_type_needs_for_cat)
     return e
 
 
@@ -132,13 +132,12 @@ def get_e_generated_from_solar(
 
 
 def _get_max_e_consumed_from_solar(e_needs: MachineEnergyNeeds) -> MachineEnergyNeeds:
-    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
     return {
         cat: {
             FuelTypeEnum.ELECTRICITY: e_needs[cat].get(FuelTypeEnum.ELECTRICITY, 0)
             * MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE[cat]
         }
-        for cat in categories
+        for cat in MACHINE_CATEGORIES
         if cat in e_needs
     }
 
@@ -165,9 +164,6 @@ def get_e_consumed_from_solar(
     Returns:
         Tuple[MachineEnergyNeeds, float, MachineEnergyNeeds]: kWh consumed from the generated solar, kWh remaining from the generated solar, kWh remaining to be met by other sources
     """
-    # Calculate electric needs across categories
-    categories = list(MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE.keys())
-
     # Default to meeting all electricity needs at self-consumption rate
     e_consumed_from_solar = _get_max_e_consumed_from_solar(e_needs)
 
@@ -185,7 +181,7 @@ def get_e_consumed_from_solar(
     # Distribute the deficit across categories, proportional to self-consumed energy size
     if total_max_consumed_from_solar > e_generated_from_solar:
         deficit = total_max_consumed_from_solar - e_generated_from_solar
-        for cat in categories:
+        for cat in MACHINE_CATEGORIES:
             e_consumed_from_solar[cat][FuelTypeEnum.ELECTRICITY] = (
                 _calculate_e_consumed_from_solar_with_deficit(
                     e_consumed_from_solar[cat][FuelTypeEnum.ELECTRICITY],
@@ -206,7 +202,7 @@ def get_e_consumed_from_solar(
             )
             for fuel_type, val in e_needs[cat].items()
         }
-        for cat in categories
+        for cat in MACHINE_CATEGORIES
         if cat in e_needs
     }
     return e_consumed_from_solar, remaining_solar, e_needs_remaining
