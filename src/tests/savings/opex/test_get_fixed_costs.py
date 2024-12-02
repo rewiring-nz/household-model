@@ -11,17 +11,32 @@ from constants.utils import PeriodEnum
 
 from savings.opex.get_fixed_costs import get_fixed_costs
 
-MOCK_FIXED_COSTS = {
+MOCK_FIXED_COSTS_2024 = {
     FuelTypeEnum.ELECTRICITY: 400,
     FuelTypeEnum.NATURAL_GAS: 300,
     FuelTypeEnum.LPG: 250,
 }
+MOCK_FIXED_COSTS_15_YRS = {
+    FuelTypeEnum.ELECTRICITY: 500,
+    FuelTypeEnum.NATURAL_GAS: 350,
+    FuelTypeEnum.LPG: 275,
+}
 
 
 @pytest.fixture
-def mock_costs():
+def mock_costs_2024():
     with patch(
-        "savings.opex.get_fixed_costs.FIXED_COSTS_PER_YEAR_2024", MOCK_FIXED_COSTS
+        "savings.opex.get_fixed_costs.FIXED_COSTS_PER_YEAR_2024",
+        MOCK_FIXED_COSTS_2024,
+    ):
+        yield
+
+
+@pytest.fixture
+def mock_costs_15_yrs():
+    with patch(
+        "savings.opex.get_fixed_costs.FIXED_COSTS_PER_YEAR_AVG_15_YEARS",
+        MOCK_FIXED_COSTS_15_YRS,
     ):
         yield
 
@@ -32,7 +47,9 @@ def sample_household():
 
 
 class TestGetFixedCosts:
-    def test_electricity_only(self, mock_costs, sample_household):
+    def test_electricity_only(
+        self, mock_costs_2024, mock_costs_15_yrs, sample_household
+    ):
         sample_household.space_heating = None
         sample_household.water_heating = None
         sample_household.cooktop = None
@@ -41,7 +58,9 @@ class TestGetFixedCosts:
         expected = 400 / 365.25  # Daily electricity cost
         assert result == expected
 
-    def test_with_natural_gas(self, mock_costs, sample_household):
+    def test_with_natural_gas(
+        self, mock_costs_2024, mock_costs_15_yrs, sample_household
+    ):
         sample_household.space_heating = SpaceHeatingEnum.GAS
         sample_household.water_heating = None
         sample_household.cooktop = None
@@ -50,7 +69,7 @@ class TestGetFixedCosts:
         expected = (400 + 300) / 365.25
         assert result == expected
 
-    def test_with_lpg(self, mock_costs, sample_household):
+    def test_with_lpg(self, mock_costs_2024, mock_costs_15_yrs, sample_household):
         sample_household.space_heating = None
         sample_household.water_heating = WaterHeatingEnum.LPG
         sample_household.cooktop = None
@@ -59,7 +78,7 @@ class TestGetFixedCosts:
         expected = (400 + 250) / 365.25
         assert result == expected
 
-    def test_ngas_and_lpg(self, mock_costs, sample_household):
+    def test_ngas_and_lpg(self, mock_costs_2024, mock_costs_15_yrs, sample_household):
         sample_household.space_heating = SpaceHeatingEnum.GAS
         sample_household.cooktop = CooktopEnum.LPG
         sample_household.water_heating = None
@@ -68,7 +87,9 @@ class TestGetFixedCosts:
         expected = (400 + 300 + 250) / 365.25
         assert result == pytest.approx(expected)
 
-    def test_ignore_lpg_with_natural_gas(self, mock_costs, sample_household):
+    def test_ignore_lpg_with_natural_gas(
+        self, mock_costs_2024, mock_costs_15_yrs, sample_household
+    ):
         sample_household.space_heating = SpaceHeatingEnum.GAS
         sample_household.cooktop = CooktopEnum.LPG
         sample_household.water_heating = None
@@ -86,11 +107,16 @@ class TestGetFixedCosts:
             (PeriodEnum.OPERATIONAL_LIFETIME, 365.25 * 15),
         ],
     )
-    def test_different_periods(self, mock_costs, sample_household, period, multiplier):
+    def test_different_periods(
+        self, mock_costs_2024, mock_costs_15_yrs, sample_household, period, multiplier
+    ):
         sample_household.space_heating = None
         sample_household.water_heating = None
         sample_household.cooktop = None
         result = get_fixed_costs(sample_household, period=period)
         daily = 400 / 365.25
         expected = daily * multiplier
+        # It uses average 15 year pricing for operational lifetime
+        if period == PeriodEnum.OPERATIONAL_LIFETIME:
+            expected = 500 / 365.25 * multiplier
         assert result == expected
