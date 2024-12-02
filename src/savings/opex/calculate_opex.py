@@ -41,25 +41,25 @@ def calculate_opex(
 
     # Weekly
     print(f"\n\n\nWEEKLY")
-    print(f"\nBefore\n")
+    print(f"\nBefore")
     weekly_before = _get_total_opex(current_household, PeriodEnum.WEEKLY)
-    print(f"\nAfter\n")
+    print(f"After")
     weekly_after = _get_total_opex(electrified_household, PeriodEnum.WEEKLY)
 
     print(f"\n\n\nYEARLY")
     # Yearly
-    print(f"\nBefore\n")
+    print(f"\nBefore")
     yearly_before = _get_total_opex(current_household, PeriodEnum.YEARLY)
-    print(f"\nAfter\n")
+    print(f"After")
     yearly_after = _get_total_opex(electrified_household, PeriodEnum.YEARLY)
 
     print(f"\n\n\nLIFETIME")
     # Operational lifetime
-    print(f"\nBefore\n")
+    print(f"\nBefore")
     lifetime_before = _get_total_opex(
         current_household, PeriodEnum.OPERATIONAL_LIFETIME
     )
-    print(f"\nAfter\n")
+    print(f"After")
     lifetime_after = _get_total_opex(
         electrified_household, PeriodEnum.OPERATIONAL_LIFETIME
     )

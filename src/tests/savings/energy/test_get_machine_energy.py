@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 
 from constants.machines.vehicles import VEHICLE_INFO
-from models.electrify_household import electrify_cooktop
 from openapi_client.models import (
     SpaceHeatingEnum,
     CooktopEnum,

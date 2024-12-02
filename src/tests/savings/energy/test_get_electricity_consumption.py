@@ -2,7 +2,6 @@ from unittest.mock import patch
 from constants.fuel_stats import FuelTypeEnum
 import pytest
 from constants.utils import DAYS_PER_YEAR, HOURS_PER_YEAR, PeriodEnum
-from openapi_client.models.battery import Battery
 from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.solar import Solar
 from params import OPERATIONAL_LIFETIME
@@ -10,37 +9,9 @@ from savings.energy.get_electricity_consumption import (
     get_e_generated_from_solar,
     get_e_consumed_from_solar,
     get_e_stored_in_battery,
-    get_electricity_consumption,
     _get_max_e_consumed_from_solar,
     sum_energy_for_fuel_type,
 )
-
-
-class TestGetEnergyConsumption:
-    def test_large_solar_install_and_large_battery(self):
-        energy_needs = {
-            "appliances": {FuelTypeEnum.ELECTRICITY: 2000},
-            "vehicles": {FuelTypeEnum.ELECTRICITY: 4000},
-            "other_appliances": {FuelTypeEnum.ELECTRICITY: 1000},
-        }  # 7000 kWh total per year
-        solar = Solar(has_solar=True, size=20)
-        battery = Battery(has_battery=True, capacity=40)
-
-        expected_electricity_consumption = {
-            "consumed_from_solar": 3000,
-            "consumed_from_battery": 11828.109900000001,
-            "consumed_from_grid": 0,
-            "exported_to_grid": 18294.11768,  # generated from solar (25294.11768) - total energy needs (7000)
-        }
-        result = get_electricity_consumption(
-            energy_needs,
-            solar,
-            battery,
-            LocationEnum.AUCKLAND_CENTRAL,
-            PeriodEnum.YEARLY,
-        )
-
-        assert result == expected_electricity_consumption
 
 
 class TestSumEnergyForFuelType:
@@ -52,7 +23,7 @@ class TestSumEnergyForFuelType:
         }
 
         result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
-        assert result == (5000.0 * 0.5 + 3000.0 * 0.5 + 14.0 * 0.5)
+        assert result == 5000.0 + 3000.0 + 14.0
 
     def test_multiple_fuel_types_in_category(self):
         e_needs = {
@@ -63,7 +34,7 @@ class TestSumEnergyForFuelType:
             "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0, FuelTypeEnum.PETROL: 1000.0},
         }
         result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
-        assert result == (5000.0 * 0.5 + 3000.0 * 0.5)
+        assert result == (5000.0 + 3000.0)
 
     def test_missing_category(self):
         e_needs = {
@@ -71,7 +42,7 @@ class TestSumEnergyForFuelType:
         }
 
         result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
-        assert result == (3000.0 * 0.5)
+        assert result == (3000.0)
 
     def test_no_matching_fuel_type(self):
         e_needs = {
@@ -85,19 +56,6 @@ class TestSumEnergyForFuelType:
         e_needs = {}
         result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
         assert result == 0
-
-    def test_different_consumption_rates(self):
-        e_needs = {
-            "appliances": {FuelTypeEnum.ELECTRICITY: 5000.0},
-            "vehicles": {FuelTypeEnum.ELECTRICITY: 3000.0},
-            "other_appliances": {FuelTypeEnum.ELECTRICITY: 14.0},
-        }
-        with patch(
-            "savings.energy.get_electricity_consumption.MACHINE_CATEGORY_TO_SELF_CONSUMPTION_RATE",
-            {"appliances": 0.7, "vehicles": 0.3, "other_appliances": 0.5},
-        ):
-            result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
-            assert result == (5000.0 * 0.7 + 3000.0 * 0.3 + 14.0 * 0.5)
 
 
 class TestGetEGeneratedFromSolar:
