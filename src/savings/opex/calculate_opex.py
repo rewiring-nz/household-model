@@ -1,6 +1,6 @@
 from typing import List
 from constants.machines.vehicles import RUCS
-from constants.solar import SOLAR_FEEDIN_TARIFF_2024
+from constants.solar import SOLAR_FEEDIN_TARIFF_2024, SOLAR_FEEDIN_TARIFF_AVG_15_YEARS
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
 from openapi_client.models.vehicle import Vehicle
 from params import (
@@ -122,7 +122,7 @@ def get_total_bills(
 
     # Savings
     revenue_from_solar_export = get_solar_feedin_tariff(
-        electricity_consumption["exported_to_grid"]
+        electricity_consumption["exported_to_grid"], period
     )
     print("revenue_from_solar_export: ", revenue_from_solar_export)
     print("\n\n")
@@ -211,6 +211,7 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
     return round(total_rucs, 2)
 
 
-def get_solar_feedin_tariff(e_exported: float) -> float:
-    # TODO: Use average prices over 15 years if period is operational lifetime
+def get_solar_feedin_tariff(e_exported: float, period: PeriodEnum) -> float:
+    if PeriodEnum.OPERATIONAL_LIFETIME:
+        return e_exported * SOLAR_FEEDIN_TARIFF_AVG_15_YEARS
     return e_exported * SOLAR_FEEDIN_TARIFF_2024
