@@ -42,7 +42,7 @@ class TestSumEnergyForFuelType:
         }
 
         result = sum_energy_for_fuel_type(e_needs, FuelTypeEnum.ELECTRICITY)
-        assert result == (3000.0)
+        assert result == 3000.0
 
     def test_no_matching_fuel_type(self):
         e_needs = {

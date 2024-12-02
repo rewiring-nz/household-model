@@ -1,3 +1,4 @@
+import json
 from typing import List
 from constants.machines.vehicles import RUCS
 from constants.solar import SOLAR_FEEDIN_TARIFF_2024, SOLAR_FEEDIN_TARIFF_AVG_15_YEARS
@@ -91,6 +92,16 @@ def _get_total_opex(household: Household, period: PeriodEnum) -> float:
         energy_needs, household.solar, household.battery, household.location, period
     )
     other_energy_consumption = get_other_energy_consumption(energy_needs)
+    if period == PeriodEnum.YEARLY:
+        print("\n\nEnergy consumption")
+        print(
+            "\nelectricity_consumption: ", json.dumps(electricity_consumption, indent=4)
+        )
+        print(
+            "\nother_energy_consumption: ",
+            json.dumps(other_energy_consumption, indent=4),
+        )
+        print("\n\n")
     total_bills = get_total_bills(
         household, electricity_consumption, other_energy_consumption, period
     )
