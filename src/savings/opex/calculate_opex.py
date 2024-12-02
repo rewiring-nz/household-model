@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 from constants.machines.vehicles import RUCS
 from constants.solar import SOLAR_FEEDIN_TARIFF_2024
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
@@ -109,12 +109,15 @@ def get_total_bills(
         electricity_consumption["consumed_from_battery"],
         period,
     )
-    other_energy_costs = get_other_energy_costs(other_energy_consumption)
-    fixed_costs = get_fixed_costs(household, period)
-    rucs = get_rucs(household.vehicles, period)
     print("\n\ngrid_volume_costs: ", grid_volume_costs)
+
+    other_energy_costs = get_other_energy_costs(other_energy_consumption, period)
     print("other_energy_costs: ", other_energy_costs)
+
+    fixed_costs = get_fixed_costs(household, period)
     print("fixed_costs: ", fixed_costs)
+
+    rucs = get_rucs(household.vehicles, period)
     print("rucs: ", rucs)
 
     # Savings
