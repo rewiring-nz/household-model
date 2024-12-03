@@ -401,4 +401,14 @@ Battery upfront costs are assumed at $1000/kWh, from multiple surveys of 2023 in
 
 ## Recommendations
 
-TODO: about how the next steps algo works
+The API's recommendation for the household's next steps is currently a simple heuristic. It simply takes the first recommendation from a prioritised list, that the household currently does not have. The list has been prioritised based on Rewiring's prior knowledge and research of what upgrades typically bring the most savings:
+
+1. Rooftop solar
+1. First EV
+1. Space heater
+1. Water heater
+1. Cooktop
+1. Battery
+1. All other EVs
+
+In future, we may improve this recommendation algorithm to take into account machine-specific savings and replacement costs.
