@@ -1,6 +1,6 @@
 # Methodology
 
-## Summary of modelling approach
+## 1 Summary of modelling approach
 
 Our modelling uses household and vehicle energy use data at a per machine level (e.g. energy use per gas water heater, or per petrol car), primarily from government sources, combined with up-to-date (2024) energy pricing and product pricing, to understand the economics of electrifying each type of individual machine occurring in New Zealand’s housing stock. This includes:
 
@@ -11,7 +11,7 @@ Our modelling uses household and vehicle energy use data at a per machine level 
 - emissions: the amount of emissions saved based on energy consumption and emissions factor of the fuel type
 - product replacement costs: the costs to replace like for like, or to replace a fossil fuel option with an electrified option including installation costs
 
-## Electrifying the house
+## 2 Electrifying the house
 
 For the given household inputs, we create a before & after state by "electrifying" the household. This means replacing appliances with the most efficient electric models.
 
@@ -22,15 +22,15 @@ For the given household inputs, we create a before & after state by "electrifyin
 
 We also add solar & batteries if the household has indicated that they would like them.
 
-## Energy Use
+## 3 Energy Use
 
 Next, we calculate the energy use, which we use to determine the emissions and operating costs.
 
-### Appliances
+### 3.1 Appliances
 
 We derive average household energy use across different appliances through the [Australian and New Zealand Residential Baseline Study 2021](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040), published November 2022. From here, these are scaled by regional heat demand differences where applicable, then scaled to the appropriate period (e.g. weekly, yearly, operational lifetime of 15 years).
 
-#### Space heating
+#### 3.1.2 Space heating
 
 Space heating energy factors for all heater types except heat pumps are sourced from the [Warm Homes Technical Report](http://environment.govt.nz/assets/Publications/Files/warm-homes-heating-optionsphase1.pdf) published by the Ministry for the Environment in November 2005. Average heat pump energy use was calculated using a coefficient of performance of 4.08, sourced from [EECA sales & efficiency data](https://www.eeca.govt.nz/insights/eeca-insights/e3-programme-sales-and-efficiency-data/).
 
@@ -71,7 +71,7 @@ We multiply these national average energy use values by a region factor, to refl
 
 *Data not available, assuming same value as similar region
 
-#### Water heating
+#### 3.1.3 Water heating
 
 Water heating efficiencies are sourced from the [US Department of Energy Energy Star ratings scheme](https://www.energystar.gov/products/water_heaters/residential_water_heaters_key_ product_criteria). Electric resistive tank water heating is assumed at 90%, and heat pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA's 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
 
@@ -84,7 +84,7 @@ Average energy use per day for water heater type:
 | Electric heat pump            | 1.71                |
 | Solar                         | 1.71                |
 
-#### Cooktop
+#### 3.1.4 Cooktop
 
 Cooktop efficiency is sourced from the Frontier Energy [Residential Cooktop Performance and Energy Comparison Study #501318071-R0](https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf), published in July 2019. Electric efficiency is assumed at 95%, and gas/LPG at 90%. 
 
@@ -96,7 +96,7 @@ Average energy use per day for cooktop type:
 | Electric resistive            | 0.83                 |
 | Electric induction            | 0.75                 |
 
-#### Other appliances
+#### 3.1.5 Other appliances
 
 For other ubiquitous appliances around the home, we assume they are all electric and use the following values:
 
@@ -106,13 +106,13 @@ For other ubiquitous appliances around the home, we assume they are all electric
 | Other cooking (oven, microwave, refrigeration)        | 2.85                 |
 | Space cooling (fans, aircon)                          | 0.34                 |
 
-### Scaling appliance energy use by occupancy
+### 3.2 Scaling appliance energy use by occupancy
 
 Household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
 
 Given that much of our energy consumption rates for each household appliances was based on averages from the Australian and New Zealand Residential Baseline Study 2021 (published November 2022), and given that the average New Zealand household has 2.7 occupants according to 2018 Census data ([Household size in New Zealand, Figure.NZ](https://figure.nz/chart/vdTbdOaKUE9zTKo3)), we needed to calculate a multiplier for the occupancy options given in the calculator.
 
-#### Data collection
+#### 3.2.1 Data collection
 
 We used electricity consumption numbers from data collected by the Australian Energy Regulator in their [Electricity and Gas consumption benchmarks for residential customers 2020 study](https://www.aer.gov.au/industry/registers/resources/guidelines/electricity-and-gas-consumption-benchmarks-residential-customers-2020). From the [Frontier Economics - Simple electricity and gas benchmarks - From June 2021](https://www.aer.gov.au/documents/frontier-economics-simple-electricity-and-gas-benchmarks-june-2021) data sheet, on the "Climate zone 6" sheet (Mild temperate, such as urban Melbourne, Adelaide Hills, Ulladulla, similar to NZ average; [see Table 1 on page 15](https://www.aer.gov.au/system/files/Residential%20energy%20consumption%20benchmarks%20-%209%20December%202020_0.pdf)), we averaged across all states and seasons, and we found the following electricity consumption and ratios.
 
@@ -128,7 +128,7 @@ _Table 1: Energy consumption by household size ([Source](https://www.aer.gov.au/
 
 We did not use the separate gas energy consumption numbers to scale gas energy use as the ratios turned out to be very similar to the electricity consumption ratios for household size, and the immaterial difference was not worth the extra complexity.
 
-#### Nonlinear interpolation
+#### 3.2.2 Nonlinear interpolation
 
 In order to calculate the multiplier of the average energy consumption values, we first needed to find the ratio value for our reference occupancy of 2.7. To do this, we fitted an exponential model to the data in Table 1, using the first four data points and excluding `5+` as this is not actually a discrete data point, but a range. Please refer to `notebooks/occupancy.ipynb` for the working on model fitting.
 
@@ -150,7 +150,7 @@ There are limitations to this modelling approach given that it is based on very 
 
 The interpolated value of the fitted exponential model at 2.7 occupants was 1.79.
 
-#### Scaling multiplier
+#### 3.2.3 Scaling multiplier
 
 To find the multiplier that we can use to scale our reference energy values, we then use the following formula:
 
@@ -183,7 +183,7 @@ Table 2: Scaling factors for energy consumption based on occupancy
 | 4 | 1.07 |
 | 5+ | 1.09 |
 
-### Vehicles
+### 3.3 Vehicles
 
 We derive average vehicle energy use through the [EECA Energy End Use Database](https://www.[eeca.govt.nz/insights/data-tools/energy-end-use-database/) for 2019. We use data from 2019 for vehicles, as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019.
 
@@ -201,7 +201,7 @@ $31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{
 
 The dropdown options for vehicle usage in our [household calculator frontend app](https://github.com/rewiring-nz/household-calculator-app/) are `Low (<100 km/wk)`, `Medium (100-300 km/wk)`, and `High (300+ km/wk)`. These options correspond to values `50 km/wk`, `210 km/wk` (the national average), and `400 km/wk` respectively.
 
-### Solar
+### 3.4 Solar
 
 The formula for calculating electricity generation from solar is as follows:
 
@@ -249,7 +249,7 @@ We assume the following solar capacity factors $C_{loc}$ per region.
 | Overseas              | 15.0%                     |
 | Other                 | 15.0%                     |
 
-### Battery
+### 3.5 Battery
 
 The formula for calculating battery capacity per day is as follows:
 
@@ -265,7 +265,7 @@ Where:
 
 We assume that all the electricity stored in the battery is from solar. The model does not handle the scenario where there are batteries but no solar (we don't model arbitrage). The API does not accept households with a battery but no solar.
 
-## Emissions
+## 4 Emissions
 
 To calculate emissions, we take the energy consumption from the various machines and their fuel types, and multiply these by the emissions factors. We use these emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
 
@@ -283,13 +283,13 @@ To calculate emissions savings, we simply take the difference between the curren
 > [!NOTE]
 > Emissions reductions from electrification are likely conservative, as it currently does not distinguish the amount of electricity that is self-consumed from solar (zero emissions) from the electricity consumed from the grid (emissions factor of 0.074). This has been noted as a future improvement in #46.
 
-## Operating Costs
+## 5 Operating Costs
 
 After calculating energy consumption across fuel types, we first calculate how much of the electricity need is met by solar, battery storage, or straight from the grid, and how much solar-generated electricity is left over for export. Then, we calculate the volume energy costs for each fuel type, including the various sources of electricity, using the appropriate pricing.
 
 We add the fixed costs (gas, LPG, or grid connections) and Road User Charges, and subtract the revenue from solar export. This gives the total operating costs for a given household. We take the difference between the total operating costs for the current and electrified household to get the savings.
 
-### Solar self-consumption
+### 5.1 Solar self-consumption
 
 How much a household is able to self-consume ($E_{self-consumed}$) from their generated solar electricity will influence their savings.
 
@@ -302,19 +302,19 @@ WWe assume the a self-consumption rate of 50% for appliance electricity needs, a
 
 Please refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
 
-### Battery impact
+### 5.2 Battery impact
 
 We then calculate how much of the solar generation is stored in battery, then consumed or exported. This impacts how much of the grid's peak prices can be offset by night rates.
 
 We assume that all the electricity stored in the battery is from solar. We don't yet allow for batteries (and therefore arbitrage) without solar. If the energy remaining from generation after self-consumption is less than the battery's capacity, battery stores all the remaining energy. If there is more energy remaining than the capacity, the battery is filled to capacity. We assume that all machine types have the same self-consumption rates from the battery. A future improvement may be to have different battery consumption rates for each machine type, since certain machines are able to shift their consumption times more easily than others (e.g. water heaters vs. cooking).
 
-### Solar export
+### 5.3 Solar export
 
 The amount of electricity exported to the grid is calculated as follows:
 
 $E_{exported} = E_{generated} - E_{battery} - E_{self-consumed}$
 
-### Grid consumption
+### 5.4 Grid consumption
 
 The amount of electricity consumed from the grid to meet any remaining electricity needs is follows:
 
@@ -322,7 +322,7 @@ $E_{grid} = E_{needs remaining} - E_{battery}$
 
 The energy needs remaining are whatever is left after solar self-consumption ($E_{self-consumed}$).
 
-### Energy Prices
+### 5.5 Energy Prices
 
 From here, we can multiply the electricity and fuel consumed with their prices, as well as the energy exported with the solar export tariff. We also include the fixed costs of grid and gas/LPG connections. All houses remain connected to the grid, paying yearly grid connection fixed costs, but electrified homes no longer need to pay yearly fixed costs for gas connections.
 
@@ -349,7 +349,7 @@ The battery export feed-in-tariff is assumed to be the same as the solar feed-in
 > In order to take into account the impact of the battery, we use an adjusted grid price that reflects the proportion of electricity that could be purchased off peak. Please refer to the logic in `get_effective_grid_price()` ([file](src/savings/opex/calculate_opex.py)) for more details.
 
 
-### Road User Charges
+### 5.6 Road User Charges
 
 We use current Road User Charges (RUCs) without taking inflation into account:
 
@@ -361,9 +361,9 @@ We use current Road User Charges (RUCs) without taking inflation into account:
 
 We have not yet included vehicle servicing costs, which tend to be lower for EVs than fossil fuel machines.
 
-## Replacement & Upfront Costs
+## 6 Replacement & Upfront Costs
 
-### Appliances
+### 6.1 Appliances
 
 Appliance replacement costs come from a comparison of over 100 different quotes for appliance costs, sourced both online and direct from installers. An average capital cost and average install cost is used for each individual appliance. The scope of the appliance cost comparison aims to compare products that are not the cheapest possible product, nor the most expensive, as appliance costs can vary significantly. The aim of the comparison was to create an assumed common cost for each option, in the middle of the cost spectrum. 
 
@@ -387,19 +387,19 @@ The following appliance price and installation cost are assumed:
 | Cooktop       | Gas                         | 1022           | 630              |
 | Cooktop       | LPG                         | 1022           | 630              |
 
-### Vehicles
+### 6.2 Vehicles
 
 The model does not provide upfront costs for vehicles, although the calculator app provides a general range to give an indication of replacing fossil fuel vehicles with EVs. The range is based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024. Clean car rebate is not included as it was phased out in 2024. 
 
-### Solar
+### 6.3 Solar
 
 The upfront cost of installing solar is estimated at $2277.78/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. This is essentially $2000/kW plus the cost of an inverter which lasts 15 years.  Inverter replacement costs are assumed at $2,500. 
 
-### Batteries
+### 6.4 Batteries
 
 Battery upfront costs are assumed at $1000/kWh, from multiple surveys of 2023 installation costs in New Zealand direct from battery installers, in addition to comparison of available online prices for batteries in New Zealand.
 
-## Recommendations
+## 7 Recommendations
 
 The API's recommendation for the household's next steps is currently a simple heuristic. It simply takes the first recommendation from a prioritised list, that the household currently does not have. The list has been prioritised based on Rewiring's prior knowledge and research of what upgrades typically bring the most savings:
 
