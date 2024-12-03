@@ -30,6 +30,34 @@ SPACE_HEATING_INFO: MachineInfoMap = {
     },
 }
 
+SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER = {
+    LocationEnum.NORTHLAND: 0.4938220361,
+    LocationEnum.AUCKLAND_NORTH: 0.6315723935,
+    LocationEnum.AUCKLAND_CENTRAL: 0.6315723935,
+    LocationEnum.AUCKLAND_EAST: 0.6315723935,
+    LocationEnum.AUCKLAND_WEST: 0.6315723935,
+    LocationEnum.AUCKLAND_SOUTH: 0.6315723935,
+    LocationEnum.WAIKATO: 1.059378221,
+    LocationEnum.BAY_OF_PLENTY: 0.7750406903,
+    LocationEnum.GISBORNE: 0.9949214495,
+    LocationEnum.HAWKES_BAY: 0.9949214495,
+    LocationEnum.TARANAKI: 0.8800428495,
+    LocationEnum.MANAWATU_WANGANUI: 1.04378384,
+    LocationEnum.WELLINGTON: 1.128513306,
+    LocationEnum.TASMAN: 0.7750406903,
+    LocationEnum.NELSON: 0.7750406903,
+    LocationEnum.MARLBOROUGH: 1.219480523,
+    LocationEnum.WEST_COAST: 1.451836786,
+    LocationEnum.CANTERBURY: 1.558398383,
+    LocationEnum.OTAGO: 1.601023022,
+    LocationEnum.SOUTHLAND: 1.764764013,
+    LocationEnum.STEWART_ISLAND: 1.764764013,
+    LocationEnum.CHATHAM_ISLANDS: 1.764764013,
+    LocationEnum.GREAT_BARRIER_ISLAND: 1.0,
+    LocationEnum.OVERSEAS: 1.0,
+    LocationEnum.OTHER: 1.0,
+}
+
 # From 'Product prices'!E8
 SPACE_HEATING_UPFRONT_COST = {
     SpaceHeatingEnum.ELECTRIC_HEAT_PUMP: {

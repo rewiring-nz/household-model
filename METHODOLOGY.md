@@ -15,9 +15,61 @@ Our modelling uses household and vehicle energy use data at a per machine level 
 
 ### Energy Use of Appliances
 
-We use energy factors / coefficient of performance across each appliance type to calculate the base energy requirements needed by a household depending on what appliances it uses. Heat pump space heating Coefficient Of Performance (COP) is sourced from EECA and a COP of 4.08 is used for the average heat pump.[^4] Space heating energy factors for other appliances are sourced from the Warm Homes Technical Report published by the Ministry for the Environment in November 2005.[^5] 
+We use energy factors / coefficient of performance across each appliance type to calculate the base energy requirements needed by a household depending on what appliances it uses.
 
-Water heating efficiencies are sourced from the US Department of Energy \- Energy Star ratings scheme.[^6] Electric Resistive Tank water heating is assumed at 90%, and Heat Pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA 408% heat pump efficiency for space heating. 
+#### Space heating
+
+We derive average household energy use across different appliances through the Australian and New Zealand Residential Baseline Study 2021, published November 2022.[^1] Heat pump space heating Coefficient Of Performance (COP) is sourced from EECA and a COP of 4.08 is used for the average heat pump.[^4] Space heating energy factors for other appliances are sourced from the Warm Homes Technical Report published by the Ministry for the Environment in November 2005.[^5] The average energy use per day can be found in the table below.
+
+| Space heating fuel type       | Energy use (kWh/day) |
+|-------------------------------|----------------------|
+| Wood                          | 14.44               |
+| Natural gas                   | 11.73               |
+| LPG                           | 11.73               |
+| Electric resistance           | 9.39                |
+| Electric heat pump            | 2.3                 |
+
+We multiply these national-average energy use values by a region factor, to reflect the different heating needs per region. This is based on [EECA data on air conditioner energy consumption](https://www.genless.govt.nz/assets/Everyone-Resources/air-conditioners-disclaimer.pdf).
+
+| Location                | Heating multiplier |
+|-------------------------|---------------------|
+| Northland              | 0.4938220361       |
+| Auckland               | 0.6315723935       |
+| Waikato                | 1.059378221        |
+| Bay of Plenty          | 0.7750406903       |
+| Gisborne               | 0.9949214495       |
+| Hawke's Bay            | 0.9949214495       |
+| Taranaki               | 0.8800428495       |
+| Manawatū-Whanganui     | 1.04378384         |
+| Wellington             | 1.128513306        |
+| Tasman                 | 0.7750406903       |
+| Nelson                 | 0.7750406903       |
+| Marlborough            | 1.219480523        |
+| West Coast             | 1.451836786        |
+| Canterbury             | 1.558398383        |
+| Otago                  | 1.601023022        |
+| Southland              | 1.764764013        |
+| Stewart Island*              | 1.764764013        |
+| Chatham Islands*              | 1.764764013        |
+| Great Barrier Island*              | 1.0        |
+| Overseas*              | 1.0        |
+| Other*              | 1.0        |
+
+*Data not available, assuming same value as similar region
+
+#### Water heating
+
+Water heating efficiencies are sourced from the US Department of Energy \- Energy Star ratings scheme.[^6] Electric Resistive Tank water heating is assumed at 90%, and Heat Pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
+
+| Water heating fuel type       | Energy use (kWh/day) |
+|-------------------------------|----------------------|
+| Natural gas                   | 6.6                 |
+| LPG                           | 6.6                 |
+| Electric resistance           | 6.97                |
+| Electric heat pump            | 1.71                |
+| Solar                         | 1.71                |
+
+#### Cooktop
 
 Cooktop efficiency is sourced from the Frontier Energy Residential Cooktop Performance and Energy Comparison Study Report \# 501318071-R0, published in July 2019.[^7] Electric oven efficiency is assumed at 95%, and gas/LPG oven at 90%. 
 
@@ -37,9 +89,11 @@ The average New Zealand car drives 10,950 km, rounded to 210 km per week. This i
 
 $31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{km/week}} \times 24\space\text{hours/day} \times 7\space\text{days/week}$.
 
+The dropdown options for vehicle usage in our [household calculator frontend app](https://github.com/rewiring-nz/household-calculator-app/) are `Low (<100 km/wk)`, `Medium (100-300 km/wk)`, and `High (300+ km/wk)`. They are fed into the calculation as 50 km/wk, 210 km/wk (the national average), and 400 km/wk respectively.
+
 ### Scaling energy use by occupancy
 
-We derive average household energy use across different appliances through the Australian and New Zealand Residential Baseline Study 2021, published November 2022.[^1] However, household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
+Household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
 
 Given that much of our energy consumption rates for each household appliances was based on averages from the Australian and New Zealand Residential Baseline Study 2021 (published November 2022), and given that the average New Zealand household has 2.7 occupants according to 2018 Census data ([Household size in New Zealand, Figure.NZ](https://figure.nz/chart/vdTbdOaKUE9zTKo3)), we needed to calculate a multiplier for the occupancy options given in the calculator.
 
@@ -256,6 +310,11 @@ We use current Road User Charges (RUCs) without taking inflation into account:
 - Diesel: $76 per year per 1000km
 
 The model does not provide upfront costs for vehicles, although the calculator app provides a general range to give an indication of replacing fossil fuel vehicles with EVs. The range is based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024. Clean car rebate is not included as it was phased out in 2024. 
+
+## Recommendations
+
+TODO: about how the next steps algo works
+
 
 
 [^1]:  [https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040)

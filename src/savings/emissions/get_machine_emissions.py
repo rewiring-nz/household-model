@@ -1,5 +1,8 @@
 from typing import List, Optional
 
+from constants.machines.space_heating import SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER
+from openapi_client.models.location_enum import LocationEnum
+from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
@@ -11,6 +14,7 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import PeriodEnum
+from savings.energy.scale_energy_by_location import scale_energy_by_location
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -19,6 +23,7 @@ def get_emissions_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
     occupancy: Optional[int] = None,
+    location: Optional[LocationEnum] = None,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
@@ -26,13 +31,17 @@ def get_emissions_per_day(
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
         occupancy (int, optional): The number of people in the household.
+        location (LocationEnum, optional): The location of the machine (for determining heating needs)
 
     Returns:
         float: machine's emissions in kgCO2e per day
     """
+    # TODO: Use get_energy_per_day() for calculating energy, then just multiply by emissions factor
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
     energy_scaled = scale_energy_by_occupancy(energy, occupancy)
+    energy_scaled = scale_energy_by_location(machine_type, energy_scaled, location)
+
     emissions = energy_scaled * EMISSIONS_FACTORS[fuel_type]
     return emissions
 
@@ -40,6 +49,7 @@ def get_emissions_per_day(
 def get_appliance_emissions(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
+    location: LocationEnum,
     occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
@@ -47,13 +57,17 @@ def get_appliance_emissions(
 
     Args:
         appliance (MachineEnum): the appliance
+        appliance_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        location (LocationEnum): The location of the machine (for determining heating needs)
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
         occupancy (int, optional): The number of people in the household. Defaults to None.
 
     Returns:
         float: kgCO2e emitted from appliance over given period
     """
-    emissions_daily = get_emissions_per_day(appliance, appliance_info, occupancy)
+    emissions_daily = get_emissions_per_day(
+        appliance, appliance_info, occupancy, location
+    )
     return scale_daily_to_period(emissions_daily, period)
 
 
