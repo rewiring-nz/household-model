@@ -9,7 +9,7 @@ from tests.mocks import mock_household, mock_household_electrified
 class TestCalculateEmissions(unittest.TestCase):
 
     get_appliance_emissions_side_effect = (
-        lambda self, appliance, appliance_info, occupancy, period: {
+        lambda self, appliance, appliance_info, location, occupancy, period: {
             PeriodEnum.WEEKLY: 1.0,
             PeriodEnum.YEARLY: 52.0,
             PeriodEnum.OPERATIONAL_LIFETIME: 500.0,
@@ -61,8 +61,12 @@ class TestCalculateEmissions(unittest.TestCase):
     def test_calculate_emissions_real_values(self):
         result = calculate_emissions(mock_household, mock_household_electrified)
         occupancy_multiplier = 1.07
+        location_multiplier = 0.6315723935
         before = {
-            "space_heating_wood": 14.44 * 0.016 * occupancy_multiplier,
+            "space_heating_wood": 14.44
+            * 0.016
+            * occupancy_multiplier
+            * location_multiplier,
             "water_heating_gas": 6.6 * 0.201 * occupancy_multiplier,
             "cooktop_resistance": 0.83 * 0.074 * occupancy_multiplier,
             "petrol_car": 31.4 * 0.258 * (250 / 210),
@@ -70,7 +74,10 @@ class TestCalculateEmissions(unittest.TestCase):
             "other": (0.34 + 4.05 + 2.85) * 0.074 * occupancy_multiplier,
         }
         after = {
-            "space_heating_heat_pump": 2.3 * 0.074 * occupancy_multiplier,
+            "space_heating_heat_pump": 2.3
+            * 0.074
+            * occupancy_multiplier
+            * location_multiplier,
             "water_heating_heat_pump": 1.71 * 0.074 * occupancy_multiplier,
             "cooktop_resistance": 0.83 * 0.074 * occupancy_multiplier,  # didn't swap
             "ev_car": 7.324 * 0.074 * (250 / 210),

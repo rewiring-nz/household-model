@@ -14,6 +14,7 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import PeriodEnum
+from savings.energy.scale_energy_by_location import scale_energy_by_location
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -39,13 +40,8 @@ def get_emissions_per_day(
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
     energy_scaled = scale_energy_by_occupancy(energy, occupancy)
-    if type(machine_type) == SpaceHeatingEnum:
-        multiplier = (
-            1
-            if location is None
-            else SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER[location]
-        )
-        energy_scaled = energy_scaled * multiplier
+    energy_scaled = scale_energy_by_location(machine_type, energy_scaled, location)
+
     emissions = energy_scaled * EMISSIONS_FACTORS[fuel_type]
     return emissions
 
@@ -53,6 +49,7 @@ def get_emissions_per_day(
 def get_appliance_emissions(
     appliance: MachineEnum,
     appliance_info: MachineInfoMap,
+    location: LocationEnum,
     occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
 ) -> float:
@@ -60,13 +57,17 @@ def get_appliance_emissions(
 
     Args:
         appliance (MachineEnum): the appliance
+        appliance_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
+        location (LocationEnum): The location of the machine (for determining heating needs)
         period (PeriodEnum, optional): the period over which to calculate the emissions. Calculations over a longer period of time (e.g. 15 years) should use this feature, as there may be external economic factors which impact the result, making it different to simply multiplying the daily emissions value. Defaults to PeriodEnum.DAILY.
         occupancy (int, optional): The number of people in the household. Defaults to None.
 
     Returns:
         float: kgCO2e emitted from appliance over given period
     """
-    emissions_daily = get_emissions_per_day(appliance, appliance_info, occupancy)
+    emissions_daily = get_emissions_per_day(
+        appliance, appliance_info, occupancy, location
+    )
     return scale_daily_to_period(emissions_daily, period)
 
 

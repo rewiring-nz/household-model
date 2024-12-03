@@ -16,6 +16,7 @@ from constants.machines.machine_info import MachineInfoMap
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.space_heating import SPACE_HEATING_INFO
 from constants.utils import PeriodEnum
+from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 from savings.energy.get_machine_energy import (
     get_energy_per_day,
@@ -95,9 +96,15 @@ class TestGetEnergyPerDay(TestCase):
 )
 class TestGetEnergyPerPeriod:
     def test_it_calls_get_energy_per_day_correctly(self, mock_get_energy_per_day, _):
-        get_energy_per_period(mock_household.space_heating, SPACE_HEATING_INFO, 1)
+        get_energy_per_period(
+            mock_household.space_heating,
+            SPACE_HEATING_INFO,
+            1,
+            PeriodEnum.DAILY,
+            LocationEnum.OTAGO,
+        )
         mock_get_energy_per_day.assert_called_once_with(
-            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, 1
+            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, 1, LocationEnum.OTAGO
         )
 
     def test_it_calls_get_energy_per_day_correctly_with_defaults(
@@ -105,7 +112,7 @@ class TestGetEnergyPerPeriod:
     ):
         get_energy_per_period(mock_household.space_heating, SPACE_HEATING_INFO)
         mock_get_energy_per_day.assert_called_once_with(
-            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, None
+            SpaceHeatingEnum.WOOD, SPACE_HEATING_INFO, None, None
         )
 
     def test_it_calls_scale_daily_to_period_correctly(
@@ -177,7 +184,9 @@ class TestGetEnergyPerPeriod:
 )
 class TestGetTotalApplianceEnergy:
     def test_it_combines_fuel_types_correctly(self, mock_get_energy_per_period):
-        result = get_total_appliance_energy(mock_household, PeriodEnum.DAILY)
+        result = get_total_appliance_energy(
+            mock_household, PeriodEnum.DAILY, LocationEnum.OTAGO
+        )
         expected = {
             FuelTypeEnum.ELECTRICITY: 6,
             FuelTypeEnum.NATURAL_GAS: 30,
@@ -215,7 +224,9 @@ class TestGetTotalApplianceEnergy:
                 # FuelTypeEnum.DIESEL: 9,
             },
         ]
-        result = get_total_appliance_energy(mock_household, PeriodEnum.DAILY)
+        result = get_total_appliance_energy(
+            mock_household, PeriodEnum.DAILY, LocationEnum.OTAGO
+        )
         expected = {
             FuelTypeEnum.ELECTRICITY: 6,
             FuelTypeEnum.NATURAL_GAS: 0,

@@ -1,8 +1,9 @@
 import json
-from typing import List
+from typing import List, Optional
 from constants.machines.vehicles import RUCS
 from constants.solar import SOLAR_FEEDIN_TARIFF_2024, SOLAR_FEEDIN_TARIFF_AVG_15_YEARS
 from constants.utils import DAYS_PER_YEAR, WEEKS_PER_YEAR, PeriodEnum
+from openapi_client.models.location_enum import LocationEnum
 from openapi_client.models.vehicle import Vehicle
 from params import (
     OPERATIONAL_LIFETIME,
@@ -43,26 +44,36 @@ def calculate_opex(
     # Weekly
     print(f"\n\n\nWEEKLY")
     print(f"\nBefore")
-    weekly_before = _get_total_opex(current_household, PeriodEnum.WEEKLY)
+    weekly_before = _get_total_opex(
+        current_household, PeriodEnum.WEEKLY, current_household.location
+    )
     print(f"After")
-    weekly_after = _get_total_opex(electrified_household, PeriodEnum.WEEKLY)
+    weekly_after = _get_total_opex(
+        electrified_household, PeriodEnum.WEEKLY, electrified_household.location
+    )
 
     print(f"\n\n\nYEARLY")
     # Yearly
     print(f"\nBefore")
-    yearly_before = _get_total_opex(current_household, PeriodEnum.YEARLY)
+    yearly_before = _get_total_opex(
+        current_household, PeriodEnum.YEARLY, current_household.location
+    )
     print(f"After")
-    yearly_after = _get_total_opex(electrified_household, PeriodEnum.YEARLY)
+    yearly_after = _get_total_opex(
+        electrified_household, PeriodEnum.YEARLY, electrified_household.location
+    )
 
     print(f"\n\n\nLIFETIME")
     # Operational lifetime
     print(f"\nBefore")
     lifetime_before = _get_total_opex(
-        current_household, PeriodEnum.OPERATIONAL_LIFETIME
+        current_household, PeriodEnum.OPERATIONAL_LIFETIME, current_household.location
     )
     print(f"After")
     lifetime_after = _get_total_opex(
-        electrified_household, PeriodEnum.OPERATIONAL_LIFETIME
+        electrified_household,
+        PeriodEnum.OPERATIONAL_LIFETIME,
+        electrified_household.location,
     )
 
     return Opex(
@@ -85,9 +96,11 @@ def calculate_opex(
     )
 
 
-def _get_total_opex(household: Household, period: PeriodEnum) -> float:
+def _get_total_opex(
+    household: Household, period: PeriodEnum, location: LocationEnum
+) -> float:
 
-    energy_needs = get_total_energy_needs(household, period)
+    energy_needs = get_total_energy_needs(household, period, location)
     electricity_consumption = get_electricity_consumption(
         energy_needs, household.solar, household.battery, household.location, period
     )

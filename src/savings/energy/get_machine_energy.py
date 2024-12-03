@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, TypedDict
 from constants.fuel_stats import FuelTypeEnum
 from constants.machines.cooktop import COOKTOP_INFO
 from constants.machines.space_heating import (
-    SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER,
     SPACE_HEATING_INFO,
 )
 from constants.machines.water_heating import WATER_HEATING_INFO
@@ -15,7 +14,7 @@ from constants.machines.vehicles import (
 )
 from constants.utils import PeriodEnum
 from openapi_client.models.location_enum import LocationEnum
-from openapi_client.models.space_heating_enum import SpaceHeatingEnum
+from savings.energy.scale_energy_by_location import scale_energy_by_location
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -30,9 +29,11 @@ class MachineEnergyNeeds(TypedDict):
 
 
 def get_total_energy_needs(
-    household: Household, period: PeriodEnum
+    household: Household,
+    period: PeriodEnum,
+    location: LocationEnum,
 ) -> MachineEnergyNeeds:
-    appliance_energy = get_total_appliance_energy(household, period)
+    appliance_energy = get_total_appliance_energy(household, period, location)
     vehicle_energy = get_vehicle_energy(household.vehicles, period)
     other_energy = get_other_appliances_energy_per_period(household.occupancy, period)
     return {
@@ -75,13 +76,9 @@ def get_energy_per_day(
             raise ValueError(f"Can not find fuel type value for {machine_type}")
 
         e_daily_scaled = scale_energy_by_occupancy(e_daily, occupancy)
-        if type(machine_type) == SpaceHeatingEnum:
-            multiplier = (
-                1
-                if location is None
-                else SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER[location]
-            )
-            e_daily_scaled = e_daily_scaled * multiplier
+        e_daily_scaled = scale_energy_by_location(
+            machine_type, e_daily_scaled, location
+        )
 
         e_fuel_type[fuel_type] = e_daily_scaled
 
@@ -93,6 +90,7 @@ def get_energy_per_period(
     machine_info: MachineInfoMap,
     occupancy: Optional[int] = None,
     period: PeriodEnum = PeriodEnum.DAILY,
+    location: Optional[LocationEnum] = None,
 ) -> Dict[FuelTypeEnum, float]:
     """Calculates the energy needs of machines in given household over given period
 
@@ -101,11 +99,12 @@ def get_energy_per_period(
         machine_info (MachineInfoMap): info about the machine's energy use per day and its fuel type
         occupancy (int, optional): The number of people in the household. Defaults to None.
         period (PeriodEnum, optional): the period over which to calculate the energy use. Defaults to PeriodEnum.DAILY.
+        location (LocationEnum, optional): The location of the machine (for determining heating needs)
 
     Returns:
         Dict[FuelTypeEnum, float]: energy needs per fuel type of operating machine over given period in kWh
     """
-    e_daily = get_energy_per_day(machine, machine_info, occupancy)
+    e_daily = get_energy_per_day(machine, machine_info, occupancy, location)
     e_daily_scaled = {
         fuel_type: scale_daily_to_period(e, period) for fuel_type, e in e_daily.items()
     }
@@ -113,17 +112,27 @@ def get_energy_per_period(
 
 
 def get_total_appliance_energy(
-    household: Household, period: PeriodEnum
+    household: Household,
+    period: PeriodEnum,
+    location: LocationEnum,
 ) -> Dict[FuelTypeEnum, float]:
 
     space_heating_energy = get_energy_per_period(
-        household.space_heating, SPACE_HEATING_INFO, household.occupancy, period
+        household.space_heating,
+        SPACE_HEATING_INFO,
+        household.occupancy,
+        period,
+        location,
     )
     water_heating_energy = get_energy_per_period(
-        household.water_heating, WATER_HEATING_INFO, household.occupancy, period
+        household.water_heating,
+        WATER_HEATING_INFO,
+        household.occupancy,
+        period,
+        location,
     )
     cooktop_energy = get_energy_per_period(
-        household.cooktop, COOKTOP_INFO, household.occupancy, period
+        household.cooktop, COOKTOP_INFO, household.occupancy, period, location
     )
     energy_dict = {}
     for fuel in FuelTypeEnum:
