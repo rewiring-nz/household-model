@@ -292,23 +292,33 @@ WWe assume the a self-consumption rate of 50% for appliance electricity needs, a
 
 Please refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
 
-## Battery impact
+### Battery impact
 
 We then calculate how much of the solar generation is stored in battery, then consumed or exported. This impacts how much of the grid's peak prices can be offset by night rates.
 
 We assume that all the electricity stored in the battery is from solar. We don't yet allow for batteries (and therefore arbitrage) without solar. If the energy remaining from generation after self-consumption is less than the battery's capacity, battery stores all the remaining energy. If there is more energy remaining than the capacity, the battery is filled to capacity. We assume that all machine types have the same self-consumption rates from the battery. A future improvement may be to have different battery consumption rates for each machine type, since certain machines are able to shift their consumption times more easily than others (e.g. water heaters vs. cooking).
 
-## Solar export
+### Solar export
 
 The amount of electricity exported to the grid is calculated as follows:
 
 $E_{exported} = E_{generated} - E_{battery} - E_{self-consumed}$
 
-## Grid consumption
+### Grid consumption
 
-Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the [MBIE Energy Prices data](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/), based on 2024 New Zealand dollars. These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
+The amount of electricity consumed from the grid to meet any remaining electricity needs is follows:
 
-We base the rate of inflation on the New Zealand CPI history from 2000 to 2024 at 2.56%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). The specific rate of inflation for each fuel type, alongside today's fixed & volume costs versus the average over the next 15 years, can be found in the table below. Our cost savings calculations for weekly & yearly savings use 2024 prices, while our lifetime savings use the average prices over 15 years.
+$E_{grid} = E_{needs remaining} - E_{battery}$
+
+The energy needs remaining are whatever is left after solar self-consumption ($E_{self-consumed}$).
+
+### Energy Prices
+
+From here, we can multiply the electricity and fuel consumed with their prices, as well as the energy exported with the solar export tariff. We also include the fixed costs of grid and gas/LPG connections. All houses remain connected to the grid, paying yearly grid connection fixed costs, but electrified homes no longer need to pay yearly fixed costs for gas connections.
+
+Our opex calculations for daily, weekly, and yearly savings use 2024 prices, while our lifetime savings use the average prices over 15 years. Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the [MBIE Energy Prices data](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/), based on 2024 New Zealand dollars. These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
+
+We base the rate of inflation on the New Zealand CPI history from 2000 to 2024 at 2.56%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). The specific rate of inflation for each fuel type, alongside today's fixed & volume costs versus the average over the next 15 years, can be found in the table below. 
 
 Table 1: Energy prices
 
@@ -325,9 +335,23 @@ Table 1: Energy prices
 
 The battery export feed-in-tariff is assumed to be the same as the solar feed-in-tariff. This is considered conservative, as the battery can feed in at peak times when electricity prices are significantly higher, and where some EDBs and retailers provide higher reward for peak feed-in. 
 
-All households remain connected to the grid, consume grid electricity, and pay for grid fixed costs and volume costs for the amount of electricity used.
+> [!NOTE]
+> In order to take into account the impact of the battery, we use an adjusted grid price that reflects the proportion of electricity that could be purchased off peak. Please refer to the logic in `get_effective_grid_price()` ([file](src/savings/opex/calculate_opex.py)) for more details.
 
-## Replacement Costs
+
+### Road User Charges
+
+We use current Road User Charges (RUCs) without taking inflation into account:
+
+- Electric: $76 per year per 1000km
+- Plug-in hybrid: $38 per year per 1000km
+- Hybrid: $0 per year per 1000km
+- Petrol: $0 per year per 1000km
+- Diesel: $76 per year per 1000km
+
+We have not yet included vehicle servicing costs, which tend to be lower for EVs than fossil fuel machines.
+
+## Replacement & Upfront Costs
 
 ### Appliances
 
@@ -354,14 +378,6 @@ The following appliance price and installation cost are assumed:
 | Cooktop       | LPG                         | 1022           | 630              |
 
 ### Vehicles
-
-We use current Road User Charges (RUCs) without taking inflation into account:
-
-- Electric: $76 per year per 1000km
-- Plug-in hybrid: $38 per year per 1000km
-- Hybrid: $0 per year per 1000km
-- Petrol: $0 per year per 1000km
-- Diesel: $76 per year per 1000km
 
 The model does not provide upfront costs for vehicles, although the calculator app provides a general range to give an indication of replacing fossil fuel vehicles with EVs. The range is based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024. Clean car rebate is not included as it was phased out in 2024. 
 
