@@ -14,6 +14,7 @@ def scale_energy_by_location(
     """Scales energy consumption by location
 
     Args:
+        machine_type (MachineEnum): the type of machine
         energy (float): energy consumption in kWh for NZ average household
         location (LocationEnum, optional): The location of the machine
 
