@@ -185,7 +185,7 @@ Table 2: Scaling factors for energy consumption based on occupancy
 
 ### 3.3 Vehicles
 
-We derive average vehicle energy use through the [EECA Energy End Use Database](https://www.[eeca.govt.nz/insights/data-tools/energy-end-use-database/) for 2019. We use data from 2019 for vehicles, as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019.
+We derive average vehicle energy use through the [EECA Energy End Use Database](https://www.eeca.govt.nz/insights/data-tools/energy-end-use-database/) for 2019. We use data from 2019 for vehicles, as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019.
 
 | Vehicle type | Energy use (kWh/day) |
 |--------------|----------------------|
@@ -195,7 +195,7 @@ We derive average vehicle energy use through the [EECA Energy End Use Database](
 
 Plug-in hybrids are assumed to be 60% petrol and 40% electric, while hybrids are considered to be 70% petrol and 30% electric.
 
-We scale this average energy use by each vehicle's stated usage. The average New Zealand car drives 10,950 km, rounded to 210 km per week (taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/). We use this to scale the energy usage per vehicle. For example, if a petrol vehicle's mileage is 300 kms/week, then its energy usage would be:
+We scale this average energy use by each vehicle's stated usage. The average New Zealand car drives 10,950 km, rounded to 210 km per week, taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/). We use this to scale the energy usage per vehicle. For example, if a petrol vehicle's mileage is 300 kms/week, then its energy usage would be:
 
 $31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{km/week}} \times 24\space\text{hours/day} \times 7\space\text{days/week}$.
 
