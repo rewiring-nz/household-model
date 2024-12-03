@@ -47,29 +47,29 @@ We multiply these national average energy use values by a region factor, to refl
 
 | Location                | Heating multiplier |
 |-------------------------|---------------------|
-| Northland              | 0.4938220361       |
-| Auckland               | 0.6315723935       |
-| Waikato                | 1.059378221        |
-| Bay of Plenty          | 0.7750406903       |
-| Gisborne               | 0.9949214495       |
-| Hawke's Bay            | 0.9949214495       |
-| Taranaki               | 0.8800428495       |
-| Manawatū-Whanganui     | 1.04378384         |
-| Wellington             | 1.128513306        |
-| Tasman                 | 0.7750406903       |
-| Nelson                 | 0.7750406903       |
-| Marlborough            | 1.219480523        |
-| West Coast             | 1.451836786        |
-| Canterbury             | 1.558398383        |
-| Otago                  | 1.601023022        |
-| Southland              | 1.764764013        |
-| Stewart Island*              | 1.764764013        |
-| Chatham Islands*              | 1.764764013        |
-| Great Barrier Island*              | 1.0        |
-| Overseas*              | 1.0        |
-| Other*              | 1.0        |
+| Northland              | 0.49       |
+| Auckland               | 0.63       |
+| Waikato                | 1.06        |
+| Bay of Plenty          | 0.78       |
+| Gisborne               | 0.99       |
+| Hawke's Bay            | 0.99       |
+| Taranaki               | 0.88       |
+| Manawatū-Whanganui     | 1.04         |
+| Wellington             | 1.13        |
+| Tasman                 | 0.78       |
+| Nelson                 | 0.78       |
+| Marlborough            | 1.22        |
+| West Coast             | 1.45        |
+| Canterbury             | 1.56        |
+| Otago                  | 1.60        |
+| Southland              | 1.76        |
+| Stewart Island*              | 1.76        |
+| Chatham Islands*              | 1.76        |
+| Great Barrier Island*              | 1.00        |
+| Overseas*              | 1.00        |
+| Other*              | 1.00        |
 
-*Data not available, assuming same value as similar region
+*Data not available, assuming same value as a similar region
 
 #### 3.1.3 Water heating
 
@@ -130,7 +130,7 @@ We did not use the separate gas energy consumption numbers to scale gas energy u
 
 #### 3.2.2 Nonlinear interpolation
 
-In order to calculate the multiplier of the average energy consumption values, we first needed to find the ratio value for our reference occupancy of 2.7. To do this, we fitted an exponential model to the data in Table 1, using the first four data points and excluding `5+` as this is not actually a discrete data point, but a range. Please refer to `notebooks/occupancy.ipynb` for the working on model fitting.
+In order to calculate the multiplier of the average energy consumption values, we first needed to find the ratio value for our reference occupancy of 2.7. To do this, we fitted an exponential model to the data in Table 1, using the first four data points and excluding `5+` as this is not actually a discrete data point, but a range. Please refer to [notebooks/occupancy.ipynb](notebooks/occupancy.ipynb) for the working on model fitting.
 
 $f(x) = a \cdot (1 - e^{-b \cdot (x-1)}) + c$
 
@@ -300,7 +300,7 @@ WWe assume the a self-consumption rate of 50% for appliance electricity needs, a
 - We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week.
 - The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods.
 
-Please refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
+Please refer to the logic in [get_e_consumed_from_solar()](src/savings/energy/get_electricity_consumption.py) for more details.
 
 ### 5.2 Battery impact
 
@@ -346,7 +346,7 @@ Table 1: Energy prices
 The battery export feed-in-tariff is assumed to be the same as the solar feed-in-tariff. This is considered conservative, as the battery can feed in at peak times when electricity prices are significantly higher, and where some EDBs and retailers provide higher reward for peak feed-in. 
 
 > [!NOTE]
-> In order to take into account the impact of the battery, we use an adjusted grid price that reflects the proportion of electricity that could be purchased off peak. Please refer to the logic in `get_effective_grid_price()` ([file](src/savings/opex/calculate_opex.py)) for more details.
+> In order to take into account the impact of the battery, we use an adjusted grid price that reflects the proportion of electricity that could be purchased off peak. Please refer to the logic in [get_effective_grid_price()](src/savings/opex/calculate_opex.py) for more details.
 
 
 ### 5.6 Road User Charges
