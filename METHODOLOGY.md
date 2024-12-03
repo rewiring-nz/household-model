@@ -195,11 +195,11 @@ The dropdown options for vehicle usage in our [household calculator frontend app
 
 The formula for calculating electricity generation from solar is as follows:
 
-$E = S \cdot C_{loc} \cdot D$
+$E_{generated} = S \cdot C_{loc} \cdot D$
 
 Where:
 
-- $E$ is the energy generated per hour
+- $E_{generated}$ is the energy generated per hour
 - $S$ is the solar panel size in kW
 - $C_{loc}$ is the solar capacity factor for a given location
 - $D$ is the degradation over the 30 year lifespan of the panels
@@ -243,15 +243,15 @@ We assume the following solar capacity factors $C_{loc}$ per region.
 
 The formula for calculating battery capacity per day is as follows:
 
-$E = C \cdot c_{day} \cdot \bar{D}_{15} \cdot (1-L)$
+$E_{battery} = C \cdot c_{day} \cdot \bar{D}_{15} \cdot (1-L)$
 
 Where:
 
-- $E$ is the energy storage capacity in kWh/day
+- $E_{battery}$ is the energy storage capacity in kWh/day
 - $C$ is the battery capacity in kWh/cycle
 - $c_{day}$ is the number of battery cycles per day, assumed to be 1 (it is filled up and depleted once per day)
 - $\bar{D}_{15}$ is the average degraded performance of the battery over a 15 year product lifetime, calculated to be 85.22%
-- $L$ are the losses from the internal electronics & wiring of the battery, assumed to be 5%
+- $L$ are the losses from the internal electronics & wiring of the battery, assumed to be 5%. In other words, we assume the round-trip efficiency is 95%.
 
 We assume that all the electricity stored in the battery is from solar. The model does not handle the scenario where there are batteries but no solar (we don't model arbitrage). The API does not accept households with a battery but no solar.
 
@@ -281,26 +281,30 @@ We add the fixed costs (gas, LPG, or grid connections) and Road User Charges, an
 
 ### Solar self-consumption
 
-How much the household is able to self-consume their generated solar electricity will influence their savings.
+How much a household is able to self-consume ($E_{self-consumed}$) from their generated solar electricity will influence their savings.
 
-To calculate how much of their generated solar they are able to consume, we assume the a self-consumption rate of 50% for appliance energy needs, and 50% for vehicle energy needs. This is based on the following assumptions:
+WWe assume the a self-consumption rate of 50% for appliance electricity needs, and 50% for vehicle electricity needs. This is based on the following assumptions:
 
 - Water heating, which is near a third of average household loads, can be moved almost entirely into the solar window in what is described as a “thermal battery”. This is similar to existing “ripple control” used in New Zealand electric water heaters to avoid peak electricity times.
 - Other appliances, such as space heaters, can only be moved a small amount, with significant energy needs being met outside the solar window.
 - We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week.
 - The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods.
 
-Refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
+Please refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
 
 ## Battery impact
 
-We then calculate how much of the solar generation is stored in battery, then consumed or exported.
+We then calculate how much of the solar generation is stored in battery, then consumed or exported. This impacts how much of the grid's peak prices can be offset by night rates.
 
- assume all machine types have the same self-consumption rates from the battery, so we can ignore how much of each machine category's needs are met by the battery storage. In future, we may wish to be more sophisticated about how certain machines pull more from the battery due to usage patterns.
-    # We assume that all the electricity stored in the battery is from solar. We don't yet allow for batteries (and therefore arbitrage) without solar.
-    
+We assume that all the electricity stored in the battery is from solar. We don't yet allow for batteries (and therefore arbitrage) without solar. If the energy remaining from generation after self-consumption is less than the battery's capacity, battery stores all the remaining energy. If there is more energy remaining than the capacity, the battery is filled to capacity. We assume that all machine types have the same self-consumption rates from the battery. A future improvement may be to have different battery consumption rates for each machine type, since certain machines are able to shift their consumption times more easily than others (e.g. water heaters vs. cooking).
 
-Battery cycle costs are calculated over a 15 year, 5475 cycle life. We assume a round trip efficiency of 95%. 
+## Solar export
+
+The amount of electricity exported to the grid is calculated as follows:
+
+$E_{exported} = E_{generated} - E_{battery} - E_{self-consumed}$
+
+## Grid consumption
 
 Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the [MBIE Energy Prices data](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/), based on 2024 New Zealand dollars. These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
 
