@@ -1,4 +1,4 @@
-# Methodology and assumptions
+# Methodology
 
 ## Summary of modelling approach
 
@@ -11,16 +11,30 @@ Our modelling uses household and vehicle energy use data at a per machine level 
 - emissions: the amount of emissions saved based on energy consumption and emissions factor of the fuel type
 - product replacement costs: the costs to replace like for like, or to replace a fossil fuel option with an electrified option including installation costs
 
+## Electrifying the house
+
+For the given household inputs, we create a before & after state by "electrifying" the household. This means replacing appliances with the most efficient electric models.
+
+- Space heaters: everything except heat pumps are replaced with heat pumps. This includes electric resistive heaters, because the efficiency gains in upgrading to a heat pump are usually worth it.
+- Water heaters: fossil fuel models (gas and LPG) upgraded to electric water heat pumps.
+- Cooktops: fossil fuel models (gas and LPG) upgraded to electric induction cooktops.
+- Vehicles: if the household has indicated that they would like to switch to an EV, we will replace those specified vehicles with an EV.
+
+We also add solar & batteries if the household has indicated that they would like them.
+
 ## Energy Use
 
-### Energy Use of Appliances
+Next, we calculate the energy use, which we use to determine the emissions and operating costs.
 
-We use energy factors / coefficient of performance across each appliance type to calculate the base energy requirements needed by a household depending on what appliances it uses.
+### Appliances
+
+We derive average household energy use across different appliances through the [Australian and New Zealand Residential Baseline Study 2021](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040), published November 2022. From here, these are scaled by regional heat demand differences where applicable, then scaled to the appropriate period (e.g. weekly, yearly, operational lifetime of 15 years).
 
 #### Space heating
 
-We derive average household energy use across different appliances through the Australian and New Zealand Residential Baseline Study 2021, published November 2022.[^1] Heat pump space heating Coefficient Of Performance (COP) is sourced from EECA and a COP of 4.08 is used for the average heat pump.[^4] Space heating energy factors for other appliances are sourced from the Warm Homes Technical Report published by the Ministry for the Environment in November 2005.[^5] The average energy use per day can be found in the table below.
+Space heating energy factors for all heater types except heat pumps are sourced from the [Warm Homes Technical Report](http://environment.govt.nz/assets/Publications/Files/warm-homes-heating-optionsphase1.pdf) published by the Ministry for the Environment in November 2005. Average heat pump energy use was calculated using a coefficient of performance of 4.08, sourced from [EECA sales & efficiency data](https://www.eeca.govt.nz/insights/eeca-insights/e3-programme-sales-and-efficiency-data/).
 
+Average energy use per day for space heater types:
 | Space heating fuel type       | Energy use (kWh/day) |
 |-------------------------------|----------------------|
 | Wood                          | 14.44               |
@@ -29,7 +43,7 @@ We derive average household energy use across different appliances through the A
 | Electric resistance           | 9.39                |
 | Electric heat pump            | 2.3                 |
 
-We multiply these national-average energy use values by a region factor, to reflect the different heating needs per region. This is based on [EECA data on air conditioner energy consumption](https://www.genless.govt.nz/assets/Everyone-Resources/air-conditioners-disclaimer.pdf).
+We multiply these national average energy use values by a region factor, to reflect the different heating needs per region. This is based on [EECA data on air conditioner energy consumption](https://www.genless.govt.nz/assets/Everyone-Resources/air-conditioners-disclaimer.pdf).
 
 | Location                | Heating multiplier |
 |-------------------------|---------------------|
@@ -59,39 +73,30 @@ We multiply these national-average energy use values by a region factor, to refl
 
 #### Water heating
 
-Water heating efficiencies are sourced from the US Department of Energy \- Energy Star ratings scheme.[^6] Electric Resistive Tank water heating is assumed at 90%, and Heat Pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
+Water heating efficiencies are sourced from the [US Department of Energy Energy Star ratings scheme](https://www.energystar.gov/products/water_heaters/residential_water_heaters_key_ product_criteria). Electric resistive tank water heating is assumed at 90%, and heat pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA's 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
 
+Average energy use per day for water heater type:
 | Water heating fuel type       | Energy use (kWh/day) |
 |-------------------------------|----------------------|
 | Natural gas                   | 6.6                 |
 | LPG                           | 6.6                 |
-| Electric resistance           | 6.97                |
+| Electric resistive           | 6.97                |
 | Electric heat pump            | 1.71                |
 | Solar                         | 1.71                |
 
 #### Cooktop
 
-Cooktop efficiency is sourced from the Frontier Energy Residential Cooktop Performance and Energy Comparison Study Report \# 501318071-R0, published in July 2019.[^7] Electric oven efficiency is assumed at 95%, and gas/LPG oven at 90%. 
+Cooktop efficiency is sourced from the Frontier Energy [Residential Cooktop Performance and Energy Comparison Study #501318071-R0](https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf), published in July 2019. Electric efficiency is assumed at 95%, and gas/LPG at 90%. 
 
-### Energy Use by Vehicles
+Average energy use per day for cooktop type:
+| Cooktop fuel type       | Energy use (kWh/day) |
+|-------------------------------|----------------------|
+| Natural gas                   | 1.94                 |
+| LPG                           | 1.94                 |
+| Electric resistive           | 0.83                |
+| Electric induction            | 0.75                |
 
-We derive average vehicle energy use through the EECA energy end use database for 2019.[^2] We use data from 2019 for vehicles as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019\.
-
-| Vehicle type | Energy use (kWh/day) |
-|--------------|----------------------|
-| Petrol       | 31.4                |
-| Diesel       | 22.8                |
-| Electric     | 7.324               |
-
-Plug-in hybrids are assumed to be 60% petrol and 40% electric, while hybrids are considered to be 70% petrol and 30% electric.
-
-The average New Zealand car drives 10,950 km, rounded to 210 km per week. This is taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/) for the year 2019, to avoid the anomalies from COVID-19. We use this to scale the energy usage per vehicle. For example, if a petrol vehicle's mileage is 300 kms/week, then its energy usage would be:
-
-$31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{km/week}} \times 24\space\text{hours/day} \times 7\space\text{days/week}$.
-
-The dropdown options for vehicle usage in our [household calculator frontend app](https://github.com/rewiring-nz/household-calculator-app/) are `Low (<100 km/wk)`, `Medium (100-300 km/wk)`, and `High (300+ km/wk)`. They are fed into the calculation as 50 km/wk, 210 km/wk (the national average), and 400 km/wk respectively.
-
-### Scaling energy use by occupancy
+### Scaling appliance energy use by occupancy
 
 Household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
 
@@ -168,6 +173,24 @@ Table 2: Scaling factors for energy consumption based on occupancy
 | 4 | 1.07 |
 | 5+ | 1.09 |
 
+### Vehicles
+
+We derive average vehicle energy use through the [EECA Energy End Use Database](https://www.[eeca.govt.nz/insights/data-tools/energy-end-use-database/) for 2019. We use data from 2019 for vehicles, as this is before COVID lockdowns and the database for vehicles had not been updated for 2022 onwards when our analysis was completed. The assumption made here is that New Zealanders drive similar amounts per year today as they did in 2019.
+
+| Vehicle type | Energy use (kWh/day) |
+|--------------|----------------------|
+| Petrol       | 31.4                |
+| Diesel       | 22.8                |
+| Electric     | 7.324               |
+
+Plug-in hybrids are assumed to be 60% petrol and 40% electric, while hybrids are considered to be 70% petrol and 30% electric.
+
+We scale this average energy use by each vehicle's stated usage. The average New Zealand car drives 10,950 km, rounded to 210 km per week (taken from 2019 stats on light passenger and light commercial vehicles from the [Ministry of Transport's Annual Fleet Statistics](https://www.transport.govt.nz/statistics-and-insights/fleet-statistics/annual-fleet-statistics/). We use this to scale the energy usage per vehicle. For example, if a petrol vehicle's mileage is 300 kms/week, then its energy usage would be:
+
+$31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{km/week}} \times 24\space\text{hours/day} \times 7\space\text{days/week}$.
+
+The dropdown options for vehicle usage in our [household calculator frontend app](https://github.com/rewiring-nz/household-calculator-app/) are `Low (<100 km/wk)`, `Medium (100-300 km/wk)`, and `High (300+ km/wk)`. These options correspond to values `50 km/wk`, `210 km/wk` (the national average), and `400 km/wk` respectively.
+
 ### Solar
 
 The formula for calculating electricity generation from solar is as follows:
@@ -181,7 +204,12 @@ Where:
 - $C_{loc}$ is the solar capacity factor for a given location
 - $D$ is the degradation over the 30 year lifespan of the panels
 
-We assume the following static capacity factors per region. However, this is a conservative estimate as capacity factor likely to increase over the next 30 years, as it has historically.
+We assume 0.5% degradation per year over a 30-year lifetime, which averages out to $D = 6.92%$ degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years.
+
+We assume the following solar capacity factors $C_{loc}$ per region.
+
+> [!NOTE]
+> These are is a conservative, static estimates. Solar capacity factor likely to increase over the years due to technology advancements, as it has rapidly in recent history.
 
 | Region                 | Solar capacity factor (%) |
 |------------------------|---------------------------|
@@ -211,27 +239,25 @@ We assume the following static capacity factors per region. However, this is a c
 | Overseas              | 15.0%                     |
 | Other                 | 15.0%                     |
 
-We also assume:
-
-- 0.5% degradation per year over a 30-year lifetime, which averages out to 6.92% degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years.
-- 50% self-consumption, i.e. 50% of appliance energy needs and 50% of vehicle energy needs can be met during the solar window.
-    - Water heating, which is near a third of average household loads, can be moved almost entirely into the solar window in what is described as a “thermal battery”. This is similar to existing “ripple control” used in New Zealand electric water heaters to avoid peak electricity times.
-    - Other appliances, such as space heaters, can only be moved a small amount, with significant energy needs being met outside the solar window.
-    - We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week.
-    - The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods.
-
 ### Battery
 
-We assume:
+The formula for calculating battery capacity per day is as follows:
 
-- Average degradation of 85.22% over a 15 year product lifetime
-- 1 battery cycle per day (it is filled up and depleted once per day)
-- 5% of electricity stored is lost to electronics & wiring to keep the battery running
-- All the electricity stored in the battery is from solar. The model does not handle the scenario where there are batteries but no solar (we don't model arbitrage). The API does not accept households with a battery but no solar.
+$E = C \cdot c_{day} \cdot \bar{D}_{15} \cdot (1-L)$
+
+Where:
+
+- $E$ is the energy storage capacity in kWh/day
+- $C$ is the battery capacity in kWh/cycle
+- $c_{day}$ is the number of battery cycles per day, assumed to be 1 (it is filled up and depleted once per day)
+- $\bar{D}_{15}$ is the average degraded performance of the battery over a 15 year product lifetime, calculated to be 85.22%
+- $L$ are the losses from the internal electronics & wiring of the battery, assumed to be 5%
+
+We assume that all the electricity stored in the battery is from solar. The model does not handle the scenario where there are batteries but no solar (we don't model arbitrage). The API does not accept households with a battery but no solar.
 
 ## Emissions
 
-To calculate emissions, we take the energy consumption from the various machines, and multiply these by the emissions factors. We use these emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
+To calculate emissions, we take the energy consumption from the various machines and their fuel types, and multiply these by the emissions factors. We use these emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
 
 | Energy Type   | Emissions Factor (kgCO₂e/kWh) |
 |---------------|-------------------------------|
@@ -242,11 +268,41 @@ To calculate emissions, we take the energy consumption from the various machines
 | Petrol        | 0.258                         |
 | Diesel        | 0.253                         |
 
+To calculate emissions savings, we simply take the difference between the current and electrified household's total emissions.
+
+> [!NOTE]
+> Emissions reductions from electrification are likely conservative, as it currently does not distinguish the amount of electricity that is self-consumed from solar (zero emissions) from the electricity consumed from the grid (emissions factor of 0.074). This has been noted as a future improvement in #46.
+
 ## Operating Costs
 
-### Energy
+After calculating energy consumption across fuel types, we first calculate how much of the electricity need is met by solar, battery storage, or straight from the grid, and how much solar-generated electricity is left over for export. Then, we calculate the volume energy costs for each fuel type, including the various sources of electricity, using the appropriate pricing.
 
-Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the MBIE Energy Prices data, based on 2024 New Zealand dollars.[^10] These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
+We add the fixed costs (gas, LPG, or grid connections) and Road User Charges, and subtract the revenue from solar export. This gives the total operating costs for a given household. We take the difference between the total operating costs for the current and electrified household to get the savings.
+
+### Solar self-consumption
+
+How much the household is able to self-consume their generated solar electricity will influence their savings.
+
+To calculate how much of their generated solar they are able to consume, we assume the a self-consumption rate of 50% for appliance energy needs, and 50% for vehicle energy needs. This is based on the following assumptions:
+
+- Water heating, which is near a third of average household loads, can be moved almost entirely into the solar window in what is described as a “thermal battery”. This is similar to existing “ripple control” used in New Zealand electric water heaters to avoid peak electricity times.
+- Other appliances, such as space heaters, can only be moved a small amount, with significant energy needs being met outside the solar window.
+- We consider this to be a conservative estimate of the load shifting possible by households. For example, with new electric vehicles having more range than a week or even two weeks of driving, households could choose to charge near 100% from solar on weekends or, if they are at home during sunlight hours, any time during the week.
+- The other electricity consumption is assumed at full grid electricity costs, which we also consider to be conservative as households often have access to low cost electric vehicle charging rates during off peak periods.
+
+Refer to the logic in `get_e_consumed_from_solar()` ([file](src/savings/energy/get_electricity_consumption.py)) for more details.
+
+## Battery impact
+
+We then calculate how much of the solar generation is stored in battery, then consumed or exported.
+
+ assume all machine types have the same self-consumption rates from the battery, so we can ignore how much of each machine category's needs are met by the battery storage. In future, we may wish to be more sophisticated about how certain machines pull more from the battery due to usage patterns.
+    # We assume that all the electricity stored in the battery is from solar. We don't yet allow for batteries (and therefore arbitrage) without solar.
+    
+
+Battery cycle costs are calculated over a 15 year, 5475 cycle life. We assume a round trip efficiency of 95%. 
+
+Energy prices for petrol, diesel, and natural gas, come from the average of the most recent four quarters of the [MBIE Energy Prices data](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/), based on 2024 New Zealand dollars. These prices are reconciled with a comparison of prices available to consumers from PowerSwitch provided by ConsumerNZ for May 2024. Where data is not provided (e.g. wood), an online comparison of prices is used. While MBIE provides combined residential gas fixed and volume costs in a combined rate, this is split into a lower cost volume rate, and a fixed yearly rate from natural gas offers available on PowerSwitch.
 
 We base the rate of inflation on the New Zealand CPI history from 2000 to 2024 at 2.56%. We set future product price base inflation at 2%. The real inflation rates used for energy are the nominal value minus the All CPI groups rate over the same period of 2.55% pa (All Groups CPI). The specific rate of inflation for each fuel type, alongside today's fixed & volume costs versus the average over the next 15 years, can be found in the table below. Our cost savings calculations for weekly & yearly savings use 2024 prices, while our lifetime savings use the average prices over 15 years.
 
@@ -263,17 +319,11 @@ Table 1: Energy prices
 | Electricity (off-peak)  | -                        | 0.17300                      | 1.14%                     | -                                             | 0.18747                                       |
 | Electricity (solar feed-back tariff) | -         | 0.135                        | 1.14%                     | -                                             | 0.14632                                       |
 
-### Solar
-
-Solar prices are estimated at $2277.78/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. This is essentially $2000/kW plus the cost of an inverter which lasts 15 years.  Inverter replacement costs are assumed at $2,500. The solar capacity factor assumption is 15%. 
-
-All households remain connected to the grid, consume grid electricity, and pay for grid fixed costs and volume costs for the amount of electricity used. The solar export feed-in-tariff is assumed at 13.5 cents per kWh based on an online comparison of feed-in tariffs. 
-
-### Batteries
-
-Battery costs are assumed at $1000/kWh, from multiple surveys of 2023 installation costs in New Zealand direct from battery installers, in addition to comparison of available online prices for batteries in New Zealand. Battery cycle costs are calculated over a 15 year, 5475 cycle life. Degradation is assumed at 60% after the 15th year with an accelerating degradation curve from the first year of use. We assume a round trip efficiency of 95%. 
-
 The battery export feed-in-tariff is assumed to be the same as the solar feed-in-tariff. This is considered conservative, as the battery can feed in at peak times when electricity prices are significantly higher, and where some EDBs and retailers provide higher reward for peak feed-in. 
+
+All households remain connected to the grid, consume grid electricity, and pay for grid fixed costs and volume costs for the amount of electricity used.
+
+## Replacement Costs
 
 ### Appliances
 
@@ -311,50 +361,14 @@ We use current Road User Charges (RUCs) without taking inflation into account:
 
 The model does not provide upfront costs for vehicles, although the calculator app provides a general range to give an indication of replacing fossil fuel vehicles with EVs. The range is based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024. Clean car rebate is not included as it was phased out in 2024. 
 
+### Solar
+
+The upfront cost of installing solar is estimated at $2277.78/kW using a combination of 2023 data from the Sustainable Energy Association of New Zealand (SEANZ) and direct surveys from installers. This is essentially $2000/kW plus the cost of an inverter which lasts 15 years.  Inverter replacement costs are assumed at $2,500. 
+
+### Batteries
+
+Battery upfront costs are assumed at $1000/kWh, from multiple surveys of 2023 installation costs in New Zealand direct from battery installers, in addition to comparison of available online prices for batteries in New Zealand.
+
 ## Recommendations
 
 TODO: about how the next steps algo works
-
-
-
-[^1]:  [https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040)
-
-[^2]:  https://www.[eeca.govt.nz/insights/data-tools/energy-end-use-database/](http://eeca.govt.nz/insights/data-tools/energy-end-use-database/)
-
-[^3]:  [https://www.mia.org.nz/Sales-Data/Vehicle-Sales\#oss](https://www.mia.org.nz/Sales-Data/Vehicle-Sales#oss)
-
-[^4]:  [https://www.eeca.govt.nz/insights/eeca-insights/e3-programme-sales-and-efficiency-data/](https://www.eeca.govt.nz/insights/eeca-insights/e3-programme-sales-and-efficiency-data/)
-
-[^5]:  [environment.govt.nz/assets/Publications/Files/warm-homes-heating-optionsphase1.pdf](http://environment.govt.nz/assets/Publications/Files/warm-homes-heating-optionsphase1.pdf) 
-
-[^6]:  [https://www.energystar.gov/products/water\_heaters/residential\_water\_heaters\_key\_ product\_criteria](https://www.energystar.gov/products/water_heaters/residential_water_heaters_key_)
-
-[^7]:  [https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf](https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf) 
-
-[^8]:  [www.fueleconomy.gov](http://www.fueleconomy.gov) 
-
-[^9]:  [https://ev-database.org/ car/1782/BYD-ATTO-3](https://ev-database.org/) 
-
-[^10]:  [https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energystatistics-and-modelling/energy-statistics/energy-prices/)
-
-[^11]:  [https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energy-statistics-and-modelling/](https://www.mbie.govt.nz/building-and-energy/energy-and-natural-resources/energy-statistics-and-modelling/energy-modelling/electricity-demand-and-generation-scenarios)
-
-[^12]:  [https://www.stats.govt.nz/indicators/consumers-price-index-cpi/](https://www.stats.govt.nz/indicators/consumers-price-index-cpi/)
-
-[^13]:  [https://ourworldindata.org/grapher/solar-pv-prices](https://ourworldindata.org/grapher/solar-pv-prices) 
-
-[^14]:  [https://atb.nrel.gov/electricity/2023/residential\_pv\#capital\_expenditures\_(capex)](https://atb.nrel.gov/electricity/2023/residential_pv#capital_expenditures_\(capex\)) 
-
-[^15]:  [https://www.cell.com/joule/fulltext/ S2542-4351(22)00410-X](https://www.cell.com/joule/fulltext/) 
-
-[^16]:  Ziegler M. S.; Trancik, J. E. Re-Examining Rates of Lithium-Ion Battery Technology Improvement and Cost Decline. Energy Environ. Sci. 2021, 14, 1635–1651. DOI: 10.1039/D0EE02681F, [https://pubs.rsc.org/en/content/articlelanding/2021/ee/d0ee02681f](https://pubs.rsc.org/en/content/articlelanding/2021/ee/d0ee02681f) [https://doi.org/10.7910/DVN/9FEJ7C](https://doi.org/10.7910/DVN/9FEJ7C)
-
-[^17]:  [https://atb.nrel.gov/electricity/2023/residential\_battery\_storage](https://atb.nrel.gov/electricity/2023/residential_battery_storage)
-
-[^18]:  [https://www.climatecommission.govt.nz/our-work/advice-to-government-topic/preparing-advice-on-emissions](https://www.climatecommission.govt.nz/our-work/advice-to-government-topic/preparing-advice-on-emissions-budgets/advice-on-the-fourth-emissions-budget/modelling-and-data-consultation-on-emissions-reduction-target-and-emissions-budgets/)
-
-[^19]:  [https://www.stats.govt.nz/information-releases/dwelling-and-household-estimates-june-2024-quarter](https://www.stats.govt.nz/information-releases/dwelling-and-household-estimates-june-2024-quarter)
-
-[^20]:  [https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-study](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040)
-
-[^21]:  [https://www.emi.ea.govt.nz/Retail/Reports/GUEHMT?DateFrom=20130901\&DateTo=20240331\&RegionType](https://www.emi.ea.govt.nz/Retail/Reports/GUEHMT?DateFrom=20130901&DateTo=20240331&RegionType=NZ&MarketSegment=Res&Capacity=All_Total&FuelType=solar_all&Show=ICP_Count&seriesFilter=NZ&_rsdr=ALL&_si=_db_Capacity%7CAll_Total,_db_MarketSegment%7CRes,_db_RegionCode%7CNZ,_db_RegionType%7CNZ,db%7C5YPBXT,dri%7C3745,s%7Cdmt,v%7C3)
