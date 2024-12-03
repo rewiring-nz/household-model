@@ -37,6 +37,8 @@ The average New Zealand car drives 10,950 km, rounded to 210 km per week. This i
 
 $31.4 \space\text{kWh/day} \times \frac{300\space\text{km/week}}{210\space\text{km/week}} \times 24\space\text{hours/day} \times 7\space\text{days/week}$.
 
+The dropdown options for vehicle usage in our [household calculator frontend app](https://github.com/rewiring-nz/household-calculator-app/) are `Low (<100 km/wk)`, `Medium (100-300 km/wk)`, and `High (300+ km/wk)`. They are fed into the calculation as 50 km/wk, 210 km/wk (the national average), and 400 km/wk respectively.
+
 ### Scaling energy use by occupancy
 
 We derive average household energy use across different appliances through the Australian and New Zealand Residential Baseline Study 2021, published November 2022.[^1] However, household energy consumption does not scale linearly with the number of occupants. Shared resources and economies of scale mean that additional occupants do not proportionally increase energy usage. For example, a 1-bedroom apartment with two people living in it does not have twice the energy consumption as one person living in it. The ratio is likely to be lower, as some of the energy needs are shared (e.g. heating the living room, cooking 1 meal that is shared). 
@@ -256,6 +258,11 @@ We use current Road User Charges (RUCs) without taking inflation into account:
 - Diesel: $76 per year per 1000km
 
 The model does not provide upfront costs for vehicles, although the calculator app provides a general range to give an indication of replacing fossil fuel vehicles with EVs. The range is based on a comparison of popular New Zealand petrol vehicles and their prices, compared to a similar EV option and its price, using pricing data from vehicle manufacturer websites accessed in August 2024. Clean car rebate is not included as it was phased out in 2024. 
+
+## Recommendations
+
+TODO: about how the next steps algo works
+
 
 
 [^1]:  [https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040)
