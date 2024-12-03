@@ -28,7 +28,7 @@ Next, we calculate the energy use, which we use to determine the emissions and o
 
 ### 3.1 Appliances
 
-We derive average household energy use across different appliances through the [Australian and New Zealand Residential Baseline Study 2021](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-studyaustralia-and-new-zealand-2000-2040), published November 2022. From here, these are scaled by regional heat demand differences where applicable, then scaled to the appropriate period (e.g. weekly, yearly, operational lifetime of 15 years).
+We derive average household energy use across different appliances through the [Australian and New Zealand Residential Baseline Study 2021](https://www.energyrating.gov.au/industry-information/publications/report-2021-residential-baseline-study-australia-and-new-zealand-2000-2040), published November 2022. From here, these are scaled by regional heat demand differences where applicable, then scaled to the appropriate period (e.g. weekly, yearly, operational lifetime of 15 years).
 
 #### 3.1.2 Space heating
 
@@ -73,7 +73,7 @@ We multiply these national average energy use values by a region factor, to refl
 
 #### 3.1.3 Water heating
 
-Water heating efficiencies are sourced from the [US Department of Energy Energy Star ratings scheme](https://www.energystar.gov/products/water_heaters/residential_water_heaters_key_ product_criteria). Electric resistive tank water heating is assumed at 90%, and heat pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA's 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
+Water heating efficiencies are sourced from the [US Department of Energy Energy Star ratings scheme](https://www.energystar.gov/products/water_heaters/residential_water_heaters_key_product_criteria). Electric resistive tank water heating is assumed at 90%, and heat pump water heaters are assumed at 367%, which is based upon the 10% tank losses combined with the EECA's 408% heat pump efficiency for space heating. We do not take location into account when it comes to water heating energy needs.
 
 Average energy use per day for water heater type:
 | Water heating fuel type       | Energy use (kWh/day) |
@@ -367,7 +367,7 @@ We have not yet included vehicle servicing costs, which tend to be lower for EVs
 
 Appliance replacement costs come from a comparison of over 100 different quotes for appliance costs, sourced both online and direct from installers. An average capital cost and average install cost is used for each individual appliance. The scope of the appliance cost comparison aims to compare products that are not the cheapest possible product, nor the most expensive, as appliance costs can vary significantly. The aim of the comparison was to create an assumed common cost for each option, in the middle of the cost spectrum. 
 
-Appliance installation specific costing is scarce, and we acknowledge the need for detailed work in the area of obtaining these “soft costs” or installation costs of devices. Installation costs also vary significantly between installers, creating further complexity. This paper uses installation costs that are the result of real quotes from both online and direct installer but A detailed analysis of the impact of different household conditions and installation costs across different appliances would be valuable for emissions reduction and energy system planning in New Zealand.  
+Appliance installation specific costing is scarce, and we acknowledge the need for detailed work in the area of obtaining these “soft costs” or installation costs of devices. Installation costs also vary significantly between installers, creating further complexity. This model uses installation costs that are the result of real quotes from both online and direct installer but A detailed analysis of the impact of different household conditions and installation costs across different appliances would be valuable for emissions reduction and energy system planning in New Zealand.  
    
 The following appliance price and installation cost are assumed:
 
