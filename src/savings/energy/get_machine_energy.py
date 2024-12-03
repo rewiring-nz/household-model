@@ -2,7 +2,10 @@ from typing import Dict, List, Optional, TypedDict
 
 from constants.fuel_stats import FuelTypeEnum
 from constants.machines.cooktop import COOKTOP_INFO
-from constants.machines.space_heating import SPACE_HEATING_INFO
+from constants.machines.space_heating import (
+    SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER,
+    SPACE_HEATING_INFO,
+)
 from constants.machines.water_heating import WATER_HEATING_INFO
 from constants.machines.machine_info import MachineEnum, MachineInfoMap
 from constants.machines.other_machines import ENERGY_NEEDS_OTHER_MACHINES_PER_DAY
@@ -11,6 +14,8 @@ from constants.machines.vehicles import (
     VEHICLE_INFO,
 )
 from constants.utils import PeriodEnum
+from openapi_client.models.location_enum import LocationEnum
+from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from savings.energy.scale_energy_by_occupancy import scale_energy_by_occupancy
 from utils.scale_daily_to_period import scale_daily_to_period
 
@@ -41,6 +46,7 @@ def get_energy_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
     occupancy: Optional[int] = None,
+    location: Optional[LocationEnum] = None,
 ) -> Dict[FuelTypeEnum, float]:
     """Get energy needs per day for a given machine
 
@@ -48,6 +54,7 @@ def get_energy_per_day(
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
         occupancy (int, optional): The number of people in the household.
+        location (LocationEnum, optional): The location of the machine (for determining heating needs)
 
     Returns:
         Dict[FuelTypeEnum, float]: machine's energy needs per day per fuel type
@@ -68,6 +75,14 @@ def get_energy_per_day(
             raise ValueError(f"Can not find fuel type value for {machine_type}")
 
         e_daily_scaled = scale_energy_by_occupancy(e_daily, occupancy)
+        if type(machine_type) == SpaceHeatingEnum:
+            multiplier = (
+                1
+                if location is None
+                else SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER[location]
+            )
+            e_daily_scaled = e_daily_scaled * multiplier
+
         e_fuel_type[fuel_type] = e_daily_scaled
 
     return e_fuel_type

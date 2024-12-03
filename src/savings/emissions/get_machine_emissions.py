@@ -1,5 +1,8 @@
 from typing import List, Optional
 
+from constants.machines.space_heating import SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER
+from openapi_client.models.location_enum import LocationEnum
+from openapi_client.models.space_heating_enum import SpaceHeatingEnum
 from openapi_client.models.vehicle import Vehicle
 from openapi_client.models.vehicle_fuel_type_enum import VehicleFuelTypeEnum
 
@@ -19,6 +22,7 @@ def get_emissions_per_day(
     machine_type: MachineEnum,
     machine_stats_map: MachineInfoMap,
     occupancy: Optional[int] = None,
+    location: Optional[LocationEnum] = None,
 ) -> float:
     """Get emissions per day based on machine's energy use per day and emissions factor for fuel type
 
@@ -26,13 +30,22 @@ def get_emissions_per_day(
         machine_type (MachineEnum): the type of machine, e.g. a gas cooktop
         machine_stats_map (MachineInfoMap): info about the machine's energy use per day and its fuel type
         occupancy (int, optional): The number of people in the household.
+        location (LocationEnum, optional): The location of the machine (for determining heating needs)
 
     Returns:
         float: machine's emissions in kgCO2e per day
     """
+    # TODO: Use get_energy_per_day() for calculating energy, then just multiply by emissions factor
     energy = machine_stats_map[machine_type]["kwh_per_day"]
     fuel_type = machine_stats_map[machine_type]["fuel_type"]
     energy_scaled = scale_energy_by_occupancy(energy, occupancy)
+    if type(machine_type) == SpaceHeatingEnum:
+        multiplier = (
+            1
+            if location is None
+            else SPACE_HEATING_ENERGY_LOCATION_MULTIPLIER[location]
+        )
+        energy_scaled = energy_scaled * multiplier
     emissions = energy_scaled * EMISSIONS_FACTORS[fuel_type]
     return emissions
 
