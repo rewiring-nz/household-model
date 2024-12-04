@@ -10,6 +10,8 @@ The main method of space heating
 
 * `LPG` (value: `'LPG'`)
 
+* `DIESEL` (value: `'DIESEL'`)
+
 * `ELECTRIC_RESISTANCE` (value: `'ELECTRIC_RESISTANCE'`)
 
 * `ELECTRIC_HEAT_PUMP` (value: `'ELECTRIC_HEAT_PUMP'`)

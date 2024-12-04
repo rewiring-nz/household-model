@@ -40,6 +40,7 @@ Average energy use per day for space heater types:
 | Wood                          | 14.44               |
 | Natural gas                   | 11.73               |
 | LPG                           | 11.73               |
+| Diesel                           | 12.95               |
 | Electric resistance           | 9.39                |
 | Electric heat pump            | 2.3                 |
 
@@ -374,18 +375,8 @@ The following appliance price and installation cost are assumed:
 | Appliance     | Fuel type                   | Item price ($) | Install cost ($) |
 |---------------|-----------------------------|----------------|------------------|
 | Space heater  | Electricity (heat pump)     | 2728           | 1050             |
-| Space heater  | Electricity (resistive)     | 300            | 0                |
-| Space heater  | Gas                         | 3876.085       | 1250             |
-| Space heater  | LPG                         | 3876.085       | 1250             |
-| Space heater  | Wood                        | 4913           | 0                |
 | Water heater  | Electricity (heat pump)     | 4678           | 2321             |
-| Water heater  | Electricity (resistive)     | 1975           | 1995             |
-| Water heater  | Gas                         | 1418           | 2175             |
-| Water heater  | LPG                         | 1419           | 2175             |
 | Cooktop       | Electricity (induction)     | 1430           | 1265             |
-| Cooktop       | Electricity (resistive)     | 879            | 288              |
-| Cooktop       | Gas                         | 1022           | 630              |
-| Cooktop       | LPG                         | 1022           | 630              |
 
 ### 6.2 Vehicles
 

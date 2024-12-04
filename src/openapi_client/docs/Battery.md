@@ -1,6 +1,6 @@
 # Battery
 
-The household's home battery system
+The household's home battery system. To have or want to install a battery, you must have or want to install solar. The model does not accept households with battery but no solar.
 
 ## Properties
 Name | Type | Description | Notes
