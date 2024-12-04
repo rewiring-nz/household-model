@@ -20,6 +20,10 @@ SPACE_HEATING_INFO: MachineInfoMap = {
         "kwh_per_day": 11.73,
         "fuel_type": FuelTypeEnum.LPG,
     },
+    SpaceHeatingEnum.DIESEL: {
+        "kwh_per_day": 12.95,
+        "fuel_type": FuelTypeEnum.DIESEL,
+    },
     SpaceHeatingEnum.ELECTRIC_RESISTANCE: {
         "kwh_per_day": 9.39,
         "fuel_type": FuelTypeEnum.ELECTRICITY,
