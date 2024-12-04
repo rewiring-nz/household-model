@@ -182,7 +182,7 @@ Table 2: Scaling factors for energy consumption based on occupancy
 | 2.7 (reference) | 1.00 |
 | 3 | 1.03 |
 | 4 | 1.07 |
-| 5+ | 1.09 |
+| 5+ | 1.37 |
 
 ### 3.3 Vehicles
 
@@ -217,10 +217,10 @@ Where:
 
 We assume 0.5% degradation per year over a 30-year lifetime, which averages out to $D = 6.92%$ degradation over 30 years, or 93.08% performance of nameplate capacity over 30 years.
 
-We assume the following solar capacity factors $C_{loc}$ per region.
+We assume the following solar capacity factors $C_{loc}$ per region:
 
 > [!NOTE]
-> These are is a conservative, static estimates. Solar capacity factor likely to increase over the years due to technology advancements, as it has rapidly in recent history.
+> These are conservative, static estimates of solar capacity factor. They are likely to increase over the years due to technology advancements, as it has rapidly in recent history.
 
 | Region                 | Solar capacity factor (%) |
 |------------------------|---------------------------|
@@ -268,7 +268,7 @@ We assume that all the electricity stored in the battery is from solar. The mode
 
 ## 4 Emissions
 
-To calculate emissions, we take the energy consumption from the various machines and their fuel types, and multiply these by the emissions factors. We use these emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
+To calculate emissions, we take the energy consumption from the various machines and their fuel types, and multiply these by the emissions factors. The emissions factors are taken from the Ministry for the Environment's [Measuring emissions: A guide for organisations (2023)](https://environment.govt.nz/assets/publications/Measuring-Emissions-Guidance_EmissionFactors_Summary_2023_ME1781.pdf).
 
 | Energy Type   | Emissions Factor (kgCO₂e/kWh) |
 |---------------|-------------------------------|
@@ -294,7 +294,7 @@ We add the fixed costs (gas, LPG, or grid connections) and Road User Charges, an
 
 How much a household is able to self-consume ($E_{self-consumed}$) from their generated solar electricity will influence their savings.
 
-WWe assume the a self-consumption rate of 50% for appliance electricity needs, and 50% for vehicle electricity needs. This is based on the following assumptions:
+We assume a self-consumption rate of 50% for appliance electricity needs, and 50% for vehicle electricity needs. This is based on the following assumptions:
 
 - Water heating, which is near a third of average household loads, can be moved almost entirely into the solar window in what is described as a “thermal battery”. This is similar to existing “ripple control” used in New Zealand electric water heaters to avoid peak electricity times.
 - Other appliances, such as space heaters, can only be moved a small amount, with significant energy needs being met outside the solar window.
