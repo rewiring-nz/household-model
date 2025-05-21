@@ -236,6 +236,6 @@ def get_rucs(vehicles: List[Vehicle], period: PeriodEnum = PeriodEnum.DAILY) -> 
 
 
 def get_solar_feedin_tariff(e_exported: float, period: PeriodEnum) -> float:
-    if PeriodEnum.OPERATIONAL_LIFETIME:
+    if period == PeriodEnum.OPERATIONAL_LIFETIME:
         return e_exported * SOLAR_FEEDIN_TARIFF_AVG_15_YEARS
     return e_exported * SOLAR_FEEDIN_TARIFF_2024
