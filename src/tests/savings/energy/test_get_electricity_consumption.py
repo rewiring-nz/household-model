@@ -59,7 +59,7 @@ class TestSumEnergyForFuelType:
 
 
 class TestGetEGeneratedFromSolar:
-    def test_calculates_generation_correctly_for_sydney(self):
+    def test_calculates_generation_correctly_for_akl_central(self):
         solar = Solar(has_solar=True, size=6.6)
         expected_generation = solar.size * 0.155 * 8766 * 0.9308
 
