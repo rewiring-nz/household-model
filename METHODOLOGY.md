@@ -87,7 +87,7 @@ Average energy use per day for water heater type:
 
 #### 3.1.4 Cooktop
 
-Cooktop efficiency is sourced from the Frontier Energy [Residential Cooktop Performance and Energy Comparison Study #501318071-R0](https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf), published in July 2019. Electric efficiency is assumed at 95%, and gas/LPG at 90%. 
+Cooktop energy use is derived from the Frontier Energy [Residential Cooktop Performance and Energy Comparison Study #501318071-R0](https://cao-94612.s3.amazonaws.com/documents/Induction-Range-Final-Report-July-2019.pdf), published in July 2019.
 
 Average energy use per day for cooktop type:
 | Cooktop fuel type             | Energy use (kWh/day) |
